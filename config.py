@@ -3,7 +3,7 @@
 
 # Device List - Each device must have a floor_id
 DEVICES = [
-    # ground FLOOR
+    # GROUND FLOOR
     {
         "id": "olt-isp-main",
         "name": "OLT ISP MyRepublic",
@@ -29,8 +29,8 @@ DEVICES = [
         "position": {"top": "40%", "left": "50%"}
     },
     {
-        "id": "srv-g-main",
-        "name": "Server Utama ground",
+        "id": "nvr-g-98",
+        "name": "NVR 98",
         "ip": "192.168.1.100",
         "type": "server",
         "floor_id": "ground",
@@ -96,9 +96,9 @@ DEVICES = [
     },
     {
         "id": "srv-lt1-storage",
-        "name": "Server Storage Lt.1",
+        "name": "Switch HIKVISION",
         "ip": "192.168.2.100",
-        "type": "server",
+        "type": "switch_poe",
         "floor_id": "floor_1",
         "position": {"top": "80%", "left": "40%"}
     },
@@ -148,9 +148,10 @@ FLOOR_LABELS = {
 
 # Device Type Configuration
 DEVICE_TYPES = {
-    "switch": {"label": "Switch", "color": "#3498db"},
-    "cctv": {"label": "CCTV", "color": "#e74c3c"},
-    "server": {"label": "Server", "color": "#9b59b6"},
-    "wifi": {"label": "WiFi/AP", "color": "#f39c12"},
-    "voip": {"label": "VoIP", "color": "#1abc9c"},
+    "switch": {"label": "Switch"},
+    "switch_poe": {"label": "Switch POE"},
+    "cctv": {"label": "CCTV"},
+    "server":{"label": "Server"},
+    "wifi": {"label": "WiFi/AP"},
+    "voip": {"label": "VoIP"},
 }
