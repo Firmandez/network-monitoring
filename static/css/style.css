@@ -8,7 +8,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0b1219; /* Ganti dari #1a1a2e */
+    background-color: #1a1a2e;
     color: #eee;
     overflow-x: hidden;
 }
@@ -18,14 +18,12 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    /* Ganti gradien ungu jadi gradien Navy halus */
-    background: linear-gradient(180deg, #132235 0%, #0e1a29 100%);
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
     padding: 20px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    border-bottom: 1px solid #1e3a5f; /* Tambah border biar tegas */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .header-left {
@@ -36,16 +34,13 @@ body {
 .logo-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 }
 
 .header-logo {
     width: 120px;
     height: 120px;
     object-fit: contain;
-    border-radius: 8px;
-    background: transparent;
-    padding: 5px;
     transition: transform 0.3s ease;
 }
 
@@ -62,13 +57,16 @@ body {
     font-size: 28px;
     font-weight: 600;
     margin: 0;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    line-height: 1.2;
 }
 
 .subtitle {
-    font-size: 14px;
-    color: #aaa;
+    font-size: 13px;
+    color: #a0aec0;
     margin: 0;
+    line-height: 1.5;
+    margin-bottom: 2px;
 }
 
 .header-right {
@@ -114,19 +112,17 @@ body {
 /* Sidebar */
 .sidebar {
     width: 260px;
-    background: #132235; 
+    background: #16213e;
     padding: 20px;
-    border-right: 1px solid #1e3a5f;
+    border-right: 2px solid #0f3460;
     overflow-y: auto;
     max-height: calc(100vh - 120px);
 }
 
 .sidebar h3 {
-    color: #ecf0f1;
+    color: #3498db;
     margin-bottom: 15px;
     font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .floor-nav {
@@ -136,29 +132,25 @@ body {
 }
 
 .floor-btn {
-    background: #0b1219;
-    border: 1px solid #1e3a5f;
-    color: #a0aec0;
+    background: #0f3460;
+    border: 2px solid #1e4d7b;
+    color: #fff;
     padding: 12px;
-    border-radius: 6px; 
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
     transition: all 0.3s;
 }
 
 .floor-btn:hover {
-    background: #1e3a5f;
-    color: #fff;
+    background: #1e4d7b;
     transform: translateX(5px);
 }
 
 .floor-btn.active {
-    background: #ffffff;
-    color: #0b1219;
-    border-color: #ffffff;
-    font-weight: bold;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    background: #3498db;
+    border-color: #3498db;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
 }
 
 /* Filter Panel */
@@ -198,11 +190,9 @@ body {
 }
 
 .legend h4 {
-    color: #ecf0f1; /* Putih Gading */
-    margin-bottom: 15px;
-    font-size: 16px;
-    text-transform: uppercase; /* Biar lebih tegas */
-    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: #3498db;
+    font-size: 14px;
 }
 
 .legend-item {
@@ -254,8 +244,7 @@ body {
 /* Map Container */
 .map-container {
     position: relative;
-    /* Background peta jadi Navy Gelap agar denah putih lebih kontras */
-    background: #0f1823; 
+    background: linear-gradient(135deg, #0a1929 0%, #0f1f35 100%);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
@@ -265,7 +254,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #1e3a5f; /* Border Navy Terang */
+    border: 1px solid #1e4d7b;
+}
+
+.map-container::before {
+    content: '⏳ Loading map...';
+    position: absolute;
+    color: #3498db;
+    font-size: 16px;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -302,28 +300,27 @@ body {
 /* Device Dots */
 .device-dot {
     position: absolute;
-    width: 15px;
-    height: 15px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     cursor: pointer;
-    border: 2px solid rgba(255, 255, 255, 0.8); /* Border putih biar kontras sama peta */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3); /* Shadow biar ngambang */
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efek membal pas hover */
     pointer-events: all;
     transition: all 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5);
     z-index: 5;
 }
 
 .device-dot.online {
-    background: #10b981; /* Emerald Green */
-    box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.4);
+    background: #2ecc71;
+    box-shadow: 0 0 25px #2ecc71, 0 0 50px rgba(46, 204, 113, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
+    animation: pulse-online 2s ease-in-out infinite;
 }
 
 .device-dot.offline {
-    background: #ef4444; /* Red */
-    box-shadow: 0 0 15px #ef4444, 0 0 30px rgba(239, 68, 68, 0.6);
-    animation: pulse-red 1.5s infinite; /* Wajib kedip biar panik dikit */
-    z-index: 20; /* Offline harus tampil paling atas */
+    background: #e74c3c;
+    box-shadow: 0 0 25px #e74c3c, 0 0 50px rgba(231, 76, 60, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
+    animation: pulse-offline 2s ease-in-out infinite;
 }
 
 .device-dot:hover {
@@ -348,6 +345,27 @@ body {
     50% {
         box-shadow: 0 0 35px #e74c3c, 0 0 70px rgba(231, 76, 60, 0.8), 0 4px 10px rgba(0, 0, 0, 0.5);
     }
+}
+
+/* Device type specific colors (for border) */
+.device-dot[data-type="switch"] {
+    border-color: #3498db;
+}
+
+.device-dot[data-type="cctv"] {
+    border-color: #e74c3c;
+}
+
+.device-dot[data-type="server"] {
+    border-color: #9b59b6;
+}
+
+.device-dot[data-type="wifi"] {
+    border-color: #f39c12;
+}
+
+.device-dot[data-type="voip"] {
+    border-color: #1abc9c;
 }
 
 .map-info {
@@ -391,9 +409,9 @@ body {
 
 /* Log Panel */
 .log-panel {
-    background: #132235;
+    background: #16213e;
     padding: 20px 30px;
-    border-top: 2px solid #1e3a5f;
+    border-top: 2px solid #0f3460;
 }
 
 .log-header {
@@ -404,11 +422,8 @@ body {
 }
 
 .log-header h3 {
-    color: #ecf0f1; /* Putih Gading */
-    margin-bottom: 15px;
-    font-size: 16px;
-    text-transform: uppercase; /* Biar lebih tegas */
-    letter-spacing: 1px;
+    color: #3498db;
+    font-size: 18px;
 }
 
 .refresh-btn {
@@ -430,7 +445,7 @@ body {
 .log-container {
     max-height: 200px;
     overflow-y: auto;
-    background: #0b1219;
+    background: #0f3460;
     padding: 15px;
     border-radius: 8px;
 }
@@ -479,12 +494,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #ecf0f1;
+    background: #3498db;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #fff;
+    background: #2980b9;
 }
 
 /* Responsive Design */
@@ -510,14 +525,12 @@ body {
     }
     
     .logo-container {
-        gap: 5px;
+        gap: 10px;
     }
     
     .header-logo {
-        width: 70px;
-        height: 70px;
-        border: 3px solid #3498db;
-        padding: 8px;
+        width: 50px;
+        height: 50px;
     }
     
     .header-left h1 {

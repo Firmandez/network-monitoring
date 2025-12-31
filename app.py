@@ -108,10 +108,10 @@ def check_single_device(device):
         device_name = device['name']
         device_ip = device['ip']
         
-        # Ping (Makan waktu, tapi karena banyak thread, gak masalah)
+        # Ping Device
         is_online = ping_device(device_ip)
         
-        # Update Status (Pakai Lock biar gak rebutan variable global)
+        # Update Status
         with status_lock:
             # Ambil status lama
             status_info = device_status.get(device_id, {'online': False})
@@ -123,7 +123,7 @@ def check_single_device(device):
                 'last_checked': datetime.now()
             }
             
-            # Cek Log kalau berubah (Logic yang tadi udah bener)
+            # Cek Log kalau berubah
             if device_id in device_status and old_status != is_online:
                  add_log_event(device_name, old_status, is_online)
                  print(f"  [Thread] {device_name} -> {'Online' if is_online else 'Offline'}")
@@ -144,10 +144,7 @@ def ping_all_devices():
             start_time = time.time() # Mulai stopwatch
             
             print(f"\n--- CYCLE #{cycle_count} START - {datetime.now().strftime('%H:%M:%S')} ---")
-            
-            # --- MAGIC HAPPENS HERE ---
-            # 50 threads
-            # Mereka bakal ngerjain fungsi 'check_single_device' barengan
+            # 50 threads mengnerjakan fungsi 'check_single_device' secara bersama
             with ThreadPoolExecutor(max_workers=50) as executor:
                 # executor.map itu kayak ngirim semua item di DEVICES ke worker
                 executor.map(check_single_device, DEVICES)
