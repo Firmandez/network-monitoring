@@ -1,6 +1,8 @@
 // dashboard.js - FINAL FIXED VERSION
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
 
+import { io } from "./socket.io.esm.min.js";
+
 // GLOBAL VARIABLES & SOCKET SETUP
 let allDevices = [];
 let config = {};
@@ -13,7 +15,10 @@ let isFullscreenMode = false;
 let clockInterval = null;
 
 // DOM Elements
-const socket = window.io(); // Initialize Socket.IO Global
+const socket = io({
+    transports: ["websocket"],
+    upgrade: false
+});
 const floorNav = document.getElementById('floor-nav');
 const filterPanel = document.getElementById('filter-panel');
 const mapContainer = document.getElementById('map-container');
