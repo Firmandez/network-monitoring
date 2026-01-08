@@ -1,119 +1,62 @@
-# app.py
-# Flask Backend for NOC Network Monitoring System
+# app.py - VERSI THREADING (CLEAN & STABLE)
 
 from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
 import subprocess
 import platform
-import traceback
 from datetime import datetime
+import json
+
+# Import config (Pastikan file config.py ada)
 from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'L4b0r4nft1'
+
+# --- SETTING SOCKET.IO ---
+# async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)
+socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
 
 # Global state
-device_status = {}  # {device_id: {"online": bool, "last_checked": datetime}}
-event_logs = []     # List of status change events (max 50, show last 10)
+device_status = {}  # Simpan status terakhir
+event_logs = []     # Simpan log history
 
-# Lock for thread-safe operations
+# Lock biar thread gak rebutan data
 status_lock = threading.RLock()
 
+# --- FUNGSI PING ---
 def ping_device(ip):
-    """
-    Ping a device to check if it's online.
-    Windows compatible: uses -n instead of -c
-    Returns True if online, False if offline
-    """
     try:
-        # Validate IP address
-        if not ip or ip == "" or ip is None:
-            print(f"    └─> Invalid IP: '{ip}'")
-            return False
+        if not ip: return False
         
-        # Detect OS
-        is_windows = platform.system().lower() == 'windows'
+        # Deteksi OS otomatis
+        param = '-n' if platform.system().lower() == 'windows' else '-c'
+        timeout_param = '-w' if platform.system().lower() == 'windows' else '-W'
         
-        # Build ping command
-        if is_windows:
-            # Windows: ping -n 1 -w 1000 <ip>
-            # -w 1000 = timeout 1 second
-            command = ['ping', '-n', '1', '-w', '500', ip]
-        else:
-            # Linux/Mac: ping -c 1 -W 1 <ip>
-            command = ['ping', '-c', '1', '-W', '1', ip]
+        # Command ping (timeout dipercepat jadi 500ms biar ngebut)
+        command = ['ping', param, '1', timeout_param, '500', ip]
         
-        # Set creation flags to hide window on Windows
-        kwargs = {
-            'stdout': subprocess.DEVNULL,  # Ignore output for speed
-            'stderr': subprocess.DEVNULL,  # Ignore errors for speed
-            'stdin': subprocess.DEVNULL,
-            'timeout': 2,  # Hard timeout limit
-            'shell': False
-        }
+        # Sembunyikan window cmd di Windows
+        kwargs = {'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
+        if platform.system().lower() == 'windows':
+            kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+            
+        return subprocess.call(command, **kwargs) == 0
         
-        if is_windows:
-            try:
-                kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
-            except AttributeError:
-                pass
-        
-        # Execute ping - this will NOT hang even if device is offline
-        result = subprocess.run(command, **kwargs)
-        
-        # Return code 0 = success (online)
-        # Return code 1 = failure (offline)
-        return result.returncode == 0
-        
-    except subprocess.TimeoutExpired:
-        # Timeout means device is not responding
-        print(f"    └─> Timeout")
-        return False
-        
-    except FileNotFoundError:
-        print(f"    └─> Ping command not found!")
-        return False
-        
-    except OSError as e:
-        # Network errors
-        print(f"    └─> Network error: {e}")
-        return False
-        
-    except Exception as e:
-        print(f"    └─> Exception: {type(e).__name__}: {e}")
+    except Exception:
         return False
 
-def add_log_event(device_name, old_status, new_status):
-    """Add a status change event to the log"""
-    with status_lock:
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        status_text = "Online" if new_status else "Offline"
-        event = {
-            "timestamp": timestamp,
-            "device": device_name,
-            "status": status_text,
-            "message": f"{device_name} went {status_text}"
-        }
-        event_logs.insert(0, event)  # Add to beginning
-        
-        # Keep only last 50 events
-        if len(event_logs) > 50:
-            event_logs.pop()
-
+# --- WORKER BUAT NGECEK 1 DEVICE ---
 def check_single_device(device):
-    """Fungsi worker yang akan dijalankan oleh banyak thread sekaligus"""
     try:
         device_id = device['id']
-        device_name = device['name']
-        device_ip = device['ip']
+        is_online = ping_device(device['ip'])
         
-        # Ping Device
-        is_online = ping_device(device_ip)
-        
-        # Update Status
         with status_lock:
-            # Ambil status lama
+            # Cek status lama
             status_info = device_status.get(device_id, {'online': False})
             old_status = status_info.get('online', False)
             
@@ -123,161 +66,95 @@ def check_single_device(device):
                 'last_checked': datetime.now()
             }
             
-            # Cek Log kalau berubah
+            # LOGIC LOGGING
             if device_id in device_status and old_status != is_online:
-                 add_log_event(device_name, old_status, is_online)
-                 print(f"  [Thread] {device_name} -> {'Online' if is_online else 'Offline'}")
-                 
-    except Exception as e:
-        print(f"Error checking {device.get('name')}: {e}")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                status_text = "Online" if is_online else "Offline"
+                log_entry = {
+                    "timestamp": timestamp,
+                    "device": device['name'],
+                    "status": status_text,
+                    "message": f"{device['name']} is now {status_text}"
+                }
+                event_logs.insert(0, log_entry)
+                if len(event_logs) > 20: event_logs.pop() # Simpan 20 log terakhir
+                
+                print(f"🔄 {device['name']} -> {status_text}")
 
-def ping_all_devices():
-    print("=" * 60)
-    print(f"STARTING PARALLEL MONITORING (ThreadPool) FOR {len(DEVICES)} DEVICES")
-    print("=" * 60)
-    
-    cycle_count = 0
+    except Exception as e:
+        print(f"Error checking {device['name']}: {e}")
+
+# --- BACKGROUND TASK ---
+def background_monitoring():
+    print("Monitoring Service Started (Threading Mode)...")
     
     while True:
         try:
-            cycle_count += 1
-            start_time = time.time() # Mulai stopwatch
-            
-            print(f"\n--- CYCLE #{cycle_count} START - {datetime.now().strftime('%H:%M:%S')} ---")
-            # 50 threads mengnerjakan fungsi 'check_single_device' secara bersama
+            # A. PING SEMUA DEVICE (Parallel 50 Thread)
             with ThreadPoolExecutor(max_workers=50) as executor:
-                # executor.map itu kayak ngirim semua item di DEVICES ke worker
                 executor.map(check_single_device, DEVICES)
             
-            # Hitung durasi selesai
-            duration = time.time() - start_time
-            
-            # Hitung statistik cepat
-            online_count = sum(1 for d in device_status.values() if d['online'])
-            offline_count = len(DEVICES) - online_count
-            
-            print(f"--- CYCLE DONE in {duration:.2f} seconds! ---")
-            print(f"Status: {online_count} Online | {offline_count} Offline")
-            
-            time.sleep(1) #jeda 1 detik
-            
-        except KeyboardInterrupt:
-            print("\n\nPing thread interrupted by user (Ctrl+C)")
-            break
-            
-        except Exception as e:
-            print(f"\n!!! CRITICAL ERROR IN PING THREAD !!!")
-            print(f"Error Type: {type(e).__name__}")
-            print(f"Error Message: {e}")
-            print(f"Traceback:")
-            traceback.print_exc()
-            print(f"\nRestarting ping thread in 3 seconds...")
-            time.sleep(3)
-            
-        # FORCE CONTINUE OUTER LOOP
-        finally:
-            pass
-
-# Routes
-@app.route('/')
-def index():
-    """Render main dashboard"""
-    return render_template('index.html')
-
-@app.route('/api/status')
-def get_status():
-    """
-    API endpoint to get all device statuses + global count
-    Returns: {
-        "devices": [...],
-        "global": {"total": X, "online": Y, "offline": Z}
-    }
-    """
-    try:
-        with status_lock:
-            # Build device list with current status
+            # B. RAKIT DATA BUAT DIKIRIM KE BROWSER
             devices_data = []
             total_online = 0
             total_offline = 0
             
-            for device in DEVICES:
-                device_id = device['id']
-                
-                # Get status, default to offline if not yet checked
-                status_info = device_status.get(device_id, {'online': False, 'last_checked': None})
-                
-                is_online = status_info.get('online', False)
-                if is_online:
-                    total_online += 1
-                else:
-                    total_offline += 1
-                
-                devices_data.append({
-                    'id': device_id,
-                    'name': device['name'],
-                    'ip': device['ip'],
-                    'type': device['type'],
-                    'floor_id': device['floor_id'],
-                    'position': device['position'],
-                    'online': is_online
-                })
-            
-            return jsonify({
+            with status_lock:
+                for device in DEVICES:
+                    d_stat = device_status.get(device['id'], {'online': False})
+                    is_online = d_stat['online']
+                    
+                    if is_online: total_online += 1
+                    else: total_offline += 1
+                    
+                    # Gabungkan data config + status terkini
+                    devices_data.append({
+                        **device, # Ambil semua data dari config (ip, posisi, dll)
+                        'online': is_online
+                    })
+
+            # Format Paket Data JSON
+            packet = {
                 'devices': devices_data,
                 'global': {
                     'total': len(DEVICES),
                     'online': total_online,
                     'offline': total_offline
                 },
-                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'status': 'ok'
-            })
-    except Exception as e:
-        print(f"Error in /api/status: {e}")
-        return jsonify({
-            'error': str(e),
-            'status': 'error'
-        }), 500
+                'logs': event_logs[:10], # Kirim 10 log terakhir
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # C. BROADCAST KE SEMUA BROWSER (Real-Time)
+            socketio.emit('update_data', packet)
+            
+            # D. Istirahat 2 detik sebelum loop lagi
+            socketio.sleep(2)
+            
+        except Exception as e:
+            print(f"Critical Loop Error: {e}")
+            socketio.sleep(5)
 
-@app.route('/api/logs')
-def get_logs():
-    """
-    API endpoint to get last 10 status change events
-    """
-    with status_lock:
-        return jsonify({
-            'logs': event_logs[:10]  # Return last 10 events
-        })
+# --- ROUTES ---
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/api/config')
 def get_config():
-    """
-    API endpoint to get floor maps and device types configuration
-    """
     return jsonify({
         'floor_maps': FLOOR_MAPS,
         'floor_labels': FLOOR_LABELS,
         'device_types': DEVICE_TYPES
     })
 
-@app.route('/api/health')
-def health_check():
-    """
-    Health check endpoint to verify server is running
-    """
-    return jsonify({
-        'status': 'ok',
-        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        'devices_tracked': len(DEVICES),
-        'devices_with_status': len(device_status)
-    })
-
+# --- START SERVER ---
 if __name__ == '__main__':
-    # Start background ping thread
-    ping_thread = threading.Thread(target=ping_all_devices, daemon=True)
-    ping_thread.start()
+    # Nyalakan background task
+    socketio.start_background_task(background_monitoring)
     
-    # Start Flask app
-    print("Starting NOC Monitoring Dashboard...")
-    print("Open browser at: http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    print("Server NOC Dashboard Running...")
+    print("Open: http://localhost:5000")
+    
+    # allow_unsafe_werkzeug=True biar gak error di environment development baru
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=False, allow_unsafe_werkzeug=True)

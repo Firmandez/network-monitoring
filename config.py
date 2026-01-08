@@ -4,122 +4,179 @@
 # Device List - Each device must have a floor_id
 DEVICES = [
     # GROUND FLOOR
-    {
-        "id": "olt-isp-main",
-        "name": "OLT ISP MyRepublic",
-        "ip": "192.168.18.1",
-        "type": "wifi",
-        "floor_id": "ground",
-        "position": {"top": "15%", "left": "50%"}
-    },
-    {
-        "id": "mob-1-user",
-        "name": "Infinix Note 40",
-        "ip": "192.168.18.3",
-        "type": "voip",
-        "floor_id": "ground",
-        "position": {"top": "20%", "left": "70%"}
-    },
-    {
-        "id": "cctv-g-lobby",
-        "name": "CCTV Lobby ground",
-        "ip": "192.168.1.11",
-        "type": "cctv",
-        "floor_id": "ground",
-        "position": {"top": "40%", "left": "50%"}
-    },
-    {
-        "id": "nvr-g-98",
-        "name": "NVR 98",
-        "ip": "192.168.1.100",
-        "type": "server",
-        "floor_id": "ground",
-        "position": {"top": "60%", "left": "50%"}
-    },
-    {
-        "id": "voip-g-reception",
-        "name": "VoIP Reception ground",
-        "ip": "192.168.1.50",
-        "type": "voip",
-        "floor_id": "ground",
-        "position": {"top": "30%", "left": "20%"}
-    },
+
     
     # FLOOR 1
     {
-        "id": "sw-lt1-main",
-        "name": "Switch Utama Lt.1",
-        "ip": "192.168.2.1",
-        "type": "switch",
-        "floor_id": "floor_1",
-        "position": {"top": "20%", "left": "45%"}
-    },
-    {
-        "id": "ap-lt1-north",
-        "name": "Access Point Lt.1 Utara",
-        "ip": "192.168.2.10",
-        "type": "wifi",
-        "floor_id": "floor_1",
-        "position": {"top": "15%", "left": "60%"}
-    },
-    {
-        "id": "ap-lt1-south",
-        "name": "Access Point Lt.1 Selatan",
-        "ip": "192.168.2.11",
-        "type": "wifi",
-        "floor_id": "floor_1",
-        "position": {"top": "70%", "left": "60%"}
-    },
-    {
-        "id": "cctv-lt1-corridor",
-        "name": "CCTV Koridor Lt.1",
-        "ip": "192.168.2.20",
+        "id": "192_168_20_1",
+        "name": "CCTV FTI120",
+        "ip": "192.168.20.1",
         "type": "cctv",
         "floor_id": "floor_1",
-        "position": {"top": "40%", "left": "30%"}
+        "position": {
+            "top": "68.2%",
+            "left": "60.6%"
+        },
+
     },
     {
-        "id": "cctv-lt1-classroom",
-        "name": "CCTV Ruang Kelas Lt.1",
-        "ip": "192.168.2.21",
+        "id": "192_168_20_3",
+        "name": "CCTV Dosen Kiri",
+        "ip": "192.168.20.3",
         "type": "cctv",
         "floor_id": "floor_1",
-        "position": {"top": "50%", "left": "70%"}
+        "position": {
+            "top": "39.4%",
+            "left": "45%"
+        },
     },
     {
-        "id": "voip-lt1-office",
-        "name": "VoIP Office Lt.1",
-        "ip": "192.168.2.50",
-        "type": "voip",
+        "id": "192_168_20_6",
+        "name": "Tata Usaha",
+        "ip": "192.168.20.6",
+        "type": "cctv",
         "floor_id": "floor_1",
-        "position": {"top": "35%", "left": "80%"}
+        "position": {
+            "top": "72.9%",
+            "left": "41.4%"
+        },
     },
     {
-        "id": "srv-lt1-storage",
-        "name": "Switch HIKVISION",
-        "ip": "192.168.2.100",
-        "type": "switch_poe",
+        "id": "192_168_20_31",
+        "name": "CCTV Kanan",
+        "ip": "192.168.20.31",
+        "type": "cctv",
         "floor_id": "floor_1",
-        "position": {"top": "80%", "left": "40%"}
+        "position": {
+            "top": "53.5%",
+            "left": "34.7%"
+        },
     },
-    
+    {
+        "id": "192_168_20_9",
+        "name": "CCTV Dosen Kanan",
+        "ip": "192.168.20.9",
+        "type": "cctv",
+        "floor_id": "floor_1",
+        "position": {
+            "top": "39.4%",
+            "left": "43%"
+        },
+    },
+    {
+        "id": "192_168_20_10",
+        "name": "CCTV Kiri",
+        "ip": "192.168.20.10",
+        "type": "cctv",
+        "floor_id": "floor_1",
+        "position": {
+            "top": "39.8%",
+            "left": "72.6%"
+        },
+    },
+    {
+        "id": "192_168_20_5",
+        "name": "CCTV Pintu Depan",
+        "ip": "192.168.20.5",
+        "type": "cctv",
+        "floor_id": "floor_1",
+        "position": {
+            "top": "48.8%",
+            "left": "41.4%"
+        },
+    },
+
     # FLOOR 2 (Placeholder for testing)
+
     {
-        "id": "sw-lt2-main",
-        "name": "Switch Utama Lt.2",
-        "ip": "192.168.3.1",
-        "type": "switch",
-        "floor_id": "floor_2",
-        "position": {"top": "25%", "left": "50%"}
-    },
-    {
-        "id": "cctv-lt2-lab",
-        "name": "CCTV Lab Lt.2",
-        "ip": "192.168.3.20",
+        "id": "192_168_20_21",
+        "name": "Sarpras",
+        "ip": "192.168.20.21",
         "type": "cctv",
         "floor_id": "floor_2",
-        "position": {"top": "45%", "left": "55%"}
+        "position": {
+            "top": "49.4%",
+            "left": "70.5%"
+        },
     },
+    {
+        "id": "192_168_20_2",
+        "name": "CCTV Dosen Kiri",
+        "ip": "192.168.20.2",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "62%",
+            "left": "45%"
+        },
+    },
+    {
+        "id": "192_168_20_19",
+        "name": "CCTV Kanan",
+        "ip": "192.168.20.19",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "61.3%",
+            "left": "15.3%"
+        },
+    },
+    {
+        "id": "192_168_20_18",
+        "name": "Lab LK",
+        "ip": "192.168.20.18",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "67%",
+            "left": "81.4%"
+        },
+    },
+    {
+        "id": "192_168_20_20",
+        "name": "CCTV Dosen Kanan",
+        "ip": "192.168.20.20",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "48.6%",
+            "left": "38%"
+        },
+    },
+    {
+        "id": "192_168_20_32",
+        "name": "CCTV Kiri",
+        "ip": "192.168.20.32",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "62.7%",
+            "left": "85.5%"
+        },
+    },
+    {
+        "id": "192_168_20_52",
+        "name": "Coworking Space 1",
+        "ip": "192.168.20.52",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "30.2%",
+            "left": "60.6%"
+        },
+    },
+    {
+        "id": "192_168_20_28",
+        "name": "Coworking Space 2",
+        "ip": "192.168.20.28",
+        "type": "cctv",
+        "floor_id": "floor_2",
+        "position": {
+            "top": "64%",
+            "left": "68.6%"
+        },
+    },
+
 ]
 
 # Map Configuration - Mapping floor_id to image path

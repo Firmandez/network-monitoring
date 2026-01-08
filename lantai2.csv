@@ -1,0 +1,9 @@
+Name,IP,type,floor_id,top,left
+Sarpras,192.168.20.21,cctv,floor_1,56.4%,70.5%
+CCTV Dosen Kiri,192.168.20.2,cctv,floor_1,70%,46%
+CCTV Kanan,192.168.20.19,cctv,floor_1,69.3%,15.3%
+Lab LK,192.168.20.18,cctv,floor_1,76%,81.4%
+CCTV Dosen Kanan,192.168.20.20,cctv,floor_1,55.6%,38%
+CCTV Kiri,192.168.20.32,cctv,floor_1,70.7%,85.5%
+Coworking Space 1,192.168.20.52,cctv,floor_1,36.2%,60.6%
+Coworking Space 2,192.168.20.28,cctv,floor_1,74.4%,68.6%

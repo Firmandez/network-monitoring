@@ -8,8 +8,8 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1a1a2e;
-    color: #eee;
+    background-color: #1a1a2e; /* Navy Gelap (Main Bg) */
+    color: #eeeeee; /* Putih Gading (Main Text) */
     overflow-x: hidden;
 }
 
@@ -18,12 +18,13 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%); /* Navy Medium ke Aksen */
     padding: 20px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid #1e4d7b;
 }
 
 .header-left {
@@ -41,7 +42,9 @@ body {
     width: 120px;
     height: 120px;
     object-fit: contain;
-    transition: transform 0.3s ease;
+    border-radius: 8px;
+    background: transparent;
+    transition: transform 0.3s;
 }
 
 .header-logo:hover {
@@ -59,11 +62,12 @@ body {
     margin: 0;
     margin-bottom: 8px;
     line-height: 1.2;
+    color: #eeeeee;
 }
 
 .subtitle {
     font-size: 13px;
-    color: #a0aec0;
+    color: #a0aec0; /* Abu-biru (Sub Text) */
     margin: 0;
     line-height: 1.5;
     margin-bottom: 2px;
@@ -72,35 +76,58 @@ body {
 .header-right {
     display: flex;
     gap: 20px;
+    align-items: center;
+}
+
+/* Primary Button Color */
+.fullscreen-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); /* Biru Utama */
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.fullscreen-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     padding: 15px 25px;
     border-radius: 10px;
     text-align: center;
     min-width: 120px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-box.stat-online {
-    background: rgba(46, 204, 113, 0.2);
-    border: 2px solid #2ecc71;
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid #2ecc71;
 }
 
 .stat-box.stat-offline {
-    background: rgba(231, 76, 60, 0.2);
-    border: 2px solid #e74c3c;
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid #e74c3c;
 }
 
 .stat-label {
     font-size: 12px;
-    color: #bbb;
+    color: #a0aec0; /* Adjusted to palette */
     margin-bottom: 5px;
 }
 
 .stat-value {
     font-size: 32px;
     font-weight: bold;
+    color: #eeeeee;
 }
 
 /* Main Container */
@@ -112,7 +139,7 @@ body {
 /* Sidebar */
 .sidebar {
     width: 260px;
-    background: #16213e;
+    background: #16213e; /* Navy Medium */
     padding: 20px;
     border-right: 2px solid #0f3460;
     overflow-y: auto;
@@ -120,7 +147,7 @@ body {
 }
 
 .sidebar h3 {
-    color: #3498db;
+    color: #3498db; /* Biru Utama */
     margin-bottom: 15px;
     font-size: 16px;
 }
@@ -133,8 +160,8 @@ body {
 
 .floor-btn {
     background: #0f3460;
-    border: 2px solid #1e4d7b;
-    color: #fff;
+    border: 1px solid #1e4d7b;
+    color: #a0aec0;
     padding: 12px;
     border-radius: 8px;
     cursor: pointer;
@@ -144,13 +171,15 @@ body {
 
 .floor-btn:hover {
     background: #1e4d7b;
+    color: #fff;
     transform: translateX(5px);
 }
 
 .floor-btn.active {
     background: #3498db;
     border-color: #3498db;
-    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
 }
 
 /* Filter Panel */
@@ -168,17 +197,25 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 5px;
     cursor: pointer;
+    border: 1px solid transparent;
+    transition: border 0.3s;
+}
+
+.filter-item:hover {
+    border-color: #3498db;
 }
 
 .filter-item input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
+    accent-color: #3498db;
 }
 
 .filter-item label {
     cursor: pointer;
     font-size: 14px;
+    color: #eeeeee;
 }
 
 /* Legend */
@@ -187,6 +224,7 @@ body {
     padding: 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .legend h4 {
@@ -200,6 +238,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 8px;
+    color: #a0aec0;
 }
 
 .legend-dot {
@@ -225,10 +264,7 @@ body {
 }
 
 .map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    display: none;
 }
 
 .map-header h2 {
@@ -238,32 +274,46 @@ body {
 
 .last-update {
     font-size: 14px;
-    color: #bbb;
+    color: #a0aec0; /* Adjusted to palette */
 }
 
 /* Map Container */
 .map-container {
     position: relative;
-    background: linear-gradient(135deg, #0a1929 0%, #0f1f35 100%);
+    background: #ffffff;
     border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    height: calc(100vh - 350px);
-    min-height: 550px;
-    max-height: 850px;
+    overflow: hidden; /* Masking biar gak bleber pas di-zoom */
     display: flex;
-    align-items: center;
     justify-content: center;
-    border: 1px solid #1e4d7b;
+    align-items: center;
+    height: calc(100vh - 200px);
+    min-height: 550px;
+    max-height: none;
+    width: 100%;
+    cursor: grab;
+    user-select: none;
 }
 
-.map-container::before {
-    content: '⏳ Loading map...';
-    position: absolute;
-    color: #3498db;
-    font-size: 16px;
-    z-index: 1;
-    animation: pulse 1.5s ease-in-out infinite;
+.map-container:active {
+    cursor: grabbing; /* Pas diklik jadi tangan ngepal */
+}
+
+.map-content {
+    position: relative;
+    /* Fit to content */
+    width: fit-content;
+    height: fit-content;
+    
+    /* Transform Origin pojok kiri atas (buat Zoom JS) */
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+    
+    /* Batasan biar gak lebih gede dari layar */
+    max-width: 100%;
+    max-height: 100%;
+
+    font-size: 0;
+    line-height: 0;
 }
 
 @keyframes pulse {
@@ -276,14 +326,15 @@ body {
 }
 
 .floor-map {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
     display: block;
-    opacity: 0.95;
-    filter: brightness(1.05) contrast(1.1);
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform-origin: center center;
+    /* PENTING: Jangan pake width/height 100% atau object-fit: contain */
+    /* Pake ini biar dia maintain aspect ratio alami */
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    width: auto;
+    
+    pointer-events: none; /* Biar gak ke-drag browser */
 }
 
 .device-dots-container {
@@ -292,102 +343,147 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
-    transition: transform 0.3s ease;
-    transform-origin: center center;
+    /* Gak perlu transform origin/transform lagi disini, karena ikut map-content */
 }
 
-/* Device Dots */
+/* =========================
+    DEVICE DOTS STYLES
+   ========================= */
+
 .device-dot {
     position: absolute;
-    width: 28px;
-    height: 28px;
+    width: 14px; 
+    height: 14px;
     border-radius: 50%;
     cursor: pointer;
     pointer-events: all;
-    transition: all 0.3s ease;
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5);
-    z-index: 5;
+    z-index: 10;
+    transform: translate(-50%, -50%); 
+    background-color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* --- ANIMASI RIPPLE --- */
+.device-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    opacity: 0;
+}
+
+/* --- STATUS: ONLINE --- */
 .device-dot.online {
-    background: #2ecc71;
-    box-shadow: 0 0 25px #2ecc71, 0 0 50px rgba(46, 204, 113, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
-    animation: pulse-online 2s ease-in-out infinite;
+    background-color: #2ecc71; /* Inti Hijau */
+    border-color: #a3e4d7;
+    box-shadow: 0 0 10px #2ecc71;
 }
 
+/* --- STATUS: OFFLINE (Merah Alert) --- */
 .device-dot.offline {
-    background: #e74c3c;
-    box-shadow: 0 0 25px #e74c3c, 0 0 50px rgba(231, 76, 60, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
-    animation: pulse-offline 2s ease-in-out infinite;
+    background-color: #e74c3c; /* Inti Merah */
+    border-color: #f1948a;
+    box-shadow: 0 0 10px #e74c3c;
+    z-index: 20; /* Offline prioritas di atas */
 }
 
+/* Ripple Animation Merah (Lebih Cepat/Panik) */
+.device-dot.offline::after {
+    background-color: rgba(231, 76, 60, 0.4);
+    box-shadow: 0 0 20px #e74c3c;
+    animation: ripple-alert 1s infinite ease-out; /* Kedip lebih cepet */
+}
+
+/* --- HOVER EFFECT (Target Lock) --- */
 .device-dot:hover {
-    transform: scale(1.7);
+    transform: translate(-50%, -50%) scale(1.3); /* Tetap di tengah + Zoom */
     z-index: 100;
-    border-width: 4px;
+    
+    /* Kasih Border Putih Tebal pas Hover biar jelas kepilih */
+    border: 2px solid #ffffff; 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 5px 15px rgba(0,0,0,0.5);
 }
 
-@keyframes pulse-online {
-    0%, 100% {
-        box-shadow: 0 0 25px #2ecc71, 0 0 50px rgba(46, 204, 113, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
+/* Hentikan animasi ripple pas di-hover biar user fokus */
+.device-dot:hover::after {
+    animation: none;
+    opacity: 0;
+}
+
+/* --- KEYFRAMES --- */
+
+/* Animasi Radar Santai (Online) */
+@keyframes ripple-scan {
+    0% {
+        width: 100%;
+        height: 100%;
+        opacity: 0.8;
+        border-width: 2px;
     }
-    50% {
-        box-shadow: 0 0 35px #2ecc71, 0 0 70px rgba(46, 204, 113, 0.8), 0 4px 10px rgba(0, 0, 0, 0.5);
+    100% {
+        width: 300%; /* Melebar sampai 3x lipat */
+        height: 300%;
+        opacity: 0;
+        border-width: 0px;
     }
 }
 
-@keyframes pulse-offline {
-    0%, 100% {
-        box-shadow: 0 0 25px #e74c3c, 0 0 50px rgba(231, 76, 60, 0.5), 0 4px 10px rgba(0, 0, 0, 0.5);
+/* Animasi Bahaya (Offline) */
+@keyframes ripple-alert {
+    0% {
+        width: 100%;
+        height: 100%;
+        opacity: 0.8;
     }
-    50% {
-        box-shadow: 0 0 35px #e74c3c, 0 0 70px rgba(231, 76, 60, 0.8), 0 4px 10px rgba(0, 0, 0, 0.5);
+    100% {
+        width: 250%;
+        height: 250%;
+        opacity: 0;
     }
 }
 
-/* Device type specific colors (for border) */
-.device-dot[data-type="switch"] {
-    border-color: #3498db;
-}
-
-.device-dot[data-type="cctv"] {
-    border-color: #e74c3c;
-}
-
-.device-dot[data-type="server"] {
-    border-color: #9b59b6;
-}
-
-.device-dot[data-type="wifi"] {
-    border-color: #f39c12;
-}
-
-.device-dot[data-type="voip"] {
-    border-color: #1abc9c;
-}
-
+/* =========================
+   MAP INFO BOX (Glassmorphism)
+   ========================= */
 .map-info {
     margin-top: 20px;
     padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, rgba(52, 152, 219, 0.05) 100%);
+    
+    /* Glass Effect yang lebih modern */
+    background: rgba(15, 52, 96, 0.6); /* Transparan Navy */
+    backdrop-filter: blur(12px); /* Blur background di belakangnya */
+    -webkit-backdrop-filter: blur(12px);
+    
     border-left: 4px solid #3498db;
     border-radius: 8px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(52, 152, 219, 0.2);
+    border-top: 1px solid rgba(52, 152, 219, 0.3);
+    border-right: 1px solid rgba(52, 152, 219, 0.1);
+    border-bottom: 1px solid rgba(52, 152, 219, 0.1);
+    
+    color: #eeeeee;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    font-size: 14px;
+    letter-spacing: 0.5px;
 }
 
 /* Tooltip */
 .tooltip {
     position: fixed;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: rgba(26, 26, 46, 0.95);
     color: #fff;
     padding: 14px 18px;
     border-radius: 10px;
     font-size: 13px;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 10000 !important;
     opacity: 0;
     transition: opacity 0.2s ease;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(52, 152, 219, 0.3);
@@ -405,11 +501,13 @@ body {
     font-size: 14px;
     display: block;
     margin-bottom: 4px;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+    padding-bottom: 4px;
 }
 
 /* Log Panel */
 .log-panel {
-    background: #16213e;
+    background: #16213e; /* Navy Medium */
     padding: 20px 30px;
     border-top: 2px solid #0f3460;
 }
@@ -445,9 +543,10 @@ body {
 .log-container {
     max-height: 200px;
     overflow-y: auto;
-    background: #0f3460;
+    background: #0f3460; /* Navy Aksen */
     padding: 15px;
     border-radius: 8px;
+    border: 1px solid #1e4d7b;
 }
 
 .log-item {
@@ -457,29 +556,25 @@ body {
     border-left: 4px solid #3498db;
     border-radius: 4px;
     font-size: 13px;
+    color: #eeeeee;
 }
 
-.log-item.status-online {
-    border-left-color: #2ecc71;
-}
-
-.log-item.status-offline {
-    border-left-color: #e74c3c;
-}
+.log-item.status-online { border-left-color: #2ecc71; }
+.log-item.status-offline { border-left-color: #e74c3c; }
 
 .log-timestamp {
-    color: #888;
+    color: #a0aec0; /* Adjusted to palette */
     font-size: 11px;
     margin-bottom: 3px;
 }
 
 .log-message {
-    color: #eee;
+    color: #eeeeee;
 }
 
 .log-empty {
     text-align: center;
-    color: #666;
+    color: #a0aec0; /* Adjusted to palette */
     padding: 20px;
 }
 
@@ -504,40 +599,244 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-    .container {
-        flex-direction: column;
-    }
+    .container { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #0f3460; }
+    .header { flex-direction: column; gap: 15px; }
+    .header-right { width: 100%; justify-content: space-around; }
+    .logo-container { gap: 10px; }
+    .header-logo { width: 120px; height: 120px; }
+    .header-left h1 { font-size: 22px; }
+    .subtitle { font-size: 12px; }
+}
 
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 2px solid #0f3460;
-    }
+/* ====================================
+   FULLSCREEN MODE / MULTIVIEW STYLES
+   ==================================== */
 
-    .header {
-        flex-direction: column;
-        gap: 15px;
-    }
+/* 1. Container Utama Fullscreen */
+.fullscreen-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0f1f35;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0); 
+    backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-font-smoothing: antialiased;
+}
 
-    .header-right {
-        width: 100%;
-        justify-content: space-around;
-    }
+.fullscreen-container.active {
+    display: flex !important;
+}
+
+/* 2. Header & Footer Fullscreen Mode */
+.fullscreen-header {
+    background: #16213e; /* Navy Medium */
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #3498db;
+    height: 70px;
+}
+
+.fullscreen-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.fullscreen-logo {
+    height: 40px;
+}
+
+.fullscreen-stats {
+    display: flex;
+    gap: 20px;
+}
+
+/* 3. Status Box di Fullscreen Mode (FIXED COLORS) */
+.fullscreen-stat {
+    background: rgba(255,255,255,0.05);
+    padding: 5px 15px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    color: #eeeeee;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.fullscreen-stat.online {
+    background: rgba(46, 204, 113, 0.2); /* Hijau Transparan */
+    border: 1px solid #2ecc71;
+    color: #fff;
+}
+
+.fullscreen-stat.offline {
+    background: rgba(231, 76, 60, 0.2); /* Merah Transparan */
+    border: 1px solid #e74c3c;
+    color: #fff;
+}
+
+.fullscreen-stat .stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.fullscreen-stat .stat-label {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-top: 2px;
+    text-transform: uppercase;
+    color: #eeeeee;
+}
+
+.fullscreen-footer {
+    background: #16213e;
+    padding: 5px 20px;
+    display: flex;
+    justify-content: space-between;
+    color: #a0aec0; /* Adjusted to palette */
+    font-size: 12px;
+    height: 30px;
+}
+
+/* 4. GRID LAYOUT */
+.fullscreen-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24%, 1fr)); 
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+/* 5. Kotak Per Lantai */
+.floor-grid-item {
+    background: #0a1929; /* Keep map bg dark for contrast */
+    border: 1px solid #1e4d7b;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+/* Status KRITIS untuk Grid Item */
+.floor-grid-item.critical {
+    border-color: #e74c3c !important; /* Border jadi merah */
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.2); /* Ada glow merah dikit */
+}
+
+.floor-grid-item.critical .floor-grid-header {
+    background: linear-gradient(to right, rgba(231, 76, 60, 0.4), rgba(231, 76, 60, 0.1)); /* Header merah */
+    border-bottom-color: #e74c3c;
+}
+
+.floor-grid-item.critical .floor-grid-header h3 {
+    color: #fff; /* Teks judul jadi putih biar kontras */
+    text-shadow: 0 0 5px rgba(231, 76, 60, 0.8);
+}
+
+.floor-grid-header {
+    background: rgba(52, 152, 219, 0.15);
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    border-bottom: 1px solid #1e4d7b;
+    height: 30px;
+    color: #eeeeee;
+}
+
+.floor-grid-header h3 {
+    margin: 0;
+    color: #3498db;
+}
+
+.floor-grid-map {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.floor-grid-map img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    opacity: 1;
+    filter: contrast(1.2) brightness(0.9) sepia(0.2) hue-rotate(190deg) saturate(0.5);
+    -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+}
+
+/* 6. Mini Dots */
+.floor-grid-dot {
+    position: absolute;
+    width: 8px;  /* Ukuran fix kecil */
+    height: 8px; /* Ukuran fix kecil */
+    border-radius: 50%;
+    transform: translate(-50%, -50%); /* Posisi Center */
+    z-index: 10;
+    cursor: pointer;
+    /* PENTING: Jangan ada animation di sini! */
+}
+
+.floor-grid-dot.online {
+    background-color: #2ecc71;
+    box-shadow: 0 0 8px #2ecc71;
+}
+
+.floor-grid-dot.offline {
+    background-color: #e74c3c;
+    box-shadow: 0 0 8px #e74c3c;
+    width: 8px; /* Offline sedikit lebih gede biar kelihatan */
+    height: 8px;
+    z-index: 20;
+    animation: pulse-offline 1s infinite;
+}
+
+.floor-grid-dot.online::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     
-    .logo-container {
-        gap: 10px;
-    }
+    width: 100%; /* 100% dari 8px */
+    height: 100%; /* 100% dari 8px */
+    border-radius: 50%;
     
-    .header-logo {
-        width: 50px;
-        height: 50px;
-    }
+    border: 1px solid #2ecc71;
+    z-index: -1;
     
-    .header-left h1 {
-        font-size: 22px;
-    }
-    
-    .subtitle {
-        font-size: 12px;
-    }
+    /* Animasi Radar */
+    animation: ripple-scan 2s infinite ease-out;
+}
+
+/* Tombol Exit */
+.exit-fullscreen-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.exit-fullscreen-btn:hover {
+    background: #c0392b;
 }
