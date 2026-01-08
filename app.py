@@ -30,14 +30,24 @@ event_logs = []     # Simpan log history
 # Lock biar thread gak rebutan data
 status_lock = threading.RLock()
 
-# --- SHUTDOWN HANDLER ---
-def cleanup_on_exit():
-    print("Performing cleanup...")
-    import os
+# --- PROPER SHUTDOWN HANDLER ---
+def shutdown_handler(signum=None, frame=None):
+    """Clean shutdown handler"""
+    print(f"\n{'='*50}")
+    print(f"Received shutdown signal")
+    print("Cleaning up threads and processes...")
+    
+    # Force exit
     os._exit(0)
 
+
+# Register signal handlers
+signal.signal(signal.SIGTERM, shutdown_handler)
+signal.signal(signal.SIGINT, shutdown_handler)
+signal.signal(signal.SIGQUIT, shutdown_handler)
+
 # Register cleanup
-atexit.register(cleanup_on_exit)
+atexit.register(lambda: print("Application exited cleanly"))
 
 def signal_handler(signum, frame):
     print(f"Received signal {signum}, shutting down...")
