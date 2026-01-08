@@ -186,8 +186,9 @@ def get_config():
 
 # --- START SERVER ---
 if __name__ == '__main__':
+ print("Use gunicorn to run this app.")
     # Set default port
-    PORT = 82  # PORT PRODUCTION
+ """   PORT = 80  # PORT PRODUCTION
     # PORT = 5000  # PORT DEVELOPMENT
     
     import sys
@@ -198,15 +199,16 @@ if __name__ == '__main__':
             pass
     
     print(f"Starting NOC Dashboard on port {PORT}...")
+
     
-    try:
+     try:
         # Nyalakan background task
         socketio.start_background_task(background_monitoring)
         
         # Jalankan server
         socketio.run(
             app, 
-            host='0.0.0.0', 
+            host='192.168.68.109', 
             port=PORT,
             debug=False,           # Set False untuk production
             use_reloader=False, 
@@ -220,4 +222,4 @@ if __name__ == '__main__':
         print("Restarting in 10 seconds...")
         time.sleep(10)
         # Auto-restart
-        os.execv(sys.executable, ['python'] + sys.argv)
+        os.execv(sys.executable, ['python'] + sys.argv) """
