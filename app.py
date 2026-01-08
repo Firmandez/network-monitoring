@@ -7,6 +7,10 @@ import threading
 import time
 import subprocess
 import platform
+import atexit
+import signal
+import sys
+import os
 from datetime import datetime
 
 # Import config (Pastikan file config.py ada)
@@ -25,6 +29,22 @@ event_logs = []     # Simpan log history
 
 # Lock biar thread gak rebutan data
 status_lock = threading.RLock()
+
+# --- SHUTDOWN HANDLER ---
+def cleanup_on_exit():
+    print("Performing cleanup...")
+    import os
+    os._exit(0)
+
+# Register cleanup
+atexit.register(cleanup_on_exit)
+
+def signal_handler(signum, frame):
+    print(f"Received signal {signum}, shutting down...")
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # --- FUNGSI PING ---
 def ping_device(ip):
@@ -87,13 +107,21 @@ def check_single_device(device):
 def background_monitoring():
     print("Monitoring Service Started (Threading Mode)...")
     
+    # Create executor di dalam loop
     while True:
         try:
             # A. PING SEMUA DEVICE (Parallel 50 Thread)
-            with ThreadPoolExecutor(max_workers=50) as executor:
-                executor.map(check_single_device, DEVICES)
+            with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:  # Kurangi workers
+                futures = []
+                for device in DEVICES:
+                    future = executor.submit(check_single_device, device)
+                    futures.append(future)
+                
+                # Wait for all to complete
+                for future in futures:
+                    future.result(timeout=10)  # Timeout 10 detik
             
-            # B. RAKIT DATA BUAT DIKIRIM KE BROWSER
+            # B. RAKIT DATA (sisa kode tetap)
             devices_data = []
             total_online = 0
             total_offline = 0
@@ -106,13 +134,11 @@ def background_monitoring():
                     if is_online: total_online += 1
                     else: total_offline += 1
                     
-                    # Gabungkan data config + status updated
                     devices_data.append({
-                        **device, # Ambil semua data dari config
+                        **device,
                         'online': is_online
                     })
 
-            # Format Paket Data JSON
             packet = {
                 'devices': devices_data,
                 'global': {
@@ -120,19 +146,20 @@ def background_monitoring():
                     'online': total_online,
                     'offline': total_offline
                 },
-                'logs': event_logs[:10], # Kirim 10 log terakhir
+                'logs': event_logs[:10],
                 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             
-            # C. BROADCAST KE SEMUA BROWSER (Real-Time)
+            # C. BROADCAST
             socketio.emit('update_data', packet)
             
-            # D. Istirahat 2 detik sebelum loop lagi
-            socketio.sleep(2)
+            # D. Istirahat 5 detik (lebih lama)
+            socketio.sleep(5)
             
         except Exception as e:
-            print(f"Critical Loop Error: {e}")
-            socketio.sleep(5)
+            print(f"Loop Error: {e}")
+            print("Restarting monitoring in 10 seconds...")
+            socketio.sleep(10)
 
 # --- ROUTES ---
 @app.route('/')
@@ -149,11 +176,38 @@ def get_config():
 
 # --- START SERVER ---
 if __name__ == '__main__':
-    # Nyalakan background task
-    socketio.start_background_task(background_monitoring)
+    # Set default port
+    PORT = 82  # PORT PRODUCTION
+    # PORT = 5000  # PORT DEVELOPMENT
     
-    print("Server NOC Dashboard Running...")
-    print("Open: http://localhost:5000")
+    import sys
+    if '--port' in sys.argv:
+        try:
+            PORT = int(sys.argv[sys.argv.index('--port') + 1])
+        except:
+            pass
     
-    # allow_unsafe_werkzeug=True biar gak error di environment development baru
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=False, allow_unsafe_werkzeug=True)
+    print(f"Starting NOC Dashboard on port {PORT}...")
+    
+    try:
+        # Nyalakan background task
+        socketio.start_background_task(background_monitoring)
+        
+        # Jalankan server
+        socketio.run(
+            app, 
+            host='0.0.0.0', 
+            port=PORT,
+            debug=False,           # Set False untuk production
+            use_reloader=False, 
+            allow_unsafe_werkzeug=True,
+            log_output=False       # Kurangi log noise
+        )
+    except KeyboardInterrupt:
+        print("Shutdown requested by user")
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        print("Restarting in 10 seconds...")
+        time.sleep(10)
+        # Auto-restart
+        os.execv(sys.executable, ['python'] + sys.argv)
