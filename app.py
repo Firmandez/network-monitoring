@@ -8,13 +8,21 @@ import time
 import subprocess
 import platform
 from datetime import datetime
-import json
 
 # Import config (Pastikan file config.py ada)
 from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'L4b0r4nft1'
+
+# --- TAMBAHAN BARU: FIX CSP LEWAT PYTHON ---
+@app.after_request
+def add_security_headers(response):
+    # Kita paksa Flask nambahin header ini di setiap respon
+    # Ini mengizinkan 'unsafe-eval' supaya Socket.IO gak diblokir browser
+    csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http: https:;"
+    response.headers['Content-Security-Policy'] = csp
+    return response
 
 # --- SETTING SOCKET.IO ---
 # async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)

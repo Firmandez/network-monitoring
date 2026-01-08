@@ -312,23 +312,31 @@ function hideTooltip() {
     tooltip.classList.remove('show');
 }
 
-// Render Logs
+
 function renderEventLogs(logs) {
+    const safeLogContainer = document.getElementById('log-container');
+
+    if (!safeLogContainer) {
+        return; 
+    }
+
     if (!logs || logs.length === 0) {
-        logContainer.innerHTML = '<p class="log-empty">No events yet...</p>';
+        safeLogContainer.innerHTML = '<p class="log-empty">No events yet...</p>';
         return;
     }
     
-    logContainer.innerHTML = '';
+    safeLogContainer.innerHTML = '';
     logs.forEach(log => {
         const logItem = document.createElement('div');
         logItem.className = 'log-item';
-        logItem.classList.add(`status-${log.status.toLowerCase()}`);
+        const statusClass = log.status ? log.status.toLowerCase() : 'unknown';
+        logItem.classList.add(`status-${statusClass}`);
+        
         logItem.innerHTML = `
-            <div class="log-timestamp">${log.timestamp}</div>
-            <div class="log-message">${log.message}</div>
+            <div class="log-timestamp">${log.timestamp || '-'}</div>
+            <div class="log-message">${log.message || '-'}</div>
         `;
-        logContainer.appendChild(logItem);
+        safeLogContainer.appendChild(logItem);
     });
 }
 
