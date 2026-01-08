@@ -30,7 +30,7 @@ def generate_config():
             required_columns = ['Name', 'IP', 'type', 'floor_id', 'top', 'left']
             for col in required_columns:
                 if col not in reader.fieldnames:
-                    print(f"Error: Kolom '{col}' gak ada di CSV. Cek header Excel lo!")
+                    print(f"Error: Kolom '{col}' gak ada di CSV. Cek header!")
                     print(f"Header yang kebaca: {reader.fieldnames}")
                     return
 

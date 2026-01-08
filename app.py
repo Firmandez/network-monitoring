@@ -79,7 +79,7 @@ def check_single_device(device):
                 event_logs.insert(0, log_entry)
                 if len(event_logs) > 20: event_logs.pop() # Simpan 20 log terakhir
                 
-                print(f"🔄 {device['name']} -> {status_text}")
+                print(f"{device['name']} -> {status_text}")
 
     except Exception as e:
         print(f"Error checking {device['name']}: {e}")
@@ -107,9 +107,9 @@ def background_monitoring():
                     if is_online: total_online += 1
                     else: total_offline += 1
                     
-                    # Gabungkan data config + status terkini
+                    # Gabungkan data config + status updated
                     devices_data.append({
-                        **device, # Ambil semua data dari config (ip, posisi, dll)
+                        **device, # Ambil semua data dari config
                         'online': is_online
                     })
 
