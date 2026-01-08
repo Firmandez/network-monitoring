@@ -13,7 +13,7 @@ let isFullscreenMode = false;
 let clockInterval = null;
 
 // DOM Elements
-const socket = io(); // Initialize Socket.IO Global
+const socket = window.io(); // Initialize Socket.IO Global
 const floorNav = document.getElementById('floor-nav');
 const filterPanel = document.getElementById('filter-panel');
 const mapContainer = document.getElementById('map-container');
