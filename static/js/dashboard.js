@@ -313,6 +313,7 @@ function hideTooltip() {
 }
 
 
+// Render Logs (VERSI KUAT / ANTI-CRASH)
 function renderEventLogs(logs) {
     const safeLogContainer = document.getElementById('log-container');
 
