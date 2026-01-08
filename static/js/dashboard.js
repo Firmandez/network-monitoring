@@ -1,9 +1,7 @@
 // dashboard.js - FINAL FIXED VERSION
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
-const socket = window.io({
-    transports: ["websocket"],
-    upgrade: false
-});
+const socket = io(); 
+
 // GLOBAL VARIABLES & SOCKET SETUP
 let allDevices = [];
 let config = {};
