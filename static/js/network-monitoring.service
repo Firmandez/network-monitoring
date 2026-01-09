@@ -1,0 +1,27 @@
+[Unit]
+Description=NOC Network Monitoring System
+After=network.target
+
+[Service]
+Type=notify
+User=root
+Group=www-data
+WorkingDirectory=/var/www/network-monitoring
+Environment="PATH=/var/www/network-monitoring/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# Agar log Python muncul real-time di journalctl (penting untuk debugging)
+Environment="PYTHONUNBUFFERED=1"
+
+# Start Gunicorn dengan config yang sudah dibuat
+ExecStart=/var/www/network-monitoring/venv/bin/gunicorn -c gunicorn_config.py app:app
+
+# Restart otomatis jika crash
+Restart=always
+RestartSec=5
+
+# Logging ke systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=network-monitoring
+
+[Install]
+WantedBy=multi-user.target
