@@ -68,6 +68,7 @@ function onUpdateData(data) {
     // A. Simpan Data Device
     allDevices = data.devices; 
     console.log(`📡 Data Masuk: ${allDevices.length} devices`);
+    console.log('First device:', allDevices[0]); // DEBUG: lihat struktur data
 
     // B. Update Stats Global
     if (data.global) {
@@ -93,10 +94,12 @@ function onUpdateData(data) {
 
     // D. Cek Config Terload
     if (!config || !config.floor_maps) {
+        console.warn('Config not loaded yet, skipping render');
         return; 
     }
 
     // E. Render Ulang Tampilan
+    console.log('Current Floor:', currentFloor, 'Active Filters:', Array.from(activeFilters));
     if (isFullscreenMode) {
         updateFullscreenStats();
     } else {
@@ -287,14 +290,30 @@ function switchFloor(floorId) {
 
 // Render Devices (Single Mode)
 function renderDevices() {
+    console.log('renderDevices called. Container:', deviceDotsContainer, 'Devices:', allDevices.length);
+    
+    if (!deviceDotsContainer) {
+        console.error('❌ Device dots container not found!');
+        return;
+    }
+    
     deviceDotsContainer.innerHTML = '';
     
-    if (!allDevices || !Array.isArray(allDevices)) return;
+    if (!allDevices || !Array.isArray(allDevices)) {
+        console.warn('No devices or not array');
+        return;
+    }
     
     // Filter devices
     const filteredDevices = allDevices.filter(device => {
-        return device.floor_id === currentFloor && activeFilters.has(device.type);
+        const match = device.floor_id === currentFloor && activeFilters.has(device.type);
+        if (!match) {
+            console.log(`Filtered out: ${device.name} (floor: ${device.floor_id}, type: ${device.type})`);
+        }
+        return match;
     });
+    
+    console.log(`Filtered: ${filteredDevices.length} devices untuk floor ${currentFloor}`);
     
     // Create Dots
     filteredDevices.forEach(device => {
@@ -315,9 +334,11 @@ function renderDevices() {
             
             deviceDotsContainer.appendChild(dot);
         } catch (error) {
-            console.error('Error rendering device:', device);
+            console.error('Error rendering device:', device, error);
         }
     });
+    
+    console.log(`✅ Rendered ${filteredDevices.length} device dots`);
 }
 
 // Tooltip Functions

@@ -22,7 +22,7 @@ app.config['SECRET_KEY'] = 'L4b0r4nft1'
 # --- CSP HEADERS ---
 @app.after_request
 def set_security_headers(response):
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io; connect-src 'self' ws: wss: https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
 # --- SETTING SOCKET.IO ---
