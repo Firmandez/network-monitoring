@@ -6,7 +6,7 @@
     <title>NOC Network Monitoring Dashboard</title>
     <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
     <!-- Socket.IO CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>

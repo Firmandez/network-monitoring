@@ -21,23 +21,24 @@ app.config['SECRET_KEY'] = 'L4b0r4nft1'
 # --- CSP HEADERS ---
 @app.after_request
 def set_security_headers(response):
-    # Allow WebSocket + source maps + HTTPS
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    # PERMISSIVE CSP untuk Socket.IO + source maps
+    response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
 # --- SETTING SOCKET.IO ---
-# async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)
+# IMPORTANT: Untuk Gunicorn + Gevent (production)
 socketio = SocketIO(
     app, 
-    async_mode='threading', 
+    async_mode='gevent',  # CRITICAL: Gunicorn dengan gevent worker
     cors_allowed_origins="*",
+    # Simplified transport untuk production stability
+    transports=['http_long_polling', 'websocket'],
+    # Ping settings untuk keep-alive
+    ping_timeout=60,
+    ping_interval=25,
+    # Disable verbose logging di production
     engineio_logger=False,
     logger=False,
-    ping_timeout=10,
-    ping_interval=5,
-    # Allow multiple transport methods with fallback
-    transports=['websocket', 'http_long_polling', 'http_polling'],
-    upgrade=True  # Allow upgrade dari polling ke WebSocket
 )
 
 # Global state
@@ -140,8 +141,8 @@ def background_monitoring():
     # Create executor di dalam loop
     while True:
         try:
-            # A. PING SEMUA DEVICE (Parallel 50 Thread)
-            with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:  # Kurangi workers
+            # A. PING SEMUA DEVICE (Parallel 20 Thread)
+            with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
                 futures = []
                 for device in DEVICES:
                     future = executor.submit(check_single_device, device)
@@ -149,46 +150,19 @@ def background_monitoring():
                 
                 # Wait for all to complete
                 for future in futures:
-                    future.result(timeout=10)  # Timeout 10 detik
+                    try:
+                        future.result(timeout=10)
+                    except Exception as e:
+                        print(f"Ping error: {e}")
             
-            # B. RAKIT DATA (sisa kode tetap)
-            devices_data = []
-            total_online = 0
-            total_offline = 0
-            
-            with status_lock:
-                for device in DEVICES:
-                    d_stat = device_status.get(device['id'], {'online': False})
-                    is_online = d_stat['online']
-                    
-                    if is_online: total_online += 1
-                    else: total_offline += 1
-                    
-                    devices_data.append({
-                        **device,
-                        'online': is_online
-                    })
-
-            packet = {
-                'devices': devices_data,
-                'global': {
-                    'total': len(DEVICES),
-                    'online': total_online,
-                    'offline': total_offline
-                },
-                'logs': event_logs[:10],
-                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            
-            # C. BROADCAST
+            # B. BROADCAST DATA via emit_update
             emit_update()
             
-            # D. Istirahat 5 detik (lebih lama)
+            # C. Istirahat 5 detik
             socketio.sleep(5)
             
         except Exception as e:
             print(f"Loop Error: {e}")
-            print("Restarting monitoring in 10 seconds...")
             socketio.sleep(10)
 
 # --- ROUTES ---
