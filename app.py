@@ -1,7 +1,7 @@
 # app.py - VERSI THREADING (CLEAN & STABLE)
 
-from flask import Flask, render_template, jsonify
-from flask_socketio import SocketIO
+from flask import Flask, render_template, jsonify, request
+from flask_socketio import SocketIO, emit
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
@@ -182,7 +182,7 @@ def background_monitoring():
             }
             
             # C. BROADCAST
-            socketio.emit('update_data', packet)
+            emit_update()
             
             # D. Istirahat 5 detik (lebih lama)
             socketio.sleep(5)
@@ -205,15 +205,61 @@ def get_config():
         'device_types': DEVICE_TYPES
     })
 
+# --- SOCKET.IO EVENTS ---
+@socketio.on('connect')
+def handle_connect():
+    print(f"✅ Client connected: {request.sid}")
+    # Broadcast initial data
+    emit_update()
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"❌ Client disconnected: {request.sid}")
+
+def emit_update():
+    """Emit data update to all connected clients"""
+    devices_data = []
+    total_online = 0
+    total_offline = 0
+    
+    with status_lock:
+        for device in DEVICES:
+            d_stat = device_status.get(device['id'], {'online': False})
+            is_online = d_stat['online']
+            
+            if is_online: total_online += 1
+            else: total_offline += 1
+            
+            devices_data.append({
+                **device,
+                'online': is_online
+            })
+
+    packet = {
+        'devices': devices_data,
+        'global': {
+            'total': len(DEVICES),
+            'online': total_online,
+            'offline': total_offline
+        },
+        'logs': event_logs[:10],
+        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
+    socketio.emit('update_data', packet)
+
 # --- START MONITORING ON APP INIT ---
 def start_monitoring():
     global monitoring_started
     if not monitoring_started:
         monitoring_started = True
-        print("Starting background monitoring...")
+        print("\n" + "="*60)
+        print("🚀 Starting background monitoring...")
+        print("="*60 + "\n")
         socketio.start_background_task(background_monitoring)
 
 # Auto-start monitoring ketika app dijalankan (baik dev maupun production)
+# IMPORTANT: harus jalan setelah socketio.init_app()
 start_monitoring()
 
 # --- MAIN ENTRY POINT ---
