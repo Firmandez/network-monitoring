@@ -6,7 +6,7 @@ let socket = null;
 // GLOBAL VARIABLES & SOCKET SETUP
 let allDevices = [];
 let config = {};
-let currentFloor = 'ground'; // Default floor
+let currentFloor = 'floor_1'; // Default floor - akan di-update dari config keys
 let activeFilters = new Set();
 let mapZoom = 1;
 let isPanning = false;
@@ -212,13 +212,23 @@ function setInitialFloorMap() {
 // Generate Floor Buttons
 function generateFloorNavigation() {
     floorNav.innerHTML = '';
-    Object.keys(config.floor_labels).forEach(floorId => {
+    const floorKeys = Object.keys(config.floor_labels);
+    
+    // Set first floor as default if not set
+    if (floorKeys.length > 0 && !floorKeys.includes(currentFloor)) {
+        currentFloor = floorKeys[0];
+        console.log('Auto-set floor to:', currentFloor);
+    }
+    
+    floorKeys.forEach(floorId => {
         const btn = document.createElement('button');
         btn.className = 'floor-btn';
         btn.textContent = config.floor_labels[floorId];
         btn.dataset.floor = floorId;
         
-        if (floorId === currentFloor) btn.classList.add('active');
+        if (floorId === currentFloor) {
+            btn.classList.add('active');
+        }
         
         btn.addEventListener('click', () => switchFloor(floorId));
         floorNav.appendChild(btn);
@@ -228,6 +238,8 @@ function generateFloorNavigation() {
 // Generate Filter Checkboxes
 function generateFilterPanel() {
     filterPanel.innerHTML = '';
+    activeFilters.clear(); // Clear before regenerating
+    
     Object.keys(config.device_types).forEach(typeId => {
         const filterItem = document.createElement('div');
         filterItem.className = 'filter-item';
@@ -236,12 +248,13 @@ function generateFilterPanel() {
         checkbox.type = 'checkbox';
         checkbox.id = `filter-${typeId}`;
         checkbox.value = typeId;
-        checkbox.checked = true;
+        checkbox.checked = true; // All checked by default
         activeFilters.add(typeId);
         
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) activeFilters.add(typeId);
             else activeFilters.delete(typeId);
+            console.log('Filter changed, active filters:', Array.from(activeFilters));
             renderDevices();
         });
         
@@ -253,6 +266,8 @@ function generateFilterPanel() {
         filterItem.appendChild(label);
         filterPanel.appendChild(filterItem);
     });
+    
+    console.log('Filters initialized:', Array.from(activeFilters));
 }
 
 // Switch Floor Logic
