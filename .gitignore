@@ -1,4 +1,4 @@
-__pycache__/
+__pycache__
 *.pyc
 *.csv
 *.py[cod]
@@ -12,5 +12,6 @@ ENV/
 Thumbs.db
 *.sqlite3
 *.db
-Caddyfile
-network-monitoring.service
+js/Caddyfile
+js/network-monitoring.service
+config_snippet.txt
