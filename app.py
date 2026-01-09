@@ -33,7 +33,7 @@ def set_security_headers(response):
 # IMPORTANT: Untuk Gunicorn + Gevent (production)
 socketio = SocketIO(
     app, 
-    async_mode='gevent',  # CRITICAL: Gunicorn dengan gevent worker
+    async_mode='eventlet',
     cors_allowed_origins="*",
     # UBAH BARIS DI BAWAH INI:
     transports=['polling', 'websocket'], # Ganti 'http_long_polling' jadi 'polling'
