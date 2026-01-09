@@ -1,4 +1,3 @@
-// dashboard.js - FINAL FIXED VERSION
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
 import { io } from "./socket.io.esm.min.js";
 
