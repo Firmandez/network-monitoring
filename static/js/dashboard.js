@@ -1,5 +1,6 @@
+import { io } from "./socket.io.min.js";
+
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
-import { io } from "./socket.io.esm.min.js";
 
 // GLOBAL VARIABLES & SOCKET SETUP
 let allDevices = [];
