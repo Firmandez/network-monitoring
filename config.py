@@ -177,6 +177,19 @@ DEVICES = [
         },
     },
 
+    #Floor 4
+        {
+        "id": "192_168_20_28",
+        "name": "PC Belakang 456",
+        "ip": "192.168.68.126",
+        "type": "cctv",
+        "floor_id": "floor_4",
+        "position": {
+            "top": "64%",
+            "left": "68.6%"
+        },
+    },
+
 ]
 
 # Map Configuration - Mapping floor_id to image path
