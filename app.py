@@ -90,8 +90,12 @@ def ping_device(ip):
         param = '-n' if platform.system().lower() == 'windows' else '-c'
         timeout_param = '-w' if platform.system().lower() == 'windows' else '-W'
         
-        # Command ping (timeout dipercepat jadi 500ms biar ngebut)
-        command = ['ping', param, '1', timeout_param, '500', ip]
+        # Command ping
+        # NOTE: On Windows '-w' expects milliseconds (use 500ms),
+        # on Unix '-W' expects seconds — using 1 second to avoid
+        # long blocking pings that stall the server.
+        timeout_val = '500' if platform.system().lower() == 'windows' else '1'
+        command = ['ping', param, '1', timeout_param, timeout_val, ip]
         
         # Sembunyikan window cmd di Windows
         kwargs = {'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
