@@ -18,11 +18,15 @@ from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'L4b0r4nft1'
 
+# --- TRUST PROXY HEADERS (untuk Caddy reverse proxy) ---
+# CRITICAL: Caddy forward X-Forwarded-* headers, Flask perlu trust ini
+app.config['TRUSTED_HOSTS'] = ['127.0.0.1', '192.168.68.109', '*']
+
 # --- CSP HEADERS ---
 @app.after_request
 def set_security_headers(response):
     # PERMISSIVE CSP untuk Socket.IO + source maps
-    response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
 # --- SETTING SOCKET.IO ---
@@ -181,13 +185,22 @@ def get_config():
 # --- SOCKET.IO EVENTS ---
 @socketio.on('connect')
 def handle_connect():
-    print(f"✅ Client connected: {request.sid}")
+    """Handle client connection"""
+    print(f"✅ [Socket.IO] Client connected: {request.sid}")
+    print(f"   - Remote: {request.remote_addr}")
+    print(f"   - User-Agent: {request.headers.get('User-Agent', 'Unknown')[:50]}")
     # Broadcast initial data
     emit_update()
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print(f"❌ Client disconnected: {request.sid}")
+    """Handle client disconnect"""
+    print(f"❌ [Socket.IO] Client disconnected: {request.sid}")
+
+@socketio.on('connect_error')
+def handle_connect_error(data):
+    """Handle connection error"""
+    print(f"⚠️ [Socket.IO] Connection error: {data}")
 
 def emit_update():
     """Emit data update to all connected clients"""
