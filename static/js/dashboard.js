@@ -48,6 +48,7 @@ function setupSocketListeners() {
     // 1. Connect
     socket.on('connect', () => {
         console.log("✅ Terhubung ke Server Real-Time!");
+        console.log('Transport:', socket.io.engine.transport.name); // Debug: lihat transport yang dipakai
         if(lastUpdateSpan) lastUpdateSpan.style.color = '#2ecc71';
     });
 
@@ -62,6 +63,11 @@ function setupSocketListeners() {
 
     // 3. Update Data
     socket.on('update_data', onUpdateData);
+    
+    // 4. Error handling
+    socket.on('connect_error', (error) => {
+        console.warn('Socket.IO connection error:', error);
+    });
 }
 
 function onUpdateData(data) {

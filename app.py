@@ -22,12 +22,24 @@ app.config['SECRET_KEY'] = 'L4b0r4nft1'
 # --- CSP HEADERS ---
 @app.after_request
 def set_security_headers(response):
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    # Allow WebSocket + source maps + HTTPS
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
 # --- SETTING SOCKET.IO ---
 # async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)
-socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*", engineio_logger=False)
+socketio = SocketIO(
+    app, 
+    async_mode='threading', 
+    cors_allowed_origins="*",
+    engineio_logger=False,
+    logger=False,
+    ping_timeout=10,
+    ping_interval=5,
+    # Allow multiple transport methods with fallback
+    transports=['websocket', 'http_long_polling', 'http_polling'],
+    upgrade=True  # Allow upgrade dari polling ke WebSocket
+)
 
 # Global state
 device_status = {}  # Simpan status terakhir
