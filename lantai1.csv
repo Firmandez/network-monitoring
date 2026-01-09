@@ -1,8 +1,0 @@
-Name,IP,type,floor_id,top,left
-CCTV FTI120,192.168.20.1,cctv,floor_1,65%,60%
-CCTV Dosen Kiri,192.168.20.3,cctv,floor_1,37.7%,45%
-Tata Usaha,192.168.20.6,cctv,floor_1,74.4%,41.3%
-Cam lt1 TU,192.168.20.31,cctv,floor_1,74.4%,41.3%
-CCTV Dosen Kanan,192.168.20.9,cctv,floor_1,37.7%,42.3%
-CCTV Kiri,192.168.20.10,cctv,floor_1,38%,72.7%
-CCTV Pintu Depan,192.168.20.5,cctv,floor_1,47.6%,41.6%
