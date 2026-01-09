@@ -184,42 +184,18 @@ def get_config():
         'device_types': DEVICE_TYPES
     })
 
-# --- START SERVER ---
+# --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
- print("Use gunicorn to run this app.")
-    # Set default port
- """   PORT = 80  # PORT PRODUCTION
-    # PORT = 5000  # PORT DEVELOPMENT
+    print("Use gunicorn to run this app in production.")
+    print("Development mode starting...")
     
-    import sys
-    if '--port' in sys.argv:
-        try:
-            PORT = int(sys.argv[sys.argv.index('--port') + 1])
-        except:
-            pass
-    
-    print(f"Starting NOC Dashboard on port {PORT}...")
-
-    
-     try:
-        # Nyalakan background task
-        socketio.start_background_task(background_monitoring)
-        
-        # Jalankan server
-        socketio.run(
-            app, 
-            host='192.168.68.109', 
-            port=PORT,
-            debug=False,           # Set False untuk production
-            use_reloader=False, 
-            allow_unsafe_werkzeug=True,
-            log_output=False       # Kurangi log noise
-        )
-    except KeyboardInterrupt:
-        print("Shutdown requested by user")
-    except Exception as e:
-        print(f"Fatal error: {e}")
-        print("Restarting in 10 seconds...")
-        time.sleep(10)
-        # Auto-restart
-        os.execv(sys.executable, ['python'] + sys.argv) """
+    # Development only
+    socketio.start_background_task(background_monitoring)
+    socketio.run(
+        app, 
+        host='0.0.0.0',
+        port=5000,
+        debug=True,
+        use_reloader=False,
+        allow_unsafe_werkzeug=True
+    )
