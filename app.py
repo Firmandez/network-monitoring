@@ -1,6 +1,11 @@
 # app.py - VERSI THREADING (CLEAN & STABLE)
 
+# IMPORTANT: Monkey Patch untuk Eventlet (Wajib ditaruh paling atas)
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask, render_template, jsonify, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -16,6 +21,10 @@ from datetime import datetime
 from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
 
 app = Flask(__name__)
+
+# FIX: Agar Flask mengenali IP asli & Protocol dari Caddy (Reverse Proxy)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 app.config['SECRET_KEY'] = 'L4b0r4nft1'
 
 # --- TRUST PROXY HEADERS (untuk Caddy reverse proxy) ---
@@ -103,7 +112,8 @@ def ping_device(ip):
             
         return subprocess.call(command, **kwargs) == 0
         
-    except Exception:
+    except Exception as e:
+        print(f"⚠️ Ping Error ({ip}): {e}")
         return False
 
 # --- WORKER BUAT NGECEK 1 DEVICE ---
