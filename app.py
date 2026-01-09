@@ -35,12 +35,11 @@ socketio = SocketIO(
     app, 
     async_mode='gevent',  # CRITICAL: Gunicorn dengan gevent worker
     cors_allowed_origins="*",
-    # Simplified transport untuk production stability
-    transports=['http_long_polling', 'websocket'],
-    # Ping settings untuk keep-alive
+    # UBAH BARIS DI BAWAH INI:
+    transports=['polling', 'websocket'], # Ganti 'http_long_polling' jadi 'polling'
+    # ...
     ping_timeout=60,
     ping_interval=25,
-    # Disable verbose logging di production
     engineio_logger=False,
     logger=False,
 )
