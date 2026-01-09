@@ -11,7 +11,7 @@ let translateX = 0, translateY = 0;
 let isFullscreenMode = false;
 let clockInterval = null;
 
-// DOM Elements
+// DOM Elements - dengan null checks
 const socket = io();
 const floorNav = document.getElementById('floor-nav');
 const filterPanel = document.getElementById('filter-panel');
@@ -343,10 +343,10 @@ function renderEventLogs(logs) {
 // ZOOM & PAN CONTROLS (Perfect Wrapper)
 function setupZoomControls() {
     // Reset Origin
-    mapContent.style.transformOrigin = '0 0';
+    if (mapContent) mapContent.style.transformOrigin = '0 0';
 
     // Mouse Wheel Zoom
-    mapContainer.addEventListener('wheel', (e) => {
+    if (mapContainer) mapContainer.addEventListener('wheel', (e) => {
         e.preventDefault();
 
         // Hitung relatif terhadap WRAPPER (map-content)
@@ -420,7 +420,7 @@ function setupPanControls() {
 }
 
 function updateMapTransform() {
-    mapContent.style.transform = `translate(${translateX}px, ${translateY}px) scale(${mapZoom})`;
+    if (mapContent) mapContent.style.transform = `translate(${translateX}px, ${translateY}px) scale(${mapZoom})`;
 }
 
 function resetMapPosition() {
@@ -432,9 +432,13 @@ function resetMapPosition() {
 
 // FULLSCREEN (Multi-View)
 
-// Button Listeners
-document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
-document.getElementById('exit-fullscreen-btn').addEventListener('click', toggleFullscreen);
+// Button Listeners - defer sampai DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+    if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+    if (exitFullscreenBtn) exitFullscreenBtn.addEventListener('click', toggleFullscreen);
+});
 
 function toggleFullscreen() {
     isFullscreenMode = !isFullscreenMode;

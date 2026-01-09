@@ -19,6 +19,12 @@ from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'L4b0r4nft1'
 
+# --- CSP HEADERS ---
+@app.after_request
+def set_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io; connect-src 'self' ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    return response
+
 # --- SETTING SOCKET.IO ---
 # async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")

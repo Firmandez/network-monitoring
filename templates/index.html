@@ -6,9 +6,10 @@
     <title>NOC Network Monitoring Dashboard</title>
     <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.socket.io; connect-src 'self' ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
     <!-- Socket.IO CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </head>
 <body>
     <!-- Global Status Header -->
@@ -136,7 +137,5 @@
 
     <!-- Tooltip (hidden by default) -->
     <div id="tooltip" class="tooltip"></div>
-
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>
