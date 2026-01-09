@@ -22,12 +22,12 @@ app.config['SECRET_KEY'] = 'L4b0r4nft1'
 # --- CSP HEADERS ---
 @app.after_request
 def set_security_headers(response):
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io; connect-src 'self' ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdn.socket.io; connect-src 'self' ws: wss: https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
 # --- SETTING SOCKET.IO ---
 # async_mode='threading' = Pakai cara standar Python (Stabil & Gak Rewel)
-socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
+socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*", engineio_logger=False)
 
 # Global state
 device_status = {}  # Simpan status terakhir
@@ -35,6 +35,9 @@ event_logs = []     # Simpan log history
 
 # Lock biar thread gak rebutan data
 status_lock = threading.RLock()
+
+# Flag untuk monitoring
+monitoring_started = False
 
 # --- PROPER SHUTDOWN HANDLER ---
 def shutdown_handler(signum=None, frame=None):
@@ -190,18 +193,31 @@ def get_config():
         'device_types': DEVICE_TYPES
     })
 
+# --- START MONITORING ON APP INIT ---
+def start_monitoring():
+    global monitoring_started
+    if not monitoring_started:
+        monitoring_started = True
+        print("Starting background monitoring...")
+        socketio.start_background_task(background_monitoring)
+
+# Auto-start monitoring ketika app dijalankan (baik dev maupun production)
+start_monitoring()
+
 # --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
-    print("Use gunicorn to run this app in production.")
-    print("Development mode starting...")
+    print("="*60)
+    print("NOC Network Monitoring System")
+    print("="*60)
+    print("\nDevelopment Server (use gunicorn for production)")
+    print("Server running at http://0.0.0.0:5000")
+    print("="*60 + "\n")
     
-    # Development only
-    socketio.start_background_task(background_monitoring)
     socketio.run(
         app, 
         host='0.0.0.0',
         port=5000,
-        debug=True,
+        debug=False,
         use_reloader=False,
-        allow_unsafe_werkzeug=True
+        allow_unsafe_werkzeug=False
     )

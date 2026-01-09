@@ -1,5 +1,8 @@
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
 
+// Socket.IO akan di-initialize setelah DOM ready
+let socket = null;
+
 // GLOBAL VARIABLES & SOCKET SETUP
 let allDevices = [];
 let config = {};
@@ -12,7 +15,7 @@ let isFullscreenMode = false;
 let clockInterval = null;
 
 // DOM Elements - dengan null checks
-const socket = io();
+// Socket di-init di init() function
 const floorNav = document.getElementById('floor-nav');
 const filterPanel = document.getElementById('filter-panel');
 const mapContainer = document.getElementById('map-container');
@@ -38,25 +41,30 @@ const fsOffline = document.getElementById('fs-offline');
 const fsLastUpdate = document.getElementById('fs-last-update');
 const fsClock = document.getElementById('fs-clock');
 
-// --- SOCKET LISTENERS ---
+// --- SOCKET LISTENERS SETUP ---
+function setupSocketListeners() {
+    if (!socket) return;
 
-// 1. Connect
-socket.on('connect', () => {
-    console.log("✅ Terhubung ke Server Real-Time!");
-    if(lastUpdateSpan) lastUpdateSpan.style.color = '#2ecc71';
-});
+    // 1. Connect
+    socket.on('connect', () => {
+        console.log("✅ Terhubung ke Server Real-Time!");
+        if(lastUpdateSpan) lastUpdateSpan.style.color = '#2ecc71';
+    });
 
-// 2. Disconnect
-socket.on('disconnect', () => {
-    console.log("❌ Koneksi Putus!");
-    if(lastUpdateSpan) {
-        lastUpdateSpan.textContent = "Connection Lost...";
-        lastUpdateSpan.style.color = 'red';
-    }
-});
+    // 2. Disconnect
+    socket.on('disconnect', () => {
+        console.log("❌ Koneksi Putus!");
+        if(lastUpdateSpan) {
+            lastUpdateSpan.textContent = "Connection Lost...";
+            lastUpdateSpan.style.color = 'red';
+        }
+    });
 
-// 3. Update Data
-socket.on('update_data', (data) => {
+    // 3. Update Data
+    socket.on('update_data', onUpdateData);
+}
+
+function onUpdateData(data) {
     // A. Simpan Data Device
     allDevices = data.devices; 
     console.log(`📡 Data Masuk: ${allDevices.length} devices`);
@@ -94,14 +102,21 @@ socket.on('update_data', (data) => {
     } else {
         renderDevices();
     }
-});
+}
 
 // INITIALIZATION
 async function init() {
     console.log('Initializing dashboard...');
 
     try {
-        // Load configuration
+        // A. Initialize Socket.IO
+        if (!socket) {
+            socket = io();
+            setupSocketListeners();
+            console.log('Socket.IO initialized');
+        }
+        
+        // B. Load configuration
         const configLoaded = await loadConfig();
         
         if (!configLoaded) {
@@ -110,17 +125,20 @@ async function init() {
             return;
         }
                 
-        // Generate UI Components
+        // C. Generate UI Components
         generateFloorNavigation();
         generateFilterPanel();
         
-        // Setup Map
+        // D. Setup Map
         setInitialFloorMap();
         setupZoomControls();
         
-        console.log('Dashboard initialized successfully!');
+        // E. Setup Button Listeners
+        setupButtonListeners();
+        
+        console.log('✅ Dashboard initialized successfully!');
 
-        // Initial Render jika data sudah ada
+        // F. Initial Render jika data sudah ada
         if (allDevices.length > 0) {
             renderDevices();
         }
@@ -130,6 +148,19 @@ async function init() {
     }
 }
 document.addEventListener('DOMContentLoaded', init);
+
+// --- SETUP BUTTON LISTENERS ---
+function setupButtonListeners() {
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+    
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+    if (exitFullscreenBtn) {
+        exitFullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+}
 
 // CORE FUNCTIONS (Config & Map)
 // Load Config from API
@@ -431,14 +462,6 @@ function resetMapPosition() {
 }
 
 // FULLSCREEN (Multi-View)
-
-// Button Listeners - defer sampai DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    const fullscreenBtn = document.getElementById('fullscreen-btn');
-    const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
-    if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
-    if (exitFullscreenBtn) exitFullscreenBtn.addEventListener('click', toggleFullscreen);
-});
 
 function toggleFullscreen() {
     isFullscreenMode = !isFullscreenMode;
