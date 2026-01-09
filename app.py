@@ -4,7 +4,6 @@ from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 from concurrent.futures import ThreadPoolExecutor
 import threading
-import time
 import subprocess
 import platform
 import atexit
