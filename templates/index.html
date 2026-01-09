@@ -6,14 +6,9 @@
     <title>NOC Network Monitoring Dashboard</title>
     <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-    <script type="importmap">
-{
-  "imports": {
-    "socket.io": "/static/js/socket.io.min.js"
-  }
-}
-</script>
+    <!-- Socket.IO CDN -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </head>
 <body>
     <!-- Global Status Header -->

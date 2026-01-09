@@ -1,5 +1,3 @@
-import { io } from "./socket.io.min.js";
-
 // Fitur: Real-time Socket.IO, Perfect Zoom/Pan, TV Mode Stabil, Auto-Reconnect
 
 // GLOBAL VARIABLES & SOCKET SETUP
