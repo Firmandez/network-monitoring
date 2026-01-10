@@ -523,6 +523,18 @@ button, .filter-item {
     }
 }
 
+/* Animasi Glow Merah untuk Grid Kritis */
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(231, 76, 60, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.2);
+    }
+}
 /* =========================
    MAP INFO BOX (Glassmorphism)
    ========================= */
@@ -784,6 +796,9 @@ button, .filter-item {
     .stat-value { font-size: 24px; }
     .stat-label { font-size: 11px; }
 
+    /* Hide fullscreen button on mobile */
+    .fullscreen-btn { display: none; }
+
     /* Main content */
     .container { flex-direction: column; min-height: auto; }
     .main-content { padding: 15px; }
@@ -961,11 +976,18 @@ button, .filter-item {
     position: relative;
     display: flex;
     flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.floor-grid-item:hover {
+    transform: scale(1.15); /* Efek Zoom In */
+    z-index: 10; /* Tampil di paling depan */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 /* Status KRITIS untuk Grid Item */
 .floor-grid-item.critical {
-    border-color: #e74c3c !important; /* Border jadi merah */
-    box-shadow: 0 0 15px rgba(231, 76, 60, 0.2); /* Ada glow merah dikit */
+    border-color: #e74c3c !important;
+    animation: pulse-border 2s infinite; /* Tambahkan animasi glow */
 }
 
 .floor-grid-item.critical .floor-grid-header {
@@ -1011,6 +1033,14 @@ button, .filter-item {
     filter: contrast(1.2) brightness(0.9) sepia(0.2) hue-rotate(190deg) saturate(0.5);
     -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
     mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    transition: all 0.3s ease;
+}
+
+.floor-grid-item:hover .floor-grid-map img {
+    /* Hilangkan filter saat di-hover agar lebih jelas */
+    filter: none;
+    -webkit-mask-image: none;
+    mask-image: none;
 }
 
 /* 6. Mini Dots */
@@ -1022,7 +1052,13 @@ button, .filter-item {
     transform: translate(-50%, -50%); /* Posisi Center */
     z-index: 10;
     cursor: pointer;
-    /* PENTING: Jangan ada animation di sini! */
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.floor-grid-item:hover .floor-grid-dot {
+    /* Perbesar dot saat grid di-hover */
+    width: 16px;
+    height: 16px;
 }
 
 .floor-grid-dot.online {
@@ -1037,6 +1073,12 @@ button, .filter-item {
     height: 8px;
     z-index: 20;
     animation: pulse-offline 1s infinite;
+}
+
+.floor-grid-item:hover .floor-grid-dot.offline {
+    /* Pastikan dot offline juga membesar saat di-hover */
+    width: 16px;
+    height: 16px;
 }
 
 .floor-grid-dot.online::after {
