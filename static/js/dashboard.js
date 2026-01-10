@@ -28,6 +28,7 @@ const logContainer = document.getElementById('log-container');
 
 const fullscreenContainer = document.getElementById('fullscreen-container');
 const fullscreenGrid = document.getElementById('fullscreen-grid');
+const focusViewContainer = document.getElementById('focus-view-container');
 
 // Stats elements
 const statTotal = document.getElementById('stat-total');
@@ -381,6 +382,58 @@ function renderDevices() {
     console.log(`✅ Rendered ${filteredDevices.length} device dots`);
 }
 
+// Render Devices for Focus View (uses main .device-dot style)
+function renderFocusViewDevices(floorId, container) {
+    if (!container) return;
+    container.innerHTML = '';
+
+    const filteredDevices = allDevices.filter(device => device.floor_id === floorId);
+
+    filteredDevices.forEach(device => {
+        try {
+            const dot = document.createElement('div');
+            dot.className = 'device-dot'; // Use the main dot style
+            dot.classList.add(device.online ? 'online' : 'offline');
+            dot.style.top = device.position.top;
+            dot.style.left = device.position.left;
+
+            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+            dot.addEventListener('mouseout', hideTooltip);
+
+            container.appendChild(dot);
+        } catch (error) {
+            console.error('Error rendering focus view device:', device, error);
+        }
+    });
+}
+
+function setupFocusMapInteraction(containerEl, contentEl) {
+    let zoom = 1, transX = 0, transY = 0;
+
+    const updateTransform = () => contentEl.style.transform = `translate(${transX}px, ${transY}px) scale(${zoom})`;
+
+    const onWheel = e => {
+        e.preventDefault();
+        const rect = contentEl.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
+        const pointX = mouseX / zoom, pointY = mouseY / zoom;
+        const newZoom = Math.min(Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 0.9)), 5);
+        transX += mouseX - (pointX * newZoom);
+        transY += mouseY - (pointY * newZoom);
+        zoom = newZoom;
+        updateTransform();
+    };
+
+    containerEl.addEventListener('wheel', onWheel);
+
+    // Return a cleanup function
+    return () => {
+        containerEl.removeEventListener('wheel', onWheel);
+        // Pan listeners would also be removed here if added
+    };
+}
+
 // Tooltip Functions
 const tooltip = document.getElementById('tooltip');
 
@@ -655,6 +708,9 @@ function setupTouchControls() {
 // FULLSCREEN (Multi-View)
 
 function toggleFullscreen() {
+    if (isFullscreenMode && isInFocusMode) {
+        exitFocusMode();
+    }
     isFullscreenMode = !isFullscreenMode;
     if (isFullscreenMode) enterFullscreenMode();
     else exitFullscreenMode();
@@ -675,6 +731,9 @@ function enterFullscreenMode() {
 }
 
 function exitFullscreenMode() {
+    if (isInFocusMode) {
+        exitFocusMode();
+    }
     isFullscreenMode = false;
     fullscreenContainer.classList.remove('active');
     
@@ -713,6 +772,9 @@ function generateFloorGrids() {
 
         // Red Alert Logic
         if (offlineCount > 0) gridItem.classList.add('critical');
+
+        // Add click listener for focus mode
+        gridItem.addEventListener('click', () => enterFocusMode(floorId));
 
         gridItem.innerHTML = `
             <div class="floor-grid-header">
@@ -761,6 +823,58 @@ function renderFloorGridDevices(floorId) {
 
         dotsContainer.appendChild(dot);
     });
+}
+
+let isInFocusMode = false;
+let destroyFocusMapListeners = () => {};
+
+function enterFocusMode(floorId) {
+    if (!config || !config.floor_maps) return;
+    isInFocusMode = true;
+
+    // Hide grid, show focus container
+    fullscreenGrid.style.display = 'none';
+    focusViewContainer.classList.add('active');
+    focusViewContainer.innerHTML = ''; // Clear previous
+
+    // Create map structure
+    const focusMapHTML = `
+        <div class="map-container" id="focus-map-container">
+            <div id="focus-map-content" class="map-content">
+                <img id="focus-floor-map" src="" class="floor-map">
+                <div id="focus-device-dots-container" class="device-dots-container"></div>
+            </div>
+        </div>
+        <button id="focus-close-btn" class="exit-fullscreen-btn focus-close-btn">Back to Grid</button>
+    `;
+    focusViewContainer.innerHTML = focusMapHTML;
+
+    // Get new elements
+    const focusMapContainer = document.getElementById('focus-map-container');
+    const focusMapContent = document.getElementById('focus-map-content');
+    const focusFloorMap = document.getElementById('focus-floor-map');
+    const focusDotsContainer = document.getElementById('focus-device-dots-container');
+    const focusCloseBtn = document.getElementById('focus-close-btn');
+
+    focusCloseBtn.addEventListener('click', exitFocusMode);
+
+    focusFloorMap.src = '/' + config.floor_maps[floorId];
+    renderFocusViewDevices(floorId, focusDotsContainer);
+
+    destroyFocusMapListeners = setupFocusMapInteraction(focusMapContainer, focusMapContent);
+}
+
+function exitFocusMode() {
+    isInFocusMode = false;
+    
+    if (destroyFocusMapListeners) {
+        destroyFocusMapListeners();
+        destroyFocusMapListeners = () => {};
+    }
+
+    focusViewContainer.classList.remove('active');
+    focusViewContainer.innerHTML = '';
+    fullscreenGrid.style.display = 'grid';
 }
 
 // Update Stats & Visual saat Data Masuk (Tanpa Re-generate semua HTML)
