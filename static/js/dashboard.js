@@ -214,6 +214,7 @@ function setInitialFloorMap() {
             floorMap.src = mapPath;
             floorMap.classList.add('loaded');
             floorMap.style.opacity = '1';
+            adjustDotsContainer(); // Adjust dots to fit the new map
         };
         img.onerror = function() {
             console.error('Failed to load map:', mapPath);
@@ -278,6 +279,17 @@ function generateFilterPanel() {
         
         filterItem.appendChild(checkbox);
         filterItem.appendChild(label);
+
+        // Make the entire item clickable to toggle the checkbox
+        filterItem.addEventListener('click', (e) => {
+            // Only trigger if the click is on the container, not the checkbox/label itself
+            if (e.target === filterItem) {
+                checkbox.checked = !checkbox.checked;
+                // Manually dispatch a 'change' event so the filter logic runs
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
         filterPanel.appendChild(filterItem);
     });
     
@@ -307,6 +319,7 @@ function switchFloor(floorId) {
         floorMap.src = mapPath;
         floorMap.classList.add('loaded');
         floorMap.style.opacity = '1';
+        adjustDotsContainer(); // Adjust dots to fit the new map
     };
     img.src = mapPath;
     
@@ -532,6 +545,43 @@ function resetMapPosition() {
     translateX = 0;
     translateY = 0;
     updateMapTransform();
+}
+
+// Adjusts the device dots container to perfectly overlay the letterboxed map image.
+// This is crucial for keeping dot positions accurate when the map has a fixed frame.
+function adjustDotsContainer() {
+    if (!floorMap || !mapContent || !deviceDotsContainer || !floorMap.naturalWidth) {
+        // Don't run if elements are missing or image not loaded (naturalWidth is 0)
+        return;
+    }
+
+    const img = floorMap;
+    const container = mapContent;
+    const dotsContainer = deviceDotsContainer;
+
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const containerRatio = container.clientWidth / container.clientHeight;
+
+    let finalWidth, finalHeight, offsetX, offsetY;
+
+    if (imgRatio > containerRatio) {
+        // Image is wider than container, so it's limited by width
+        finalWidth = container.clientWidth;
+        finalHeight = finalWidth / imgRatio;
+        offsetX = 0;
+        offsetY = (container.clientHeight - finalHeight) / 2;
+    } else {
+        // Image is taller or same ratio, limited by height
+        finalHeight = container.clientHeight;
+        finalWidth = finalHeight * imgRatio;
+        offsetY = 0;
+        offsetX = (container.clientWidth - finalWidth) / 2;
+    }
+
+    dotsContainer.style.width = `${finalWidth}px`;
+    dotsContainer.style.height = `${finalHeight}px`;
+    dotsContainer.style.top = `${offsetY}px`;
+    dotsContainer.style.left = `${offsetX}px`;
 }
 
 // Sidebar Toggle Function
@@ -828,5 +878,6 @@ window.addEventListener('resize', () => {
         generateFloorGrids();
     } else {
         updateMapTransform();
+        adjustDotsContainer();
     }
 });

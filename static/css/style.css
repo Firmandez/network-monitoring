@@ -14,6 +14,15 @@ body {
     min-height: 100vh;
 }
 
+/* --- INTERACTION POLISH --- */
+/* Prevent text selection on buttons and other clickable areas */
+button, .filter-item {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE/Edge */
+    user-select: none;         /* Standard */
+}
+
 /* Header - Global Stats */
 .header {
     position: sticky;
@@ -369,19 +378,17 @@ body {
 .map-content {
     position: relative;
     /* Fit to content */
-    width: fit-content;
-    height: fit-content;
+    width: 100%;
+    height: 100%;
     
     /* Transform Origin pojok kiri atas (buat Zoom JS) */
     transform-origin: 0 0;
     transition: transform 0.1s ease-out;
-    
-    /* Batasan biar gak lebih gede dari layar */
-    max-width: 100%;
-    max-height: 100%;
 
-    font-size: 0;
-    line-height: 0;
+    /* Center the content inside */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 @keyframes pulse {
@@ -395,13 +402,10 @@ body {
 
 .floor-map {
     display: block;
-    /* PENTING: Jangan pake width/height 100% atau object-fit: contain */
-    /* Pake ini biar dia maintain aspect ratio alami */
-    max-width: 100%;
-    max-height: 100%;
-    height: auto;
-    width: auto;
-    
+    /* MODIFIED: Use object-fit to contain image within the stable frame */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     pointer-events: none; /* Biar gak ke-drag browser */
 }
 
