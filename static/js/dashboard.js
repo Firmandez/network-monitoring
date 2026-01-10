@@ -162,12 +162,16 @@ document.addEventListener('DOMContentLoaded', init);
 function setupButtonListeners() {
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
-    
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreen);
     }
     if (exitFullscreenBtn) {
         exitFullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
     }
 }
 
@@ -448,6 +452,7 @@ function setupZoomControls() {
     mapContainer.addEventListener('dblclick', resetMapPosition);
 
     setupPanControls();
+    setupTouchControls();
 }
 
 function setupPanControls() {
@@ -501,6 +506,126 @@ function resetMapPosition() {
     translateX = 0;
     translateY = 0;
     updateMapTransform();
+}
+
+// Sidebar Toggle Function
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay') || createOverlay();
+
+    if (sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+    }
+}
+
+// Create overlay for mobile sidebar
+function createOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    overlay.addEventListener('click', toggleSidebar);
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+// Touch Controls for Mobile Zoom and Pan
+function setupTouchControls() {
+    let initialDistance = 0;
+    let initialZoom = 1;
+    let initialTranslateX = 0;
+    let initialTranslateY = 0;
+    let isPinching = false;
+    let isPanning = false;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+
+    mapContainer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            // Pinch start
+            e.preventDefault();
+            isPinching = true;
+            isPanning = false;
+
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            initialDistance = getDistance(touch1, touch2);
+            initialZoom = mapZoom;
+            initialTranslateX = translateX;
+            initialTranslateY = translateY;
+
+            const centerX = (touch1.clientX + touch2.clientX) / 2;
+            const centerY = (touch1.clientY + touch2.clientY) / 2;
+            const rect = mapContent.getBoundingClientRect();
+            const pointX = (centerX - rect.left) / mapZoom;
+            const pointY = (centerY - rect.top) / mapZoom;
+
+            // Store center point for zoom
+            mapContainer.dataset.zoomCenterX = pointX;
+            mapContainer.dataset.zoomCenterY = pointY;
+        } else if (e.touches.length === 1) {
+            // Pan start
+            e.preventDefault();
+            isPanning = true;
+            isPinching = false;
+
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+            initialTranslateX = translateX;
+            initialTranslateY = translateY;
+        }
+    });
+
+    mapContainer.addEventListener('touchmove', (e) => {
+        if (isPinching && e.touches.length === 2) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = getDistance(touch1, touch2);
+            const scale = currentDistance / initialDistance;
+
+            let newZoom = initialZoom * scale;
+            newZoom = Math.min(Math.max(0.5, newZoom), 5);
+
+            const pointX = parseFloat(mapContainer.dataset.zoomCenterX);
+            const pointY = parseFloat(mapContainer.dataset.zoomCenterY);
+            const rect = mapContent.getBoundingClientRect();
+            const centerX = rect.left + pointX * initialZoom;
+            const centerY = rect.top + pointY * initialZoom;
+
+            translateX = initialTranslateX + (centerX - rect.left) - (pointX * newZoom);
+            translateY = initialTranslateY + (centerY - rect.top) - (pointY * newZoom);
+
+            mapZoom = newZoom;
+            updateMapTransform();
+        } else if (isPanning && e.touches.length === 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - lastTouchX;
+            const deltaY = touch.clientY - lastTouchY;
+
+            translateX = initialTranslateX + deltaX;
+            translateY = initialTranslateY + deltaY;
+
+            updateMapTransform();
+        }
+    });
+
+    mapContainer.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+            isPinching = false;
+            isPanning = false;
+        }
+    });
+
+    // Helper function to calculate distance between two touches
+    function getDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 }
 
 // FULLSCREEN (Multi-View)
