@@ -25,7 +25,7 @@ const deviceDotsContainer = document.getElementById('device-dots-container');
 const currentFloorTitle = document.getElementById('current-floor-title');
 const lastUpdateSpan = document.getElementById('last-update');
 const logContainer = document.getElementById('log-container');
-const tooltip = document.getElementById('tooltip');
+
 const fullscreenContainer = document.getElementById('fullscreen-container');
 const fullscreenGrid = document.getElementById('fullscreen-grid');
 
@@ -354,8 +354,6 @@ function renderDevices() {
             
             // Events
             dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-            dot.addEventListener('mouseenter', (e) => showTooltip(e, device));
-            dot.addEventListener('mouseleave', hideTooltip);
             
             deviceDotsContainer.appendChild(dot);
         } catch (error) {
@@ -366,27 +364,7 @@ function renderDevices() {
     console.log(`✅ Rendered ${filteredDevices.length} device dots`);
 }
 
-// Tooltip Functions
-function showTooltip(event, device) {
-    const statusText = device.online ? 
-        '<span style="color: #2ecc71;">● Online</span>' : 
-        '<span style="color: #e74c3c;">● Offline</span>';
-    
-    tooltip.innerHTML = `
-        <strong>${device.name}</strong><br>
-        IP: ${device.ip}<br>
-        Type: ${config.device_types[device.type] ? config.device_types[device.type].label : device.type}<br>
-        Status: ${statusText}
-    `;
-    
-    tooltip.style.left = (event.pageX + 15) + 'px';
-    tooltip.style.top = (event.pageY + 15) + 'px';
-    tooltip.classList.add('show');
-}
-
-function hideTooltip() {
-    tooltip.classList.remove('show');
-}
+// Tooltip Functions - Removed for cleaner map interface
 
 
 // Render Logs (VERSI KUAT / ANTI-CRASH)
@@ -729,11 +707,7 @@ function renderFloorGridDevices(floorId) {
         
         dot.style.top = device.position.top;
         dot.style.left = device.position.left;
-        
-        // Hover Tooltip juga aktif di TV Mode
-        dot.addEventListener('mouseenter', (e) => showTooltip(e, device));
-        dot.addEventListener('mouseleave', hideTooltip);
-        
+
         dotsContainer.appendChild(dot);
     });
 }
