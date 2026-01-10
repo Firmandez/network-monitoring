@@ -998,8 +998,7 @@ button, .filter-item {
 
 .focus-close-btn {
     position: absolute;
-    top: 85px; /* Below fullscreen header */
-    right: 25px;
+    padding: 8px 15px;
     z-index: 30;
 }
 
