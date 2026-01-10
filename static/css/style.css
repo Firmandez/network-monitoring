@@ -359,16 +359,17 @@ button, .filter-item {
     position: relative;
     background: #ffffff;
     border-radius: 16px;
-    overflow: hidden; /* Masking biar gak bleber pas di-zoom */
+    overflow: hidden; 
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 350px);
-    min-height: 550px;
-    max-height: 850px;
+    height: calc(100vh - 220px); 
+    max-height: none; 
+    min-height: 400px; 
     cursor: grab;
     user-select: none;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    box-sizing: border-box; 
 }
 
 .map-container:active {
