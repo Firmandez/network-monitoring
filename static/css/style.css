@@ -25,6 +25,8 @@ body {
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     border-bottom: 1px solid #1e4d7b;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .header-left {
@@ -100,12 +102,22 @@ body {
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     padding: 15px 25px;
-    border-radius: 10px;
+    border-radius: 12px;
     text-align: center;
     min-width: 120px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .stat-box.stat-online {
@@ -139,11 +151,22 @@ body {
 /* Sidebar */
 .sidebar {
     width: 220px;
-    background: #16213e; /* Navy Medium */
-    padding: 15px;
-    border-right: 2px solid #0f3460;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 20px 15px;
+    border-right: 2px solid rgba(52, 152, 219, 0.3);
     overflow-y: auto;
     max-height: calc(100vh - 120px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar:hover {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar h3 {
@@ -193,16 +216,22 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 5px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
     cursor: pointer;
-    border: 1px solid transparent;
-    transition: border 0.3s;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 .filter-item:hover {
-    border-color: #3498db;
+    transform: translateX(2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(52, 152, 219, 0.3);
 }
 
 .filter-item input[type="checkbox"] {
@@ -222,9 +251,19 @@ body {
 .legend {
     margin-top: 30px;
     padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.legend:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .legend h4 {
@@ -294,8 +333,8 @@ body {
 /* Map Container */
 .map-container {
     position: relative;
-    background: #ffffff;
-    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
     overflow: hidden; /* Masking biar gak bleber pas di-zoom */
     display: flex;
     justify-content: center;
@@ -306,6 +345,8 @@ body {
     width: 100%;
     cursor: grab;
     user-select: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .map-container:active {
@@ -521,9 +562,21 @@ body {
 
 /* Log Panel */
 .log-panel {
-    background: #16213e; /* Navy Medium */
+    background: rgba(255, 255, 255, 0.08);
     padding: 20px 30px;
-    border-top: 2px solid #0f3460;
+    border-top: 2px solid rgba(52, 152, 219, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: none;
+    transition: all 0.3s ease;
+}
+
+.log-panel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .log-header {
