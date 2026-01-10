@@ -368,10 +368,38 @@ function renderDevices() {
             dot.style.left = device.position.left;
             dot.style.transform = 'translate(-50%, -50%)';
 
-            // Events
-            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-            dot.addEventListener('mouseout', hideTooltip);
+            // --- Event Handling (Desktop vs Mobile) ---
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                let pressTimer = null;
+                let longPressTriggered = false;
+
+                const handleTouchStart = (e) => {
+                    longPressTriggered = false;
+                    pressTimer = setTimeout(() => {
+                        longPressTriggered = true;
+                        showTooltip(device, e.touches[0]);
+                    }, 400); // Hold for 400ms
+                };
+
+                const handleTouchEnd = (e) => {
+                    clearTimeout(pressTimer);
+                    if (longPressTriggered) {
+                        e.preventDefault(); // Prevent click after long press
+                    }
+                };
+
+                dot.addEventListener('touchstart', handleTouchStart);
+                dot.addEventListener('touchend', handleTouchEnd);
+                dot.addEventListener('touchcancel', handleTouchEnd);
+                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+                dot.addEventListener('contextmenu', e => e.preventDefault());
+            } else {
+                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+                dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+                dot.addEventListener('mouseout', hideTooltip);
+            }
 
             deviceDotsContainer.appendChild(dot);
         } catch (error) {
@@ -397,9 +425,38 @@ function renderFocusViewDevices(floorId, container) {
             dot.style.top = device.position.top;
             dot.style.left = device.position.left;
 
-            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-            dot.addEventListener('mouseout', hideTooltip);
+            // --- Event Handling (Desktop vs Mobile) ---
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                let pressTimer = null;
+                let longPressTriggered = false;
+
+                const handleTouchStart = (e) => {
+                    longPressTriggered = false;
+                    pressTimer = setTimeout(() => {
+                        longPressTriggered = true;
+                        showTooltip(device, e.touches[0]);
+                    }, 400);
+                };
+
+                const handleTouchEnd = (e) => {
+                    clearTimeout(pressTimer);
+                    if (longPressTriggered) {
+                        e.preventDefault();
+                    }
+                };
+
+                dot.addEventListener('touchstart', handleTouchStart);
+                dot.addEventListener('touchend', handleTouchEnd);
+                dot.addEventListener('touchcancel', handleTouchEnd);
+                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+                dot.addEventListener('contextmenu', e => e.preventDefault());
+            } else {
+                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+                dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+                dot.addEventListener('mouseout', hideTooltip);
+            }
 
             container.appendChild(dot);
         } catch (error) {
@@ -818,10 +875,38 @@ function renderFloorGridDevices(floorId) {
         dot.style.top = device.position.top;
         dot.style.left = device.position.left;
 
-        // Add events for tooltip and click
-        dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-        dot.addEventListener('mouseout', hideTooltip);
-        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        // --- Event Handling (Desktop vs Mobile) ---
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            let pressTimer = null;
+            let longPressTriggered = false;
+
+            const handleTouchStart = (e) => {
+                longPressTriggered = false;
+                pressTimer = setTimeout(() => {
+                    longPressTriggered = true;
+                    showTooltip(device, e.touches[0]);
+                }, 400);
+            };
+
+            const handleTouchEnd = (e) => {
+                clearTimeout(pressTimer);
+                if (longPressTriggered) {
+                    e.preventDefault();
+                }
+            };
+
+            dot.addEventListener('touchstart', handleTouchStart);
+            dot.addEventListener('touchend', handleTouchEnd);
+            dot.addEventListener('touchcancel', handleTouchEnd);
+            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+            dot.addEventListener('contextmenu', e => e.preventDefault());
+        } else {
+            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+            dot.addEventListener('mouseout', hideTooltip);
+            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        }
 
         dotsContainer.appendChild(dot);
     });
