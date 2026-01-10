@@ -138,9 +138,9 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 260px;
+    width: 220px;
     background: #16213e; /* Navy Medium */
-    padding: 20px;
+    padding: 15px;
     border-right: 2px solid #0f3460;
     overflow-y: auto;
     max-height: calc(100vh - 120px);
@@ -255,6 +255,20 @@ body {
 .legend-dot.offline {
     background: #e74c3c;
     box-shadow: 0 0 10px #e74c3c;
+}
+
+/* Legend in top left of main content */
+.legend-top-left {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    margin-top: 0;
+    padding: 10px;
+    background: rgba(15, 52, 96, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Main Content */
