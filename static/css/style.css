@@ -994,6 +994,7 @@ button, .filter-item {
     height: 100%;
     max-width: 90vw;
     max-height: calc(100vh - 140px); /* Fullscreen header/footer height */
+    overflow: hidden; /* Pastikan tidak ada scrollbar saat zoom/pan */
 }
 
 .focus-close-btn {
@@ -1016,7 +1017,7 @@ button, .filter-item {
 }
 
 .floor-grid-item:hover {
-    transform: scale(1.15); /* Efek Zoom In */
+    transform: scale(0.80); /* Efek Zoom In (dikurangi agar lebih halus) */
     z-index: 10; /* Tampil di paling depan */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
