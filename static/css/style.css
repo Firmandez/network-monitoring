@@ -1017,7 +1017,7 @@ button, .filter-item {
 }
 
 .floor-grid-item:hover {
-    transform: scale(0.80); /* Efek Zoom In (dikurangi agar lebih halus) */
+    transform: scale(1.00); /* Efek Zoom In (dikurangi agar lebih halus) */
     z-index: 10; /* Tampil di paling depan */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
