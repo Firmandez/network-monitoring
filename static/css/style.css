@@ -152,9 +152,9 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 220px;
+    width: 250px; /* Sedikit lebih lebar agar proporsional */
     background: rgba(255, 255, 255, 0.08);
-    padding: 20px 15px;
+    padding: 25px; /* Padding lebih lega */
     border-right: 2px solid rgba(52, 152, 219, 0.3);
     height: auto;
     overflow-y: auto;
@@ -181,24 +181,24 @@ body {
 
 .sidebar h3 {
     color: #3498db; /* Biru Utama */
-    margin-bottom: 15px;
-    font-size: 16px;
+    margin-bottom: 20px; /* Jarak lebih besar */
+    font-size: 18px; /* Judul lebih jelas */
 }
 
 .floor-nav {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px; /* Jarak antar tombol lebih pas */
 }
 
 .floor-btn {
     background: #0f3460;
     border: 1px solid #1e4d7b;
     color: #a0aec0;
-    padding: 12px;
+    padding: 12px 15px; /* Padding horizontal lebih besar */
     border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px; /* Font lebih mudah dibaca */
     transition: all 0.3s;
 }
 
@@ -219,14 +219,14 @@ body {
 .filter-panel {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px; /* Jarak antar filter lebih pas */
 }
 
 .filter-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 12px; /* Jarak checkbox & label */
+    padding: 12px 15px; /* Padding disamakan dengan tombol floor */
     background: rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     cursor: pointer;
@@ -253,7 +253,7 @@ body {
 
 .filter-item label {
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px; /* Font disamakan dengan tombol floor */
     color: #eeeeee;
 }
 
@@ -659,18 +659,32 @@ body {
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
+    height: 8px; /* Untuk scrollbar horizontal jika ada */
 }
 
 ::-webkit-scrollbar-track {
     background: #0f3460;
+    /* Sembunyikan track */
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
     background: #3498db;
+    /* Sembunyikan thumb by default, dengan transisi */
+    background: transparent;
     border-radius: 4px;
+    transition: background 0.2s ease-out;
+}
+
+/* Tampilkan thumb saat hover di atas container yang bisa di-scroll */
+.sidebar:hover::-webkit-scrollbar-thumb,
+.log-container:hover::-webkit-scrollbar-thumb,
+body:hover::-webkit-scrollbar-thumb {
+    background: rgba(52, 152, 219, 0.5); /* Semi-transparan */
 }
 
 ::-webkit-scrollbar-thumb:hover {
+    /* Buat lebih solid saat di-hover langsung */
     background: #2980b9;
 }
 
@@ -717,7 +731,7 @@ body {
 
 /* Tablet Styles (768px - 1024px) */
 @media (max-width: 1024px) and (min-width: 769px) {
-    .sidebar { width: 220px; padding: 15px; }
+    .sidebar { width: 250px; padding: 20px; } /* Disesuaikan dengan ukuran desktop */
     .main-content { padding: 20px; flex-grow: 1; }
     .map-container { height: calc(100vh - 250px); }
     .header-logo { width: 100px; height: 100px; }
@@ -738,7 +752,11 @@ body {
         height: 100vh; 
         z-index: 1000; 
         transition: left 0.3s ease-in-out; /* Animasi geser yang smooth */
-        background: #16213e;
+        /* FIX: Ganti background solid dengan glassmorphism agar efek langsung muncul */
+        background: rgba(10, 42, 74, 0.85); /* Warna dasar navy, tapi transparan */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(52, 152, 219, 0.3); /* Border tipis di kanan */
     }
     .sidebar.open { left: 0; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
 
