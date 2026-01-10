@@ -394,16 +394,16 @@ function positionTooltip(event) {
     if (!tooltip) return;
 
     const tooltipRect = tooltip.getBoundingClientRect();
-    let x = event.pageX + 10;
-    let y = event.pageY + 10;
+    let x = event.pageX + 2;
+    let y = event.pageY + 2;
 
     // Adjust if tooltip goes off screen
     if (x + tooltipRect.width > window.innerWidth) {
-        x = event.pageX - tooltipRect.width - 10;
+        x = event.pageX - tooltipRect.width - 2;
     }
 
     if (y + tooltipRect.height > window.innerHeight) {
-        y = event.pageY - tooltipRect.height - 10;
+        y = event.pageY - tooltipRect.height - 2;
     }
 
     tooltip.style.left = `${x}px`;
