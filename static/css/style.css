@@ -363,7 +363,7 @@ button, .filter-item {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 250px); 
+    height: calc(100vh - 350px); 
     max-height: 850px; 
     min-height: 400px; 
     cursor: grab;
