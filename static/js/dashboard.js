@@ -180,6 +180,43 @@ function setupButtonListeners() {
     }
 }
 
+// --- DEVICE DOT INTERACTION HANDLER (REFACTORED) ---
+function addDeviceDotInteraction(dot, device) {
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        let pressTimer = null;
+        let longPressTriggered = false;
+
+        const handleTouchStart = (e) => {
+            longPressTriggered = false;
+            pressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                showTooltip(device, e.touches[0]); // Show tooltip on long press
+            }, 400); // Hold for 400ms
+        };
+
+        const handleTouchEnd = (e) => {
+            clearTimeout(pressTimer);
+            hideTooltip(); // Hide tooltip on release
+            if (longPressTriggered) {
+                e.preventDefault(); // Prevent click event after a long press
+            }
+        };
+
+        dot.addEventListener('touchstart', handleTouchStart);
+        dot.addEventListener('touchend', handleTouchEnd);
+        dot.addEventListener('touchcancel', handleTouchEnd); // Also hide on cancel
+        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        dot.addEventListener('contextmenu', e => e.preventDefault()); // Prevent default menu
+    } else {
+        // Desktop logic
+        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+        dot.addEventListener('mouseout', hideTooltip);
+    }
+}
+
 // CORE FUNCTIONS (Config & Map)
 // Load Config from API
 async function loadConfig() {
@@ -368,38 +405,7 @@ function renderDevices() {
             dot.style.left = device.position.left;
             dot.style.transform = 'translate(-50%, -50%)';
 
-            // --- Event Handling (Desktop vs Mobile) ---
-            const isMobile = window.innerWidth <= 768;
-
-            if (isMobile) {
-                let pressTimer = null;
-                let longPressTriggered = false;
-
-                const handleTouchStart = (e) => {
-                    longPressTriggered = false;
-                    pressTimer = setTimeout(() => {
-                        longPressTriggered = true;
-                        showTooltip(device, e.touches[0]);
-                    }, 400); // Hold for 400ms
-                };
-
-                const handleTouchEnd = (e) => {
-                    clearTimeout(pressTimer);
-                    if (longPressTriggered) {
-                        e.preventDefault(); // Prevent click after long press
-                    }
-                };
-
-                dot.addEventListener('touchstart', handleTouchStart);
-                dot.addEventListener('touchend', handleTouchEnd);
-                dot.addEventListener('touchcancel', handleTouchEnd);
-                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-                dot.addEventListener('contextmenu', e => e.preventDefault());
-            } else {
-                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-                dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-                dot.addEventListener('mouseout', hideTooltip);
-            }
+            addDeviceDotInteraction(dot, device);
 
             deviceDotsContainer.appendChild(dot);
         } catch (error) {
@@ -425,38 +431,7 @@ function renderFocusViewDevices(floorId, container) {
             dot.style.top = device.position.top;
             dot.style.left = device.position.left;
 
-            // --- Event Handling (Desktop vs Mobile) ---
-            const isMobile = window.innerWidth <= 768;
-
-            if (isMobile) {
-                let pressTimer = null;
-                let longPressTriggered = false;
-
-                const handleTouchStart = (e) => {
-                    longPressTriggered = false;
-                    pressTimer = setTimeout(() => {
-                        longPressTriggered = true;
-                        showTooltip(device, e.touches[0]);
-                    }, 400);
-                };
-
-                const handleTouchEnd = (e) => {
-                    clearTimeout(pressTimer);
-                    if (longPressTriggered) {
-                        e.preventDefault();
-                    }
-                };
-
-                dot.addEventListener('touchstart', handleTouchStart);
-                dot.addEventListener('touchend', handleTouchEnd);
-                dot.addEventListener('touchcancel', handleTouchEnd);
-                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-                dot.addEventListener('contextmenu', e => e.preventDefault());
-            } else {
-                dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-                dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-                dot.addEventListener('mouseout', hideTooltip);
-            }
+            addDeviceDotInteraction(dot, device);
 
             container.appendChild(dot);
         } catch (error) {
@@ -875,38 +850,7 @@ function renderFloorGridDevices(floorId) {
         dot.style.top = device.position.top;
         dot.style.left = device.position.left;
 
-        // --- Event Handling (Desktop vs Mobile) ---
-        const isMobile = window.innerWidth <= 768;
-
-        if (isMobile) {
-            let pressTimer = null;
-            let longPressTriggered = false;
-
-            const handleTouchStart = (e) => {
-                longPressTriggered = false;
-                pressTimer = setTimeout(() => {
-                    longPressTriggered = true;
-                    showTooltip(device, e.touches[0]);
-                }, 400);
-            };
-
-            const handleTouchEnd = (e) => {
-                clearTimeout(pressTimer);
-                if (longPressTriggered) {
-                    e.preventDefault();
-                }
-            };
-
-            dot.addEventListener('touchstart', handleTouchStart);
-            dot.addEventListener('touchend', handleTouchEnd);
-            dot.addEventListener('touchcancel', handleTouchEnd);
-            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-            dot.addEventListener('contextmenu', e => e.preventDefault());
-        } else {
-            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
-            dot.addEventListener('mouseout', hideTooltip);
-            dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-        }
+        addDeviceDotInteraction(dot, device);
 
         dotsContainer.appendChild(dot);
     });
