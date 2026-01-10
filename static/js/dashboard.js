@@ -346,15 +346,17 @@ function renderDevices() {
             const dot = document.createElement('div');
             dot.className = 'device-dot';
             dot.classList.add(device.online ? 'online' : 'offline');
-            
+
             // Posisi
             dot.style.top = device.position.top;
             dot.style.left = device.position.left;
             dot.style.transform = 'translate(-50%, -50%)';
-            
+
             // Events
             dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
-            
+            dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+            dot.addEventListener('mouseout', hideTooltip);
+
             deviceDotsContainer.appendChild(dot);
         } catch (error) {
             console.error('Error rendering device:', device, error);
@@ -364,7 +366,49 @@ function renderDevices() {
     console.log(`✅ Rendered ${filteredDevices.length} device dots`);
 }
 
-// Tooltip Functions - Removed for cleaner map interface
+// Tooltip Functions
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(device, event) {
+    if (!tooltip) return;
+
+    tooltip.innerHTML = `
+        <strong>${device.name}</strong><br>
+        IP: ${device.ip}<br>
+        Type: ${config.device_types[device.type].label}<br>
+        Status: ${device.online ? 'Online' : 'Offline'}<br>
+        Floor: ${config.floor_labels[device.floor_id]}
+    `;
+
+    tooltip.classList.add('show');
+    // Position after the content has been rendered
+    setTimeout(() => positionTooltip(event), 0);
+}
+
+function hideTooltip() {
+    if (!tooltip) return;
+    tooltip.classList.remove('show');
+}
+
+function positionTooltip(event) {
+    if (!tooltip) return;
+
+    const tooltipRect = tooltip.getBoundingClientRect();
+    let x = event.pageX + 10;
+    let y = event.pageY + 10;
+
+    // Adjust if tooltip goes off screen
+    if (x + tooltipRect.width > window.innerWidth) {
+        x = event.pageX - tooltipRect.width - 10;
+    }
+
+    if (y + tooltipRect.height > window.innerHeight) {
+        y = event.pageY - tooltipRect.height - 10;
+    }
+
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+}
 
 
 // Render Logs (VERSI KUAT / ANTI-CRASH)

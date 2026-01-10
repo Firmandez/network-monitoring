@@ -74,10 +74,12 @@ def shutdown_handler(signum=None, frame=None):
     os._exit(0)
 
 
-# Register signal handlers
+# Register signal handlers (Windows-compatible)
 signal.signal(signal.SIGTERM, shutdown_handler)
 signal.signal(signal.SIGINT, shutdown_handler)
-signal.signal(signal.SIGQUIT, shutdown_handler)
+# SIGQUIT is not available on Windows, skip it
+if hasattr(signal, 'SIGQUIT'):
+    signal.signal(signal.SIGQUIT, shutdown_handler)
 
 # Register cleanup
 atexit.register(lambda: print("Application exited cleanly"))
