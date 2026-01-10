@@ -163,6 +163,7 @@ function setupButtonListeners() {
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -172,6 +173,9 @@ function setupButtonListeners() {
     }
     if (sidebarToggleBtn) {
         sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', toggleSidebar);
     }
 }
 
@@ -394,8 +398,8 @@ function positionTooltip(event) {
     if (!tooltip) return;
 
     const tooltipRect = tooltip.getBoundingClientRect();
-    let x = event.pageX + 15;
-    let y = event.pageY + 15;
+    let x = event.pageX + 12;
+    let y = event.pageY + 12;
 
     // Adjust if tooltip goes off screen
     if (x + tooltipRect.width > window.innerWidth) {
@@ -533,26 +537,13 @@ function resetMapPosition() {
 // Sidebar Toggle Function
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay') || createOverlay();
-
-    if (sidebar.classList.contains('open')) {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('show');
-    } else {
-        sidebar.classList.add('open');
-        overlay.classList.add('show');
-    }
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar?.classList.toggle('open');
+    overlay?.classList.toggle('show');
 }
 
-// Create overlay for mobile sidebar
-function createOverlay() {
-    const overlay = document.createElement('div');
-    overlay.className = 'sidebar-overlay';
-    overlay.addEventListener('click', toggleSidebar);
-    document.body.appendChild(overlay);
-    return overlay;
-}
-
+// The createOverlay function is no longer needed as the overlay is now part of the HTML structure.
+// The event listener is added in setupButtonListeners.
 // Touch Controls for Mobile Zoom and Pan
 function setupTouchControls() {
     let initialDistance = 0;
