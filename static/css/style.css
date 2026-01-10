@@ -8,8 +8,8 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1a1a2e; /* Navy Gelap (Main Bg) */
-    color: #eeeeee; /* Putih Gading (Main Text) */
+    background-color: #0A2A4A; /* Logo Primary Dark Blue (Main Bg) */
+    color: #FFFFFF; /* Logo Secondary White (Main Text) */
     overflow-x: hidden;
 }
 
@@ -18,13 +18,13 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%); /* Navy Medium ke Aksen */
+    background: linear-gradient(135deg, #0A2A4A 0%, #0A2A4A 100%); /* Logo Primary Dark Blue */
     padding: 20px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid #1e4d7b;
+    border-bottom: 1px solid #0A2A4A;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
