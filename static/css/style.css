@@ -14,6 +14,11 @@ body {
     min-height: 100vh;
 }
 
+/* Hide body scrollbar when in fullscreen mode */
+body.fullscreen-active {
+    overflow: hidden;
+}
+
 /* --- INTERACTION POLISH --- */
 /* Prevent text selection on buttons and other clickable areas */
 button, .filter-item {
@@ -1017,7 +1022,7 @@ button, .filter-item {
 }
 
 .floor-grid-item:hover {
-    transform: scale(1.00); /* Efek Zoom In (dikurangi agar lebih halus) */
+    transform: scale(1.05); /* FIX: Kembalikan efek zoom halus saat hover */
     z-index: 10; /* Tampil di paling depan */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }

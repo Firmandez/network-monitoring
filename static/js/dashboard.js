@@ -717,6 +717,7 @@ function toggleFullscreen() {
 }
 
 function enterFullscreenMode() {
+    document.body.classList.add('fullscreen-active');
     fullscreenContainer.classList.add('active');
     
     // Native Fullscreen Request
@@ -731,6 +732,7 @@ function enterFullscreenMode() {
 }
 
 function exitFullscreenMode() {
+    document.body.classList.remove('fullscreen-active');
     if (isInFocusMode) {
         exitFocusMode();
     }
