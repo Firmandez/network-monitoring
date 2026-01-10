@@ -597,6 +597,27 @@ body {
     background: #2980b9;
 }
 
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    border: none;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(127, 140, 141, 0.3);
+    display: none; /* Hidden by default, shown on mobile */
+}
+
+.sidebar-toggle-btn:hover {
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7b7d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(127, 140, 141, 0.4);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .container { flex-direction: column; }
@@ -607,6 +628,87 @@ body {
     .header-logo { width: 120px; height: 120px; }
     .header-left h1 { font-size: 22px; }
     .subtitle { font-size: 12px; }
+}
+
+/* Tablet Styles (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .sidebar { width: 220px; padding: 15px; }
+    .main-content { padding: 20px; }
+    .map-container { height: calc(100vh - 250px); }
+    .header-logo { width: 100px; height: 100px; }
+    .header-left h1 { font-size: 24px; }
+    .stat-box { min-width: 100px; padding: 12px 20px; }
+    .stat-value { font-size: 28px; }
+    .fullscreen-grid { grid-template-columns: repeat(auto-fit, minmax(30%, 1fr)); }
+}
+
+/* Mobile Styles (up to 768px) */
+@media (max-width: 768px) {
+    /* Hide sidebar by default */
+    .sidebar { display: none; position: fixed; top: 0; left: -260px; height: 100vh; z-index: 1000; transition: left 0.3s ease; background: #16213e; }
+    .sidebar.open { left: 0; }
+
+    /* Show toggle button */
+    .sidebar-toggle-btn { display: block; }
+
+    /* Header adjustments */
+    .header { padding: 15px 20px; }
+    .header-left { flex: 1; }
+    .header-right { flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    .logo-container { gap: 8px; }
+    .header-logo { width: 80px; height: 80px; }
+    .header-left h1 { font-size: 18px; line-height: 1.1; }
+    .subtitle { font-size: 11px; margin-bottom: 1px; }
+    .stat-box { min-width: 80px; padding: 10px 15px; }
+    .stat-value { font-size: 24px; }
+    .stat-label { font-size: 11px; }
+
+    /* Main content */
+    .container { flex-direction: column; min-height: auto; }
+    .main-content { padding: 15px; }
+    .map-container { height: calc(100vh - 300px); min-height: 400px; touch-action: none; /* Enable touch zoom */ }
+    .map-content { cursor: grab; }
+    .map-content:active { cursor: grabbing; }
+
+    /* Device dots - larger for touch */
+    .device-dot { width: 20px; height: 20px; }
+    .device-dot:hover { transform: translate(-50%, -50%) scale(1.2); }
+
+    /* Tooltip - larger on mobile */
+    .tooltip { padding: 12px 16px; font-size: 12px; max-width: 250px; }
+
+    /* Map info */
+    .map-info { padding: 12px 16px; font-size: 13px; }
+
+    /* Log panel */
+    .log-panel { padding: 15px 20px; }
+    .log-header h3 { font-size: 16px; }
+    .log-item { padding: 8px; font-size: 12px; }
+
+    /* Fullscreen mode - single column grid */
+    .fullscreen-grid { grid-template-columns: 1fr; grid-template-rows: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; padding: 8px; }
+    .fullscreen-header { padding: 8px 15px; height: 60px; }
+    .fullscreen-title h1 { font-size: 16px; }
+    .fullscreen-title p { font-size: 12px; }
+    .fullscreen-stats { gap: 15px; }
+    .fullscreen-stat { min-width: 70px; padding: 4px 12px; }
+    .fullscreen-stat .stat-value { font-size: 20px; }
+    .fullscreen-stat .stat-label { font-size: 10px; }
+    .fullscreen-footer { padding: 4px 15px; font-size: 11px; height: 25px; }
+
+    /* Floor grid items */
+    .floor-grid-header { padding: 4px 8px; height: 25px; font-size: 11px; }
+    .floor-grid-header h3 { font-size: 11px; }
+
+    /* Mini dots - larger for touch */
+    .floor-grid-dot { width: 12px; height: 12px; }
+    .floor-grid-dot.offline { width: 12px; height: 12px; }
+}
+
+/* Overlay for mobile sidebar */
+@media (max-width: 768px) {
+    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    .sidebar-overlay.show { display: block; }
 }
 
 /* ====================================
