@@ -345,7 +345,7 @@ body {
 /* Map Container */
 .map-container {
     position: relative;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: #ffffff;
     border-radius: 16px;
     overflow: hidden; /* Masking biar gak bleber pas di-zoom */
     display: flex;
