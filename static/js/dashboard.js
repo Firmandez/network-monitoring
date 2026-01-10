@@ -754,6 +754,11 @@ function renderFloorGridDevices(floorId) {
         dot.style.top = device.position.top;
         dot.style.left = device.position.left;
 
+        // Add events for tooltip and click
+        dot.addEventListener('mouseover', (e) => showTooltip(device, e));
+        dot.addEventListener('mouseout', hideTooltip);
+        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+
         dotsContainer.appendChild(dot);
     });
 }
