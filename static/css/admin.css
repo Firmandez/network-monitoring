@@ -1,0 +1,22 @@
+/* Custom styles for admin page */
+body { background-color: #0A2A4A; color: #fff; }
+.admin-container { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; max-width: 1600px; margin: auto; }
+.form-section { flex: 1; min-width: 350px; background: rgba(255, 255, 255, 0.08); padding: 20px; border-radius: 8px; }
+.map-section { flex: 2; min-width: 400px; }
+.list-section { width: 100%; margin-top: 20px; }
+h2 { color: #3498db; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; color: #a0aec0; }
+.form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #1e4d7b; background: #0f3460; color: #fff; }
+.coord-group { display: flex; gap: 10px; }
+#map-picker { position: relative; border: 2px dashed #3498db; border-radius: 8px; overflow: hidden; cursor: crosshair; }
+#map-picker-img { width: 100%; display: block; }
+#click-marker { position: absolute; width: 20px; height: 20px; background: red; border-radius: 50%; border: 2px solid white; transform: translate(-50%, -50%); pointer-events: none; display: none; z-index: 10; }
+.btn { background: #3498db; color: #fff; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+.btn:hover { background: #2980b9; }
+.btn-delete { background: #e74c3c; }
+.btn-delete:hover { background: #c0392b; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 12px; border: 1px solid #1e4d7b; text-align: left; }
+th { background: #1e4d7b; }
+tr:nth-child(even) { background: #0f3460; }

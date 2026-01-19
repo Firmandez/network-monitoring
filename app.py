@@ -19,11 +19,12 @@ import sys
 import os
 from datetime import datetime
 
-# Import Blueprints dan Config
-from auth import auth_bp
-from db import close_db
-# Import config (Pastikan file config.py ada)
-from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES, SECRET_KEY
+# Import Blueprints, DB, dan Config
+from auth import auth_bp, login_required
+from db import get_db, close_db
+from admin import admin_bp
+# Import config (DEVICES sekarang diambil dari DB)
+from config import FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES, SECRET_KEY
 
 # Muat environment variables dari .env
 load_dotenv()
@@ -88,6 +89,27 @@ if hasattr(signal, 'SIGQUIT'):
 
 # Register cleanup functions that will be called on exit
 app.teardown_appcontext(close_db)
+
+# --- FUNGSI PENGAMBILAN DATA DEVICE DARI DATABASE ---
+def get_devices_from_db():
+    """Mengambil semua device aktif dari database."""
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT id, name, ip, type, floor_id, pos_top, pos_left FROM devices WHERE is_active = TRUE ORDER BY name")
+    rows = cur.fetchall()
+    cur.close()
+    
+    devices = []
+    for row in rows:
+        devices.append({
+            "id": row[0], # ID sekarang integer dari DB
+            "name": row[1],
+            "ip": str(row[2]), # Konversi tipe INET ke string
+            "type": row[3],
+            "floor_id": row[4],
+            "position": { "top": f"{row[5]}%", "left": f"{row[6]}%" }
+        })
+    return devices
 
 # --- FUNGSI PING ---
 def ping_device(ip):
@@ -158,10 +180,13 @@ def background_monitoring():
     # Create executor di dalam loop
     while True:
         try:
+            # AMBIL DEVICE TERBARU DARI DB SETIAP LOOP
+            current_devices = get_devices_from_db()
+
             # A. PING SEMUA DEVICE (Parallel 20 Thread)
             with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
                 futures = []
-                for device in DEVICES:
+                for device in current_devices:
                     future = executor.submit(check_single_device, device)
                     futures.append(future)
                 
@@ -172,8 +197,8 @@ def background_monitoring():
                     except Exception as e:
                         print(f"Ping error: {e}")
             
-            # B. BROADCAST DATA via emit_update
-            emit_update()
+            # B. BROADCAST DATA via emit_update dengan data terbaru
+            emit_update(current_devices)
             
             # C. Istirahat 5 detik
             socketio.sleep(5)
@@ -215,14 +240,14 @@ def handle_connect_error(data):
     """Handle connection error"""
     print(f"[Socket.IO] Connection error: {data}")
 
-def emit_update():
+def emit_update(current_devices):
     """Emit data update to all connected clients"""
     devices_data = []
     total_online = 0
     total_offline = 0
     
     with status_lock:
-        for device in DEVICES:
+        for device in current_devices:
             d_stat = device_status.get(device['id'], {'online': False})
             is_online = d_stat['online']
             
@@ -237,7 +262,7 @@ def emit_update():
     packet = {
         'devices': devices_data,
         'global': {
-            'total': len(DEVICES),
+            'total': len(current_devices),
             'online': total_online,
             'offline': total_offline
         },
@@ -263,6 +288,7 @@ start_monitoring()
 
 # --- REGISTER BLUEPRINTS ---
 app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(admin_bp, url_prefix='/admin')
 
 # --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
