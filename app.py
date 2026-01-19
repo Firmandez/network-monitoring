@@ -257,7 +257,8 @@ def emit_update(current_devices=None):
     # FIX: Jika fungsi dipanggil tanpa argumen (misal saat koneksi baru),
     # ambil sendiri data device dari database.
     if current_devices is None:
-        current_devices = get_devices_from_db()
+        with app.app_context():
+            current_devices = get_devices_from_db()
 
     with status_lock:
         for device in current_devices:
