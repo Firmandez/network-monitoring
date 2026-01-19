@@ -822,7 +822,7 @@ function generateFloorGrids() {
                 </div>
             </div>
             <div class="floor-grid-map">
-                <img src="/${floorMap}" alt="${floorLabel}">
+                <img src="/static/${floorMap}" alt="${floorLabel}">
                 <div class="floor-grid-dots"></div>
             </div>
         `;

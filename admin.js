@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
     floorSelect.addEventListener('change', () => {
         const selectedFloor = floorSelect.value;
         if (FLOOR_MAPS[selectedFloor]) {
-            mapImage.src = `/static/${FLOOR_MAPS[selectedFloor]}`;
             mapImage.src = urlTemplate.replace('__FILENAME__', FLOOR_MAPS[selectedFloor]);
             clickMarker.style.display = 'none'; // Hide marker when map changes
         }
