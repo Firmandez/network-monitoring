@@ -4,8 +4,9 @@ body {
     color: #FFFFFF;
     display: flex;
     flex-direction: column; /* Stack items vertically */
-    min-height: 100vh;
+    height: 100vh; /* Use fixed height to prevent overflow */
     margin: 0;
+    overflow: hidden; /* Hide any potential scrollbars */
 }
 
 .login-container {

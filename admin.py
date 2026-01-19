@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, url_for
 from db import get_db
 from auth import login_required # Import decorator
 import psycopg2
+from psycopg2 import IntegrityError
 
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
 
@@ -11,8 +12,10 @@ def dashboard():
     """Menampilkan halaman utama admin."""
     # Ambil data statis untuk form
     from config import FLOOR_LABELS, DEVICE_TYPES, FLOOR_MAPS
-    # Tentukan floor pertama sebagai default untuk map picker
-    initial_map = FLOOR_MAPS.get('floor_1', '')
+    # FIX: Tentukan floor pertama secara dinamis dari konfigurasi
+    # Ini memastikan gambar peta dan pilihan dropdown selalu sinkron.
+    first_floor_id = next(iter(FLOOR_LABELS), 'floor_1') # Ambil key pertama, fallback ke 'floor_1'
+    initial_map = FLOOR_MAPS.get(first_floor_id, '')
     return render_template('admin/admin_dashboard.html', floor_labels=FLOOR_LABELS, device_types=DEVICE_TYPES, floor_maps=FLOOR_MAPS, initial_map=initial_map)
 
 @admin_bp.route('/api/devices', methods=['GET'])
@@ -51,26 +54,35 @@ def add_device():
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Data tidak lengkap"}), 400
 
+    # Generate ID from IP address (dots replaced with underscores)
+    new_id = data['ip'].replace('.', '_')
+
     try:
         db = get_db()
         cur = db.cursor()
         cur.execute(
             """
-            INSERT INTO devices (name, ip, type, floor_id, pos_top, pos_left)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING id;
+            INSERT INTO devices (id, name, ip, type, floor_id, pos_top, pos_left)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
             """,
-            (data['name'], data['ip'], data['type'], data['floor_id'], data['pos_top'], data['pos_left'])
+            (new_id, data['name'], data['ip'], data['type'], data['floor_id'], data['pos_top'], data['pos_left'])
         )
-        new_id = cur.fetchone()[0]
         db.commit()
         cur.close()
         return jsonify({"message": "Device berhasil ditambahkan", "id": new_id}), 201
+    except IntegrityError as e:
+        db.rollback()
+        # Check for unique violation on IP or ID
+        if 'devices_ip_key' in str(e):
+            return jsonify({"error": f"IP address '{data['ip']}' sudah terdaftar."}), 409
+        if 'devices_pkey' in str(e):
+            return jsonify({"error": f"Device dengan ID '{new_id}' sudah ada."}), 409
+        return jsonify({"error": f"Database integrity error: {e}"}), 500
     except psycopg2.Error as e:
         db.rollback()
         return jsonify({"error": f"Database error: {e}"}), 500
 
-@admin_bp.route('/api/devices/<int:device_id>', methods=['DELETE'])
+@admin_bp.route('/api/devices/<string:device_id>', methods=['DELETE'])
 @login_required
 def delete_device(device_id):
     """API endpoint untuk menghapus device."""

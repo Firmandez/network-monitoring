@@ -16,6 +16,13 @@ try:
     )
     cur = conn.cursor()
 
+    # Hapus tabel lama jika ada (dengan CASCADE untuk mengatasi dependensi)
+    print("Menghapus tabel lama (jika ada)...")
+    cur.execute("""
+    DROP TABLE IF EXISTS device_status, devices, users CASCADE;
+    """)
+    print("Tabel lama berhasil dihapus.")
+
     # Create users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
@@ -29,9 +36,9 @@ try:
     # Create devices table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS devices (
-        id SERIAL PRIMARY KEY,
+        id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        ip INET NOT NULL,
+        ip INET UNIQUE NOT NULL,
         type VARCHAR(50) NOT NULL,
         floor_id VARCHAR(50) NOT NULL,
         pos_top NUMERIC(5,2) NOT NULL,
@@ -44,7 +51,7 @@ try:
     # Create device_status table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS device_status (
-        device_id INTEGER PRIMARY KEY REFERENCES devices(id) ON DELETE CASCADE,
+        device_id VARCHAR(255) PRIMARY KEY REFERENCES devices(id) ON DELETE CASCADE,
         online BOOLEAN NOT NULL,
         last_checked TIMESTAMP
     );
