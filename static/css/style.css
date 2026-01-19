@@ -321,17 +321,17 @@ button, .filter-item {
 
 .map-content {
     position: relative;
-    width: 100%; /* Memastikan map-content mengisi penuh map-container */
-    height: 100%; /* Memastikan map-content mengisi penuh map-container */
-    aspect-ratio: 16 / 9; /* Mempertahankan rasio aspek 16:9 */
-    
+    /* Paksa wrapper ini untuk selalu 16:9 dan biarkan flexbox parent yang me-resize */
+    width: 100%;
+    max-height: 100%; /* Jangan sampai lebih tinggi dari container */
+    aspect-ratio: 16 / 9;
+
     /* Transform Origin pojok kiri atas (buat Zoom JS) */
     transform-origin: 0 0;
     transition: transform 0.1s ease-out;
 
     font-size: 0;
     line-height: 0;
-    /* object-fit: contain; tidak diperlukan di sini karena aspect-ratio sudah menangani */
 }
 
 @keyframes pulse {
@@ -344,14 +344,11 @@ button, .filter-item {
 }
 
 .floor-map {
-    width: 100%; /* Memastikan gambar mengisi penuh map-content yang sudah 16:9 */
-    height: 100%; /* Memastikan gambar mengisi penuh map-content yang sudah 16:9 */
-    object-fit: contain;
-    display: block;
+    width: 100%;
+    height: 100%;
+    display: block; /* Hapus spasi bawah dari gambar */
     opacity: 0.95;
     filter: brightness(1.05) contrast(1.1);
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform-origin: center center;
 }
 
 .device-dots-container {
@@ -360,7 +357,8 @@ button, .filter-item {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Gak perlu transform origin/transform lagi disini, karena ikut map-content */
+    /* Biarkan klik menembus ke map untuk pan, tapi dot tetap bisa diklik */
+    pointer-events: none;
 }
 
 /* =========================
@@ -372,7 +370,7 @@ button, .filter-item {
     width: 14px; 
     height: 14px;
     border-radius: 50%;
-    cursor: pointer;
+    cursor: pointer; 
     pointer-events: all;
     z-index: 10;
     transform: translate(-50%, -50%); 
