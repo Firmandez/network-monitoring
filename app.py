@@ -7,6 +7,8 @@ eventlet.monkey_patch()
 from flask import Flask, render_template, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
+from dotenv import load_dotenv
+import psycopg2
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import subprocess
@@ -17,15 +19,21 @@ import sys
 import os
 from datetime import datetime
 
+# Import Blueprints dan Config
+from auth import auth_bp
+from db import close_db
 # Import config (Pastikan file config.py ada)
-from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES
+from config import DEVICES, FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES, SECRET_KEY
+
+# Muat environment variables dari .env
+load_dotenv()
 
 app = Flask(__name__)
 
 # FIX: Agar Flask mengenali IP asli & Protocol dari Caddy (Reverse Proxy)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-app.config['SECRET_KEY'] = 'L4b0r4nft1'
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # --- TRUST PROXY HEADERS (untuk Caddy reverse proxy) ---
 # CRITICAL: Caddy forward X-Forwarded-* headers, Flask perlu trust ini
@@ -65,31 +73,21 @@ monitoring_started = False
 
 # --- PROPER SHUTDOWN HANDLER ---
 def shutdown_handler(signum=None, frame=None):
-    """Clean shutdown handler"""
+    """Gracefully handle shutdown signals."""
     print(f"\n{'='*50}")
-    print(f"Received shutdown signal")
-    print("Cleaning up threads and processes...")
-    
-    # Force exit
-    os._exit(0)
+    print(f"Received signal {signum}. Shutting down gracefully...")
+    # This will allow atexit and finally blocks to execute
+    sys.exit(0)
 
 
-# Register signal handlers (Windows-compatible)
+# Register signal handlers for graceful shutdown
 signal.signal(signal.SIGTERM, shutdown_handler)
 signal.signal(signal.SIGINT, shutdown_handler)
-# SIGQUIT is not available on Windows, skip it
 if hasattr(signal, 'SIGQUIT'):
     signal.signal(signal.SIGQUIT, shutdown_handler)
 
-# Register cleanup
-atexit.register(lambda: print("Application exited cleanly"))
-
-def signal_handler(signum, frame):
-    print(f"Received signal {signum}, shutting down...")
-    sys.exit(0)
-
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
+# Register cleanup functions that will be called on exit
+app.teardown_appcontext(close_db)
 
 # --- FUNGSI PING ---
 def ping_device(ip):
@@ -262,6 +260,9 @@ def start_monitoring():
 # Auto-start monitoring ketika app dijalankan (baik dev maupun production)
 # IMPORTANT: harus jalan setelah socketio.init_app()
 start_monitoring()
+
+# --- REGISTER BLUEPRINTS ---
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
 # --- MAIN ENTRY POINT ---
 if __name__ == '__main__':

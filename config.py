@@ -1,6 +1,9 @@
 # config.py
 # Configuration file for NOC Network Monitoring System
 
+# Secret Key for Flask session
+SECRET_KEY = 'L4b0r4nft1' # Ganti dengan key yang lebih aman di production
+
 # Device List - Each device must have a floor_id
 DEVICES = [
     # GROUND FLOOR
@@ -37,7 +40,7 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "33.0%   ",
+            "top": "33.0%",
             "left": "83.6%"
         },
     },
@@ -95,8 +98,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "30.8%",
-            "left": "71.8%"
+            "top": "30.5%",
+            "left": "75.2%"
         },
     },
     {
@@ -107,7 +110,7 @@ DEVICES = [
         "floor_id": "floor_2",
         "position": {
             "top": "45.0%",
-            "left": "47.0%"
+            "left": "46.4%"
         },
     },
     {
@@ -117,8 +120,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "43.6%",
-            "left": "9.9%"
+            "top": "44.1%",
+            "left": "3.2%"
         },
     },
     {
@@ -128,8 +131,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "49.3%",
-            "left": "84.6%"
+            "top": "49.4%",
+            "left": "90.2%"
         },
     },
     {
@@ -139,8 +142,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "28.9%",
-            "left": "35.3%"
+            "top": "28.2%",
+            "left": "32.9%"
         },
     },
     {
@@ -150,8 +153,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "45.4%",
-            "left": "89.5%"
+            "top": "45.1%",
+            "left": "96.0%"
         },
     },
     {
@@ -161,8 +164,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "11.7%",
-            "left": "60.9%"
+            "top": "11.2%",
+            "left": "62.7%"
         },
     },
     {
@@ -172,21 +175,21 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "47.7%",
-            "left": "70.2%"
+            "top": "48.0%",
+            "left": "73.6%"
         },
     },
 
-    #Floor 4
+    #Floor 4E
         {
         "id": "192_168_68_126",
         "name": "PC Belakang 456",
         "ip": "192.168.68.126",
         "type": "cctv",
-        "floor_id": "floor_4",
+        "floor_id": "floor_4e",
         "position": {
-            "top": "64%",
-            "left": "68.6%"
+            "top": "55.4%",
+            "left": "61.6%"
         },
     },
 
