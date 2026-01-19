@@ -4,7 +4,7 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, g, render_template, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
@@ -232,6 +232,13 @@ def get_config():
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection"""
+    # FIX: Start the background task only on the first client connection
+    # This ensures the app is fully initialized before the thread starts.
+    global monitoring_started
+    with status_lock: # Use lock to prevent race conditions from multiple simultaneous connections
+        if not monitoring_started:
+            start_monitoring()
+
     print(f"[Socket.IO] Client connected: {request.sid}")
     print(f"   - Remote: {request.remote_addr}")
     print(f"   - User-Agent: {request.headers.get('User-Agent', 'Unknown')[:50]}")
@@ -295,10 +302,6 @@ def start_monitoring():
         print("Starting background monitoring...")
         print("="*60 + "\n")
         socketio.start_background_task(background_monitoring)
-
-# Auto-start monitoring ketika app dijalankan (baik dev maupun production)
-# IMPORTANT: harus jalan setelah socketio.init_app()
-start_monitoring()
 
 # --- REGISTER BLUEPRINTS ---
 app.register_blueprint(auth_bp, url_prefix='/auth')
