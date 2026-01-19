@@ -14,8 +14,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "68.2%",
-            "left": "60.6%"
+            "top": "64.5%",
+            "left": "67.2%"
         },
 
     },
@@ -26,8 +26,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "39.4%",
-            "left": "45%"
+            "top": "32.5%",
+            "left": "45.8%"
         },
     },
     {
@@ -37,8 +37,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "72.9%",
-            "left": "41.4%"
+            "top": "69.1%",
+            "left": "41.8%"
         },
     },
     {
@@ -48,8 +48,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "53.5%",
-            "left": "34.7%"
+            "top": "48.1%",
+            "left": "34.5%"
         },
     },
     {
@@ -59,8 +59,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "39.4%",
-            "left": "43%"
+            "top": "32.7%",
+            "left": "42.7%"
         },
     },
     {
@@ -70,8 +70,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "39.8%",
-            "left": "72.6%"
+            "top": "32.8%",
+            "left": "83.5%"
         },
     },
     {
@@ -81,8 +81,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_1",
         "position": {
-            "top": "48.8%",
-            "left": "41.4%"
+            "top": "40.2%",
+            "left": "40.0%"
         },
     },
 
@@ -95,8 +95,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "47.4%",
-            "left": "70.2%"
+            "top": "30.7%",
+            "left": "75.3%"
         },
     },
     {
@@ -106,8 +106,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "60.5%",
-            "left": "45.9%"
+            "top": "45.2%",
+            "left": "46.5%"
         },
     },
     {
@@ -117,8 +117,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "59.4%",
-            "left": "15.2%"
+            "top": "43.7%",
+            "left": "3.2%"
         },
     },
     {
@@ -128,8 +128,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "64.4%",
-            "left": "81.7%"
+            "top": "49.6%",
+            "left": "90.1%"
         },
     },
     {
@@ -139,8 +139,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "47.1%",
-            "left": "38.0%"
+            "top": "28.4%",
+            "left": "33.1%"
         },
     },
     {
@@ -150,8 +150,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "60.6%",
-            "left": "86.0%"
+            "top": "45.6%",
+            "left": "95.8%"
         },
     },
     {
@@ -161,8 +161,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "30.2%",
-            "left": "60.6%"
+            "top": "11.7%",
+            "left": "62.9%"
         },
     },
     {
@@ -172,8 +172,8 @@ DEVICES = [
         "type": "cctv",
         "floor_id": "floor_2",
         "position": {
-            "top": "62.9%",
-            "left": "69.2%"
+            "top": "48.1%",
+            "left": "73.4%"
         },
     },
 
