@@ -244,7 +244,7 @@ function setInitialFloorMap() {
             currentFloorTitle.textContent = config.floor_labels[currentFloor];
         }
         
-        const mapPath = '/' + config.floor_maps[currentFloor];
+        const mapPath = '/static/' + config.floor_maps[currentFloor];
         
         // Preload Image
         const img = new Image();

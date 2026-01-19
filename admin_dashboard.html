@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Devices</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Admin Dashboard</h1>
+        </div>
+        <div class="header-right">
+            {% if user %}
+                <span style="color: #a0aec0;">Welcome, <strong>{{ user.username }}</strong>!</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-delete">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+            {% endif %}
+            <a href="{{ url_for('index') }}" class="btn">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <!-- Form Section -->
+        <div class="form-section">
+            <h2>Add New Device</h2>
+            <form id="add-device-form">
+                <div class="form-group">
+                    <label for="name">Device Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="ip">IP Address</label>
+                    <input type="text" id="ip" name="ip" required>
+                </div>
+                <div class="form-group">
+                    <label for="type">Device Type</label>
+                    <select id="type" name="type" required>
+                        {% for type_id, type_info in device_types.items() %}
+                        <option value="{{ type_id }}">{{ type_info.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="floor_id">Floor</label>
+                    <select id="floor_id" name="floor_id" required>
+                        {% for floor_id, floor_label in floor_labels.items() %}
+                        <option value="{{ floor_id }}">{{ floor_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p style="color: #a0aec0; font-size: 14px; margin-bottom: 10px;">Click on the map to set coordinates automatically.</p>
+                <div class="form-group coord-group">
+                    <div>
+                        <label for="pos_top">Position Top (%)</label>
+                        <input type="number" id="pos_top" name="pos_top" step="0.01" required>
+                    </div>
+                    <div>
+                        <label for="pos_left">Position Left (%)</label>
+                        <input type="number" id="pos_left" name="pos_left" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Add Device</button>
+            </form>
+        </div>
+
+        <!-- Map Picker Section -->
+        <div class="map-section">
+            <h2>Click on Map to Get Coordinates</h2>
+            <div id="map-picker" data-url-template="{{ url_for('static', filename='__FILENAME__') }}">
+                <img id="map-picker-img" src="{{ url_for('static', filename=initial_map) }}" alt="Map">
+                <div id="click-marker"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-container list-section">
+        <div style="width: 100%;">
+            <h2>Device List</h2>
+            <table id="devices-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>IP</th>
+                        <th>Type</th>
+                        <th>Floor</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Pass floor maps config to JavaScript
+        const FLOOR_MAPS = {{ floor_maps|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

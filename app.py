@@ -47,6 +47,13 @@ def set_security_headers(response):
     response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     return response
 
+# --- CONTEXT PROCESSOR (Suntikkan variabel ke semua template) ---
+@app.context_processor
+def inject_user():
+    """Membuat 'g.user' tersedia di semua template."""
+    # g.user di-set oleh @auth_bp.before_app_request di auth.py
+    return dict(user=g.get('user', None))
+
 # --- SETTING SOCKET.IO ---
 # IMPORTANT: Untuk Gunicorn + Gevent (production)
 socketio = SocketIO(
