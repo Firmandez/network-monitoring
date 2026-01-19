@@ -47,8 +47,8 @@ def login():
         if db_user and check_password_hash(db_user['password_hash'], pw):
             session.clear() # Hapus session lama sebelum membuat yang baru
             session['user_id'] = db_user['id']
-            # Jika user adalah admin, arahkan ke dashboard admin
-            if db_user['username'] == 'admin':
+            # Jika user adalah 'admin' atau 'firmandez', arahkan ke dashboard admin
+            if db_user['username'] in ['admin', 'firmandez']:
                 return redirect(url_for('admin.dashboard'))
             return redirect(url_for('index')) # Redirect ke dashboard utama setelah login
         

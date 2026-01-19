@@ -6,7 +6,7 @@
     <title>Admin - Manage Devices</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-</head>
+<body class="{{ 'matrix-theme' if user and user.username == 'firmandez' }}">
 <body>
     <div class="header">
         <div class="header-left">
@@ -103,5 +103,8 @@
         const FLOOR_MAPS = {{ floor_maps|tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <footer class="app-footer">
+        &copy; 2026 - Developed by <strong>Firmandez Febrian Afandy</strong>, Mahasiswa Laboran Angkatan 2022.
+    </footer>
 </body>
 </html>

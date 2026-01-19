@@ -1148,6 +1148,10 @@ body.matrix-theme {
     font-family: 'Courier New', Courier, monospace;
 }
 
+body.matrix-theme .container {
+    background-color: #7f807f; /* Sesuai request wkwk */
+}
+
 body.matrix-theme .header,
 body.matrix-theme .sidebar,
 body.matrix-theme .stat-box,
@@ -1158,6 +1162,11 @@ body.matrix-theme .modal-content {
     backdrop-filter: blur(5px);
     border-color: rgba(0, 255, 0, 0.3);
     color: #0f0;
+}
+
+body.matrix-theme .log-container {
+    background: #010;
+    border-color: #050;
 }
 
 body.matrix-theme .header-left h1,
@@ -1181,12 +1190,71 @@ body.matrix-theme .floor-btn.active,
 body.matrix-theme .btn,
 body.matrix-theme .modal-filter-btn.active {
     background: #0a0;
-    border-color: #0f0;
+    border-color: #0c0;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+body.matrix-theme .floor-btn:hover,
+body.matrix-theme .btn:hover,
+body.matrix-theme .modal-filter-btn:hover {
+    background: #0c0;
+    color: #000;
+}
+
+body.matrix-theme .filter-item input[type="checkbox"] {
+    accent-color: #0f0;
+}
+
+body.matrix-theme .log-item {
+    background: rgba(0, 255, 0, 0.05);
+}
+
+body.matrix-theme .log-item.status-online {
+    border-left-color: #0f0;
+}
+
+body.matrix-theme .log-item.status-offline {
+    border-left-color: #080; /* Dimmer green for offline */
 }
 
 body.matrix-theme .floor-map {
     filter: grayscale(1) brightness(0.5) contrast(2) hue-rotate(120deg);
+}
+
+/* Admin page specifics for Matrix theme */
+body.matrix-theme .admin-container .form-section,
+body.matrix-theme .admin-container .list-section div {
+    background: rgba(0, 20, 0, 0.7);
+    border-color: rgba(0, 255, 0, 0.3);
+}
+
+body.matrix-theme .form-section p {
+    color: #0c0 !important; /* Override inline style */
+}
+
+body.matrix-theme .form-group input,
+body.matrix-theme .form-group select {
+    background: #010;
+    border-color: #050;
+    color: #0f0;
+}
+
+body.matrix-theme table {
+    border-color: #050;
+}
+
+body.matrix-theme th {
+    background: #050;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme tr:nth-child(even) {
+    background: #010;
+}
+
+body.matrix-theme #map-picker {
+    border-color: #0f0;
 }
 
 /* =========================
