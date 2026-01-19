@@ -187,29 +187,30 @@ def background_monitoring():
     # Create executor di dalam loop
     while True:
         try:
-            # AMBIL DEVICE TERBARU DARI DB SETIAP LOOP
-            current_devices = get_devices_from_db()
+            # FIX: Buat application context secara manual untuk background thread
+            with app.app_context():
+                # AMBIL DEVICE TERBARU DARI DB SETIAP LOOP
+                current_devices = get_devices_from_db()
 
-            # A. PING SEMUA DEVICE (Parallel 20 Thread)
-            with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
-                futures = []
-                for device in current_devices:
-                    future = executor.submit(check_single_device, device)
-                    futures.append(future)
+                # A. PING SEMUA DEVICE (Parallel 20 Thread)
+                with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
+                    futures = []
+                    for device in current_devices:
+                        future = executor.submit(check_single_device, device)
+                        futures.append(future)
+                    
+                    # Wait for all to complete
+                    for future in futures:
+                        try:
+                            future.result(timeout=10)
+                        except Exception as e:
+                            print(f"Ping error: {e}")
                 
-                # Wait for all to complete
-                for future in futures:
-                    try:
-                        future.result(timeout=10)
-                    except Exception as e:
-                        print(f"Ping error: {e}")
-            
-            # B. BROADCAST DATA via emit_update dengan data terbaru
-            emit_update(current_devices)
+                # B. BROADCAST DATA via emit_update dengan data terbaru
+                emit_update(current_devices)
             
             # C. Istirahat 5 detik
             socketio.sleep(5)
-            
         except Exception as e:
             print(f"Loop Error: {e}")
             socketio.sleep(10)
