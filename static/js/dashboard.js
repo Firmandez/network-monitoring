@@ -30,6 +30,12 @@ const fullscreenContainer = document.getElementById('fullscreen-container');
 const fullscreenGrid = document.getElementById('fullscreen-grid');
 const focusViewContainer = document.getElementById('focus-view-container');
 
+// Modal elements
+const deviceListModal = document.getElementById('device-list-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalBody = document.getElementById('modal-body');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
 // Stats elements
 const statTotal = document.getElementById('stat-total');
 const statOnline = document.getElementById('stat-online');
@@ -165,6 +171,21 @@ function setupButtonListeners() {
     const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    // Stat box listeners
+    const statTotalBox = document.querySelector('.header-right .stat-box:nth-child(1)');
+    const statOnlineBox = document.querySelector('.header-right .stat-box:nth-child(2)');
+    const statOfflineBox = document.querySelector('.header-right .stat-box:nth-child(3)');
+
+    if (statTotalBox) statTotalBox.addEventListener('click', () => showDeviceListModal('total'));
+    if (statOnlineBox) statOnlineBox.addEventListener('click', () => showDeviceListModal('online'));
+    if (statOfflineBox) statOfflineBox.addEventListener('click', () => showDeviceListModal('offline'));
+
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', hideDeviceListModal);
+    if (deviceListModal) deviceListModal.addEventListener('click', (e) => {
+        // Close modal if overlay is clicked, but not its content
+        if (e.target === deviceListModal) hideDeviceListModal();
+    });
 
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -628,6 +649,123 @@ function resetMapPosition() {
     translateX = 0;
     translateY = 0;
     updateMapTransform();
+}
+
+// --- MODAL FUNCTIONS ---
+function showDeviceListModal(status) {
+    if (!deviceListModal || !modalTitle || !modalBody) return;
+
+    let initialDevices = [];
+    let title = '';
+
+    switch (status) {
+        case 'online':
+            initialDevices = allDevices.filter(d => d.online);
+            title = 'Online Devices';
+            break;
+        case 'offline':
+            initialDevices = allDevices.filter(d => !d.online);
+            title = 'Offline Devices';
+            break;
+        case 'total':
+        default:
+            initialDevices = [...allDevices]; // Create a copy to sort
+            title = 'All Devices';
+            break;
+    }
+
+    modalTitle.textContent = `${title} (${initialDevices.length})`;
+    modalBody.innerHTML = ''; // Clear previous content
+
+    // 1. Create filter controls
+    const filterControls = document.createElement('div');
+    filterControls.className = 'modal-filter-controls';
+    
+    const deviceTypesInList = [...new Set(initialDevices.map(d => d.type))];
+
+    // Only show filters if there's more than one type and the list is not empty
+    if (deviceTypesInList.length > 1) {
+        // "All" button
+        const allBtn = document.createElement('button');
+        allBtn.className = 'modal-filter-btn active';
+        allBtn.textContent = `All (${initialDevices.length})`;
+        allBtn.dataset.type = 'all';
+        filterControls.appendChild(allBtn);
+
+        // Buttons for each type
+        deviceTypesInList.sort().forEach(type => {
+            const typeCount = initialDevices.filter(d => d.type === type).length;
+            const typeBtn = document.createElement('button');
+            typeBtn.className = 'modal-filter-btn';
+            typeBtn.textContent = `${config.device_types[type]?.label || type} (${typeCount})`;
+            typeBtn.dataset.type = type;
+            filterControls.appendChild(typeBtn);
+        });
+        modalBody.appendChild(filterControls);
+    }
+
+    // 2. Create list container
+    const listContainer = document.createElement('div');
+    modalBody.appendChild(listContainer);
+
+    // 3. Function to render the list
+    function renderList(devices) {
+        listContainer.innerHTML = ''; // Clear only the list
+        if (devices.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; color: #a0aec0;">No devices to show.</p>';
+            return;
+        }
+
+        const list = document.createElement('ul');
+        list.className = 'modal-device-list';
+
+        // Sort devices: offline first, then by name
+        devices.sort((a, b) => {
+            if (a.online !== b.online) return a.online ? 1 : -1;
+            return a.name.localeCompare(b.name);
+        });
+
+        devices.forEach(device => {
+            const item = document.createElement('li');
+            item.className = `modal-device-item ${device.online ? 'online' : 'offline'}`;
+            item.innerHTML = `
+                <div class="modal-device-info">
+                    <span class="modal-device-name">${device.name}</span>
+                    <span class="modal-device-ip">${device.ip}</span>
+                </div>
+                <a href="http://${device.ip}" target="_blank" class="btn" style="padding: 5px 10px; font-size: 12px;">Access</a>
+            `;
+            list.appendChild(item);
+        });
+        listContainer.appendChild(list);
+    }
+
+    // 4. Initial render
+    renderList(initialDevices);
+
+    // 5. Add event listeners to filter buttons
+    filterControls.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            // Deactivate all buttons
+            filterControls.querySelectorAll('.modal-filter-btn').forEach(btn => btn.classList.remove('active'));
+            // Activate clicked button
+            e.target.classList.add('active');
+
+            const filterType = e.target.dataset.type;
+            const filteredDevices = filterType === 'all'
+                ? initialDevices
+                : initialDevices.filter(d => d.type === filterType);
+            
+            renderList(filteredDevices);
+        }
+    });
+
+    deviceListModal.classList.add('show');
+}
+
+function hideDeviceListModal() {
+    if (!deviceListModal) return;
+    deviceListModal.classList.remove('show');
 }
 
 // Sidebar Toggle Function
