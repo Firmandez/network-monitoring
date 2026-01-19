@@ -350,7 +350,7 @@ function switchFloor(floorId) {
     floorMap.classList.remove('loaded');
     floorMap.style.opacity = '0.3';
     
-    const mapPath = '/' + config.floor_maps[floorId];
+    const mapPath = '/static/' + config.floor_maps[floorId];
     const img = new Image();
     img.onload = function() {
         floorMap.src = mapPath;
