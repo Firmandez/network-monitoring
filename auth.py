@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, g, url_for
 from werkzeug.security import check_password_hash
 from functools import wraps
+from psycopg2.extras import DictCursor
 
 # Import fungsi untuk mendapatkan koneksi DB per-request
 from db import get_db
@@ -25,33 +26,35 @@ def load_logged_in_user():
         g.user = None
     else:
         db = get_db()
-        cur = db.cursor()
+        cur = db.cursor(cursor_factory=DictCursor) # FIX: Use DictCursor to get dict-like rows
         cur.execute("SELECT id, username FROM users WHERE id = %s", (user_id,))
-        g.user = cur.fetchone()
+        g.user = cur.fetchone() # Now g.user will be a DictRow object
         cur.close()
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         user = request.form['username']
         pw = request.form['password']
 
         db = get_db()
-        cur = db.cursor()
-        cur.execute("SELECT id, password_hash FROM users WHERE username = %s", (user,))
-        row = cur.fetchone()
+        cur = db.cursor(cursor_factory=DictCursor)
+        cur.execute("SELECT * FROM users WHERE username = %s", (user,))
+        db_user = cur.fetchone()
         cur.close()
 
-        if row and check_password_hash(row[1], pw):
+        if db_user and check_password_hash(db_user['password_hash'], pw):
             session.clear() # Hapus session lama sebelum membuat yang baru
-            session['user_id'] = row[0]
+            session['user_id'] = db_user['id']
             # Jika user adalah admin, arahkan ke dashboard admin
-            if user == 'admin':
+            if db_user['username'] == 'admin':
                 return redirect(url_for('admin.dashboard'))
             return redirect(url_for('index')) # Redirect ke dashboard utama setelah login
-        return "Login gagal: Username atau password salah.", 401
+        
+        error = "Login gagal: Username atau password salah."
 
-    return render_template('login.html')
+    return render_template('login.html', error=error)
 
 @auth_bp.route('/logout')
 def logout():

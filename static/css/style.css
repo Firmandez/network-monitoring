@@ -1,5 +1,31 @@
 /* style.css - NOC Monitoring Dashboard Styles */
 
+/* =========================
+   GENERAL/REUSABLE CLASSES
+   ========================= */
+
+.btn {
+    background: #3498db;
+    color: #fff !important; /* Ensure text color is white */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-decoration: none; /* Remove underline from links styled as buttons */
+}
+
+.btn:hover {
+    background: #2980b9;
+}
+
+.btn-delete {
+    background: #e74c3c;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
 * {
     margin: 0;
     padding: 0;
@@ -1093,4 +1119,21 @@ button, .filter-item {
 
 .exit-fullscreen-btn:hover {
     background: #c0392b;
+}
+
+/* =========================
+   FOOTER / COPYRIGHT
+   ========================= */
+.app-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    color: #a0aec0; /* Sub Text color */
+    font-size: 13px;
+    border-top: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.app-footer strong {
+    color: #eeeeee;
+    font-weight: 600;
 }

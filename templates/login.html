@@ -1,5 +1,34 @@
-<form method="post">
-  <input name="username" placeholder="Username" required>
-  <input type="password" name="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NOC Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Admin Login</h1>
+            <p>Network Monitoring System</p>
+            <form method="POST">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login">Login</button>
+            </form>
+            {% if error %}
+                <div class="flash-error">{{ error }}</div>
+            {% endif %}
+        </div>
+    </div>
+    <footer class="app-footer">
+        &copy; 2026 - Developed by <strong>Firmandez Febrian Afandy</strong>, Mahasiswa Laboran Angkatan 2022.
+    </footer>
+</body>
+</html>

@@ -1,0 +1,111 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0A2A4A;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    min-height: 100vh;
+    margin: 0;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    flex-grow: 1; /* Make this container take up available space */
+}
+
+.login-box {
+    background: rgba(15, 52, 96, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-box h1 {
+    color: #eeeeee;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.login-box p {
+    color: #a0aec0;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #1e4d7b;
+    background: #0f3460;
+    color: #fff;
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-login:hover {
+    background: #2980b9;
+}
+
+.flash-error {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid #e74c3c;
+    color: #f1948a;
+    border-radius: 8px;
+}
+
+.app-footer {
+    text-align: center;
+    padding: 20px;
+    color: #a0aec0;
+    font-size: 13px;
+    width: 100%;
+}
+
+.app-footer strong {
+    color: #eeeeee;
+    font-weight: 600;
+}
