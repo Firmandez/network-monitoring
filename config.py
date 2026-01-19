@@ -151,7 +151,7 @@ DEVICES = [
         "floor_id": "floor_2",
         "position": {
             "top": "45.4%",
-            "left": "89.5%%"
+            "left": "89.5%"
         },
     },
     {
@@ -179,7 +179,7 @@ DEVICES = [
 
     #Floor 4
         {
-        "id": "192_168_20_28",
+        "id": "192_168_68_126",
         "name": "PC Belakang 456",
         "ip": "192.168.68.126",
         "type": "cctv",

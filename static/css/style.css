@@ -280,6 +280,7 @@ button, .filter-item {
     padding: 25px;
     display: flex; /* Jadikan flex container */
     flex-direction: column; /* Tumpuk elemen di dalamnya secara vertikal */
+    min-width: 0; /* FIX: Mencegah konten map meluap saat window menyempit */
 }
 
 .map-header {
@@ -743,8 +744,11 @@ button, .filter-item {
     /* Main content */
     .container { flex-direction: column; min-height: auto; }
     .main-content { padding: 15px; }
-    .map-container { min-height: 450px; touch-action: none; /* Enable touch zoom */ }
-    .map-content { cursor: grab; }
+    .map-container { min-height: 450px; touch-action: none; /* Enable touch zoom */ }    
+    .map-content { 
+        cursor: grab; 
+        aspect-ratio: unset; /* FIX: Biarkan map beradaptasi di mobile, jangan paksa 16:9 */
+    }
     .map-content:active { cursor: grabbing; }
 
     /* Device dots - larger for touch */
