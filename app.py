@@ -201,7 +201,7 @@ def get_config():
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection"""
-    print(f"✅ [Socket.IO] Client connected: {request.sid}")
+    print(f"[Socket.IO] Client connected: {request.sid}")
     print(f"   - Remote: {request.remote_addr}")
     print(f"   - User-Agent: {request.headers.get('User-Agent', 'Unknown')[:50]}")
     # Broadcast initial data
@@ -210,12 +210,12 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     """Handle client disconnect"""
-    print(f"❌ [Socket.IO] Client disconnected: {request.sid}")
+    print(f"[Socket.IO] Client disconnected: {request.sid}")
 
 @socketio.on('connect_error')
 def handle_connect_error(data):
     """Handle connection error"""
-    print(f"⚠️ [Socket.IO] Connection error: {data}")
+    print(f"[Socket.IO] Connection error: {data}")
 
 def emit_update():
     """Emit data update to all connected clients"""
@@ -255,7 +255,7 @@ def start_monitoring():
     if not monitoring_started:
         monitoring_started = True
         print("\n" + "="*60)
-        print("🚀 Starting background monitoring...")
+        print("Starting background monitoring...")
         print("="*60 + "\n")
         socketio.start_background_task(background_monitoring)
 

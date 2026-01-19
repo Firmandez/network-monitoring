@@ -48,14 +48,14 @@ function setupSocketListeners() {
 
     // 1. Connect
     socket.on('connect', () => {
-        console.log("✅ Terhubung ke Server Real-Time!");
+        console.log("Terhubung ke Server Real-Time!");
         console.log('Transport:', socket.io.engine.transport.name); // Debug: lihat transport yang dipakai
         if(lastUpdateSpan) lastUpdateSpan.style.color = '#2ecc71';
     });
 
     // 2. Disconnect
     socket.on('disconnect', () => {
-        console.log("❌ Koneksi Putus!");
+        console.log("Koneksi Putus!");
         if(lastUpdateSpan) {
             lastUpdateSpan.textContent = "Connection Lost...";
             lastUpdateSpan.style.color = 'red';
@@ -74,7 +74,7 @@ function setupSocketListeners() {
 function onUpdateData(data) {
     // A. Simpan Data Device
     allDevices = data.devices; 
-    console.log(`📡 Data Masuk: ${allDevices.length} devices`);
+    console.log(`Data Masuk: ${allDevices.length} devices`);
     console.log('First device:', allDevices[0]); // DEBUG: lihat struktur data
 
     // B. Update Stats Global
@@ -371,7 +371,7 @@ function renderDevices() {
     console.log('renderDevices called. Container:', deviceDotsContainer, 'Devices:', allDevices.length);
     
     if (!deviceDotsContainer) {
-        console.error('❌ Device dots container not found!');
+        console.error('Device dots container not found!');
         return;
     }
     
@@ -413,7 +413,7 @@ function renderDevices() {
         }
     });
     
-    console.log(`✅ Rendered ${filteredDevices.length} device dots`);
+    console.log(`Rendered ${filteredDevices.length} device dots`);
 }
 
 // Render Devices for Focus View (uses main .device-dot style)

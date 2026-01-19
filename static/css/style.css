@@ -662,7 +662,6 @@ button, .filter-item {
     font-weight: 600;
     transition: all 0.3s;
     box-shadow: 0 4px 12px rgba(127, 140, 141, 0.3);
-    display: none; /* Hidden by default, shown on mobile */
 }
 
 .sidebar-toggle-btn:hover {
@@ -787,6 +786,7 @@ button, .filter-item {
 
 /* Desktop Styles (above 768px) */
 @media (min-width: 769px) {
+    .sidebar-toggle-btn { display: none; }
     .desktop-tip { display: inline; }
     .mobile-tip { display: none; }
 }
