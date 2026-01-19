@@ -8,8 +8,8 @@ load_dotenv()
 # --- KONFIGURASI ---
 # Baca dari environment variable, atau gunakan default jika tidak ada.
 # Ini memungkinkan pengaturan password yang lebih aman di production.
-ADMIN_USERNAME = os.getenv("ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASS", "laboranfti")
+ADMIN_USERNAME = os.getenv("ADMIN_USER", "firmandez") # Ganti dengan username-mu
+ADMIN_PASSWORD = os.getenv("ADMIN_PASS", "passwordrahasia") # Ganti dengan password-mu
 
 conn = None
 cur = None

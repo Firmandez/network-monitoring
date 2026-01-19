@@ -10,7 +10,7 @@
     <!-- Socket.IO CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</head>
+<body class="{{ 'matrix-theme' if user and user.username == 'firmandez' }}">
 <body>
     <!-- Global Status Header -->
     <header class="header">

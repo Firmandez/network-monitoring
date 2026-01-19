@@ -1140,6 +1140,56 @@ button, .filter-item {
 }
 
 /* =========================
+   EASTER EGG: MATRIX THEME
+   ========================= */
+body.matrix-theme {
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+body.matrix-theme .header,
+body.matrix-theme .sidebar,
+body.matrix-theme .stat-box,
+body.matrix-theme .log-panel,
+body.matrix-theme .map-info,
+body.matrix-theme .modal-content {
+    background: rgba(0, 20, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-color: rgba(0, 255, 0, 0.3);
+    color: #0f0;
+}
+
+body.matrix-theme .header-left h1,
+body.matrix-theme h2,
+body.matrix-theme h3,
+body.matrix-theme .stat-value,
+body.matrix-theme .modal-header h2 {
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme .subtitle,
+body.matrix-theme .stat-label,
+body.matrix-theme .last-update,
+body.matrix-theme .log-timestamp,
+body.matrix-theme .app-footer {
+    color: #0c0;
+}
+
+body.matrix-theme .floor-btn.active,
+body.matrix-theme .btn,
+body.matrix-theme .modal-filter-btn.active {
+    background: #0a0;
+    border-color: #0f0;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+body.matrix-theme .floor-map {
+    filter: grayscale(1) brightness(0.5) contrast(2) hue-rotate(120deg);
+}
+
+/* =========================
    MODAL (Device List)
    ========================= */
 .modal-overlay {
