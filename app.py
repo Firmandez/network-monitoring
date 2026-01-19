@@ -240,12 +240,17 @@ def handle_connect_error(data):
     """Handle connection error"""
     print(f"[Socket.IO] Connection error: {data}")
 
-def emit_update(current_devices):
+def emit_update(current_devices=None):
     """Emit data update to all connected clients"""
     devices_data = []
     total_online = 0
     total_offline = 0
     
+    # FIX: Jika fungsi dipanggil tanpa argumen (misal saat koneksi baru),
+    # ambil sendiri data device dari database.
+    if current_devices is None:
+        current_devices = get_devices_from_db()
+
     with status_lock:
         for device in current_devices:
             d_stat = device_status.get(device['id'], {'online': False})
