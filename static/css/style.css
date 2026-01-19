@@ -1370,6 +1370,10 @@ body.matrix-theme td {
     border-color: #050;
 }
 
+body.matrix-theme tr:nth-child(even) {
+    background: #010; /* Dark green for alternating rows */
+}
+
 body.matrix-theme #map-picker {
     border-color: #0f0;
 }
