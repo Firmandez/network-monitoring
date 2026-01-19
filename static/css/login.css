@@ -5,6 +5,7 @@ body {
     display: flex;
     flex-direction: column; /* Stack items vertically */
     height: 100vh; /* Use fixed height to prevent overflow */
+    justify-content: center; /* Center content vertically */
     margin: 0;
     overflow: hidden; /* Hide any potential scrollbars */
 }

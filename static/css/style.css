@@ -1,6 +1,15 @@
 /* style.css - NOC Monitoring Dashboard Styles */
 
 /* =========================
+   CSS VARIABLES
+   ========================= */
+:root {
+    --scrollbar-track-bg: #0f3460;
+    --scrollbar-thumb-bg: #3498db;
+    --scrollbar-thumb-hover-bg: #2980b9;
+}
+
+/* =========================
    GENERAL/REUSABLE CLASSES
    ========================= */
 
@@ -664,16 +673,16 @@ button, .filter-item {
 }
 
 ::-webkit-scrollbar-track {
-    background: #0f3460; /* Warna track yang gelap dan konsisten */
+    background: var(--scrollbar-track-bg); /* Warna track yang gelap dan konsisten */
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #3498db; /* Warna thumb yang kontras */
+    background: var(--scrollbar-thumb-bg); /* Warna thumb yang kontras */
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #2980b9; /* Warna saat di-hover langsung */
+    background: var(--scrollbar-thumb-hover-bg); /* Warna saat di-hover langsung */
 }
 
 /* 2. Auto-hiding Scrollbar (untuk container spesifik seperti sidebar & log) */
@@ -1157,6 +1166,11 @@ body.matrix-theme {
     background-color: #000; /* True matrix black */
     color: #0f0;
     font-family: 'Courier New', Courier, monospace;
+
+    /* CSS Variable Overrides for Matrix Theme */
+    --scrollbar-track-bg: #010;
+    --scrollbar-thumb-bg: #0a0;
+    --scrollbar-thumb-hover-bg: #0f0;
 }
 
 body.matrix-theme .header,
@@ -1320,6 +1334,10 @@ body.matrix-theme .floor-grid-dot.offline {
 }
 
 /* Admin page specifics for Matrix theme */
+body.matrix-theme .admin-container h2 {
+    border-bottom-color: #0f0;
+}
+
 body.matrix-theme .admin-container .form-section,
 body.matrix-theme .admin-container .list-section div {
     background: rgba(0, 20, 0, 0.7);
@@ -1342,13 +1360,14 @@ body.matrix-theme table {
 }
 
 body.matrix-theme th {
+    border-color: #050;
     background: #050;
     color: #0f0;
     text-shadow: 0 0 5px #0f0;
 }
 
-body.matrix-theme tr:nth-child(even) {
-    background: #010;
+body.matrix-theme td {
+    border-color: #050;
 }
 
 body.matrix-theme #map-picker {

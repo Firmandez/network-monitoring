@@ -1027,7 +1027,7 @@ function enterFocusMode(floorId) {
 
     focusCloseBtn.addEventListener('click', exitFocusMode);
 
-    focusFloorMap.src = '/' + config.floor_maps[floorId];
+    focusFloorMap.src = '/static/' + config.floor_maps[floorId];
     renderFocusViewDevices(floorId, focusDotsContainer);
 
     destroyFocusMapListeners = setupFocusMapInteraction(focusMapContainer, focusMapContent);
