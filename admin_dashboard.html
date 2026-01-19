@@ -13,8 +13,13 @@
             <h1>Admin Dashboard</h1>
         </div>
         <div class="header-right">
+            {% if user %}
+                <span style="color: #a0aec0;">Welcome, <strong>{{ user.username }}</strong>!</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-delete">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+            {% endif %}
             <a href="{{ url_for('index') }}" class="btn">Back to Dashboard</a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-delete">Logout</a>
         </div>
     </div>
 
@@ -96,7 +101,7 @@
     <script>
         // Pass floor maps config to JavaScript
         const FLOOR_MAPS = {{ floor_maps|tojson }};
-    </script> 
-    <script src="{{ url_for('static', filename='js/admin.js') }}"></script> 
+    </script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>,
 </body>
 </html>
