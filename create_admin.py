@@ -6,10 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- KONFIGURASI ---
-# Baca dari environment variable, atau gunakan default jika tidak ada.
-# Ini memungkinkan pengaturan password yang lebih aman di production.
-ADMIN_USERNAME = os.getenv("ADMIN_USER", "firmandez") # Ganti dengan username-mu
-ADMIN_PASSWORD = os.getenv("ADMIN_PASS", "alkhemix") # Ganti dengan password-mu
+# Daftar user yang akan dibuat atau di-update
+# Format: (username, password)
+USERS_TO_CREATE = [
+    ("admin", "laboranfti"),
+    ("firmandez", "alkhemix")
+]
 
 conn = None
 cur = None
@@ -22,24 +24,25 @@ try:
     )
     cur = conn.cursor()
 
-    print(f"Membuat atau memperbarui user: {ADMIN_USERNAME}")
+    for username, password in USERS_TO_CREATE:
+        print(f"Membuat atau memperbarui user: {username}")
 
-    if not ADMIN_PASSWORD:
-        raise ValueError("ADMIN_PASS environment variable tidak boleh kosong.")
+        if not password:
+            print(f"⚠️  Password untuk user '{username}' kosong, user dilewati.")
+            continue
 
-    # Hash password
-    password_hash = generate_password_hash(ADMIN_PASSWORD)
+        # Hash password
+        password_hash = generate_password_hash(password)
 
-    # Masukkan ke database
-    # ON CONFLICT memastikan jika user sudah ada, passwordnya akan di-update.
-    cur.execute(
-        "INSERT INTO users (username, password_hash) VALUES (%s, %s) ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;",
-        (ADMIN_USERNAME, password_hash)
-    )
+        # Masukkan ke database
+        # ON CONFLICT memastikan jika user sudah ada, passwordnya akan di-update.
+        cur.execute(
+            "INSERT INTO users (username, password_hash) VALUES (%s, %s) ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;",
+            (username, password_hash)
+        )
 
     conn.commit()
-
-    print("✅ User admin berhasil dibuat/diperbarui.")
+    print(f"\n✅ {len(USERS_TO_CREATE)} user berhasil diproses.")
 
 except Exception as e:
     print(f"❌ Gagal membuat user: {e}")
