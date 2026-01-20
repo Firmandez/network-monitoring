@@ -16,12 +16,12 @@ try:
     )
     cur = conn.cursor()
 
-    # Hapus tabel lama jika ada (dengan CASCADE untuk mengatasi dependensi)
-    print("Menghapus tabel lama (jika ada)...")
-    cur.execute("""
-    DROP TABLE IF EXISTS device_status, devices, users CASCADE;
-    """)
-    print("Tabel lama berhasil dihapus.")
+    # ==============================================================================
+    # Skrip ini dirancang untuk aman dijalankan berulang kali.
+    # Perintah `CREATE TABLE IF NOT EXISTS` memastikan tabel hanya dibuat jika belum ada.
+    # TIDAK ADA perintah `DROP TABLE` untuk mencegah kehilangan data.
+    # ==============================================================================
+    print("Memeriksa dan membuat tabel jika diperlukan...")
 
     # Create users table
     cur.execute("""
@@ -55,6 +55,17 @@ try:
         device_id VARCHAR(255) PRIMARY KEY REFERENCES devices(id) ON DELETE CASCADE,
         online BOOLEAN NOT NULL,
         last_checked TIMESTAMP WITH TIME ZONE
+    );
+    """)
+
+    # Create event_logs table for persistent history
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS event_logs (
+        id SERIAL PRIMARY KEY,
+        device_id VARCHAR(255) NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+        status VARCHAR(10) NOT NULL,
+        message TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     """)
     print("Tabel-tabel dasar berhasil dibuat.")
