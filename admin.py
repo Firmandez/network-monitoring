@@ -82,20 +82,60 @@ def add_device():
         db.rollback()
         return jsonify({"error": f"Database error: {e}"}), 500
 
-@admin_bp.route('/api/devices/<string:device_id>', methods=['DELETE'])
+@admin_bp.route('/api/devices/<string:device_id>', methods=['GET', 'PUT', 'DELETE'])
 @login_required
-def delete_device(device_id):
-    """API endpoint untuk menghapus device."""
-    try:
-        db = get_db()
+def handle_device(device_id):
+    """API endpoint untuk GET, UPDATE, atau DELETE satu device."""
+    db = get_db()
+
+    # --- GET ---
+    if request.method == 'GET':
         cur = db.cursor()
-        cur.execute("DELETE FROM devices WHERE id = %s", (device_id,))
-        db.commit()
-        
-        if cur.rowcount == 0:
+        cur.execute("SELECT id, name, ip, type, floor_id, pos_top, pos_left, is_active FROM devices WHERE id = %s", (device_id,))
+        row = cur.fetchone()
+        cur.close()
+        if not row:
             return jsonify({"error": "Device tidak ditemukan"}), 404
-            
-        return jsonify({"message": "Device berhasil dihapus"}), 200
-    except psycopg2.Error as e:
-        db.rollback()
-        return jsonify({"error": f"Database error: {e}"}), 500
+        device = {
+            "id": row[0], "name": row[1], "ip": str(row[2]), "type": row[3],
+            "floor_id": row[4], "pos_top": float(row[5]), "pos_left": float(row[6]),
+            "is_active": row[7]
+        }
+        return jsonify(device)
+
+    # --- PUT (UPDATE) ---
+    if request.method == 'PUT':
+        data = request.get_json()
+        required_fields = ['name', 'ip', 'type', 'floor_id', 'pos_top', 'pos_left', 'is_active']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Data tidak lengkap"}), 400
+        try:
+            cur = db.cursor()
+            cur.execute(
+                "UPDATE devices SET name = %s, ip = %s, type = %s, floor_id = %s, pos_top = %s, pos_left = %s, is_active = %s WHERE id = %s;",
+                (data['name'], data['ip'], data['type'], data['floor_id'], data['pos_top'], data['pos_left'], data['is_active'], device_id)
+            )
+            db.commit()
+            if cur.rowcount == 0: return jsonify({"error": "Device tidak ditemukan untuk diupdate"}), 404
+            cur.close()
+            return jsonify({"message": "Device berhasil diperbarui"}), 200
+        except IntegrityError as e:
+            db.rollback()
+            if 'devices_ip_key' in str(e): return jsonify({"error": f"IP address '{data['ip']}' sudah terdaftar untuk device lain."}), 409
+            return jsonify({"error": f"Database integrity error: {e}"}), 500
+        except psycopg2.Error as e:
+            db.rollback()
+            return jsonify({"error": f"Database error: {e}"}), 500
+
+    # --- DELETE ---
+    if request.method == 'DELETE':
+        try:
+            cur = db.cursor()
+            cur.execute("DELETE FROM devices WHERE id = %s", (device_id,))
+            db.commit()
+            if cur.rowcount == 0: return jsonify({"error": "Device tidak ditemukan"}), 404
+            cur.close()
+            return jsonify({"message": "Device berhasil dihapus"}), 200
+        except psycopg2.Error as e:
+            db.rollback()
+            return jsonify({"error": f"Database error: {e}"}), 500
