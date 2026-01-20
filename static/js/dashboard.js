@@ -25,6 +25,8 @@ const deviceDotsContainer = document.getElementById('device-dots-container');
 const currentFloorTitle = document.getElementById('current-floor-title');
 const lastUpdateSpan = document.getElementById('last-update');
 const logContainer = document.getElementById('log-container');
+const clearLogsBtn = document.getElementById('clear-logs-btn');
+const refreshLogBtn = document.getElementById('refresh-log-btn');
 
 const fullscreenContainer = document.getElementById('fullscreen-container');
 const fullscreenGrid = document.getElementById('fullscreen-grid');
@@ -198,6 +200,27 @@ function setupButtonListeners() {
     }
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', toggleSidebar);
+    }
+
+    // Add listeners for log buttons
+    if (clearLogsBtn) {
+        clearLogsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all activity logs from memory?')) {
+                socket.emit('clear_logs');
+            }
+        });
+    }
+
+    if (refreshLogBtn) {
+        refreshLogBtn.addEventListener('click', () => {
+            // Meminta server mengirim ulang data terbaru
+            socket.emit('request_update');
+            // Beri feedback visual sederhana
+            refreshLogBtn.textContent = 'Refreshing...';
+            setTimeout(() => {
+                refreshLogBtn.textContent = 'Refresh';
+            }, 1000);
+        });
     }
 }
 

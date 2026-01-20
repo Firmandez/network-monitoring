@@ -9,7 +9,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
 import psycopg2
-from concurrent.futures import ThreadPoolExecutor
+from psycopg2.extras import DictCursor, execute_batch
+import concurrent.futures
 import threading
 import subprocess
 import platform
@@ -101,7 +102,7 @@ app.teardown_appcontext(close_db)
 def get_devices_from_db():
     """Mengambil semua device aktif dari database."""
     db = get_db()
-    cur = db.cursor()
+    cur = db.cursor(cursor_factory=DictCursor)
     cur.execute("SELECT id, name, ip, type, floor_id, pos_top, pos_left FROM devices WHERE is_active = TRUE ORDER BY name")
     rows = cur.fetchall()
     cur.close()
@@ -109,12 +110,12 @@ def get_devices_from_db():
     devices = []
     for row in rows:
         devices.append({
-            "id": row[0], # ID sekarang integer dari DB
-            "name": row[1],
-            "ip": str(row[2]), # Konversi tipe INET ke string
-            "type": row[3],
-            "floor_id": row[4],
-            "position": { "top": f"{row[5]}%", "left": f"{row[6]}%" }
+            "id": row['id'],
+            "name": row['name'],
+            "ip": str(row['ip']),
+            "type": row['type'],
+            "floor_id": row['floor_id'],
+            "position": { "top": f"{row['pos_top']}%", "left": f"{row['pos_left']}%" }
         })
     return devices
 
@@ -145,71 +146,82 @@ def ping_device(ip):
         print(f"⚠️ Ping Error ({ip}): {e}")
         return False
 
-# --- WORKER BUAT NGECEK 1 DEVICE ---
-def check_single_device(device):
-    try:
-        device_id = device['id']
-        is_online = ping_device(device['ip'])
-        
-        with status_lock:
-            # Cek status lama
-            status_info = device_status.get(device_id, {'online': False})
-            old_status = status_info.get('online', False)
-            
-            # Simpan status baru
-            device_status[device_id] = {
-                'online': is_online,
-                'last_checked': datetime.now()
-            }
-            
-            # LOGIC LOGGING
-            if device_id in device_status and old_status != is_online:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                status_text = "Online" if is_online else "Offline"
-                log_entry = {
-                    "timestamp": timestamp,
-                    "device": device['name'],
-                    "status": status_text,
-                    "message": f"{device['name']} is now {status_text}"
-                }
-                event_logs.insert(0, log_entry)
-                if len(event_logs) > 20: event_logs.pop() # Simpan 20 log terakhir
-                
-                print(f"{device['name']} -> {status_text}")
-
-    except Exception as e:
-        print(f"Error checking {device['name']}: {e}")
-
 # --- BACKGROUND TASK ---
 def background_monitoring():
     print("Monitoring Service Started (Threading Mode)...")
     
-    # Create executor di dalam loop
     while True:
         try:
-            # FIX: Buat application context secara manual untuk background thread
             with app.app_context():
-                # AMBIL DEVICE TERBARU DARI DB SETIAP LOOP
-                current_devices = get_devices_from_db()
+                db = get_db()
+                cur = db.cursor(cursor_factory=DictCursor)
 
-                # A. PING SEMUA DEVICE (Parallel 20 Thread)
-                with ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
-                    futures = []
-                    for device in current_devices:
-                        future = executor.submit(check_single_device, device)
-                        futures.append(future)
-                    
-                    # Wait for all to complete
-                    for future in futures:
+                # 1. Ambil semua device aktif dari DB
+                current_devices = get_devices_from_db()
+                device_map = {d['id']: d for d in current_devices}
+
+                # 2. Ambil status terakhir dari tabel device_status
+                cur.execute("SELECT device_id, online FROM device_status")
+                old_statuses_db = {row['device_id']: row['online'] for row in cur.fetchall()}
+
+                # 3. Ping semua device secara paralel
+                ping_results = {}
+                with concurrent.futures.ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
+                    future_to_device = {executor.submit(ping_device, d['ip']): d for d in current_devices}
+                    for future in concurrent.futures.as_completed(future_to_device):
+                        device = future_to_device[future]
                         try:
-                            future.result(timeout=10)
-                        except Exception as e:
-                            print(f"Ping error: {e}")
+                            ping_results[device['id']] = future.result()
+                        except Exception as exc:
+                            print(f"Error pinging {device['name']}: {exc}")
+                            ping_results[device['id']] = False
+
+                # 4. Proses hasil, bandingkan status, dan siapkan update
+                db_updates = []
+                with status_lock:
+                    for device_id, is_online in ping_results.items():
+                        # Default ke status berlawanan untuk memastikan log/update pertama kali
+                        old_status = old_statuses_db.get(device_id, not is_online)
+
+                        # Update cache di memori untuk emit_update()
+                        device_status[device_id] = {'online': is_online, 'last_checked': datetime.now()}
+
+                        # Jika status berubah, buat log dan siapkan update DB
+                        if old_status != is_online:
+                            device_name = device_map[device_id]['name']
+                            db_updates.append((device_id, is_online, datetime.now()))
+
+                            # Buat log entry
+                            status_text = "Online" if is_online else "Offline"
+                            log_entry = {
+                                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "device": device_name,
+                                "status": status_text,
+                                "message": f"{device_name} is now {status_text}"
+                            }
+                            event_logs.insert(0, log_entry)
+                            if len(event_logs) > 100: event_logs.pop() # Keep last 100 logs in memory
+                            
+                            print(f"{device_name} -> {status_text}")
+
+                # 5. Lakukan batch update ke database jika ada perubahan
+                if db_updates:
+                    upsert_query = """
+                        INSERT INTO device_status (device_id, online, last_checked)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (device_id) DO UPDATE SET
+                            online = EXCLUDED.online,
+                            last_checked = EXCLUDED.last_checked;
+                    """
+                    execute_batch(cur, upsert_query, db_updates)
+                    db.commit()
                 
-                # B. BROADCAST DATA via emit_update dengan data terbaru
+                cur.close()
+
+                # 6. Broadcast data terbaru ke semua client
                 emit_update(current_devices)
             
-            # C. Istirahat 5 detik
+            # 7. Istirahat sebelum loop berikutnya
             socketio.sleep(5)
         except Exception as e:
             print(f"Loop Error: {e}")
@@ -250,6 +262,23 @@ def handle_disconnect():
     """Handle client disconnect"""
     print(f"[Socket.IO] Client disconnected: {request.sid}")
 
+@socketio.on('clear_logs')
+@login_required
+def handle_clear_logs():
+    """Clears the in-memory event logs. Only logged-in users can do this."""
+    with status_lock:
+        event_logs.clear()
+    print(f"Event logs cleared by user: {g.user['username']}")
+    # Broadcast an update to all clients to refresh their log view
+    emit_update()
+
+@socketio.on('request_update')
+def handle_request_update():
+    """Forces a data refresh when a client clicks the refresh button."""
+    print(f"Client {request.sid} requested a manual update.")
+    # emit_update() will send fresh data to all connected clients.
+    emit_update()
+
 @socketio.on('connect_error')
 def handle_connect_error(data):
     """Handle connection error"""
@@ -287,7 +316,7 @@ def emit_update(current_devices=None):
             'online': total_online,
             'offline': total_offline
         },
-        'logs': event_logs[:10],
+        'logs': event_logs, # Send all logs, let frontend decide how many to show
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     

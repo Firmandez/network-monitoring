@@ -50,22 +50,21 @@ def add_device():
     data = request.get_json()
     
     # Validasi sederhana
-    required_fields = ['name', 'ip', 'type', 'floor_id', 'pos_top', 'pos_left']
+    required_fields = ['name', 'ip', 'type', 'floor_id', 'pos_top', 'pos_left', 'is_active']
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Data tidak lengkap"}), 400
 
     # Generate ID from IP address (dots replaced with underscores)
     new_id = data['ip'].replace('.', '_')
-
     try:
         db = get_db()
         cur = db.cursor()
-        cur.execute(
-            """
-            INSERT INTO devices (id, name, ip, type, floor_id, pos_top, pos_left)
-            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        # FIX: Tambahkan is_active ke dalam statement INSERT
+        cur.execute("""
+            INSERT INTO devices (id, name, ip, type, floor_id, pos_top, pos_left, is_active)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
             """,
-            (new_id, data['name'], data['ip'], data['type'], data['floor_id'], data['pos_top'], data['pos_left'])
+            (new_id, data['name'], data['ip'], data['type'], data['floor_id'], data['pos_top'], data['pos_left'], data['is_active'])
         )
         db.commit()
         cur.close()
