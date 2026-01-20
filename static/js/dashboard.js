@@ -516,12 +516,26 @@ const tooltip = document.getElementById('tooltip');
 function showTooltip(device, event) {
     if (!tooltip) return;
 
+    // Tambahkan class status ke tooltip utama untuk styling (misal: border color)
+    tooltip.className = 'tooltip'; // Reset class dulu
+    tooltip.classList.add(device.online ? 'status-online' : 'status-offline');
+
+    const statusText = device.online ? 'Online' : 'Offline';
+    const statusClass = device.online ? 'online' : 'offline';
+
     tooltip.innerHTML = `
-        <strong>${device.name}</strong><br>
-        IP: ${device.ip}<br>
-        Type: ${config.device_types[device.type].label}<br>
-        Status: ${device.online ? 'Online' : 'Offline'}<br>
-        Floor: ${config.floor_labels[device.floor_id]}
+        <strong>
+            <span class="tooltip-type">${config.device_types[device.type].label}</span>
+            ${device.name}
+        </strong>
+        <div class="tooltip-body">
+            IP: ${device.ip}<br>
+            Status: <span class="status-indicator ${statusClass}">${statusText}</span><br>
+            Floor: ${config.floor_labels[device.floor_id]}
+        </div>
+        <div class="tooltip-meta">
+            Last Checked: ${device.last_checked || 'N/A'}
+        </div>
     `;
 
     tooltip.classList.add('show');

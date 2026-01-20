@@ -298,15 +298,20 @@ def emit_update(current_devices=None):
 
     with status_lock:
         for device in current_devices:
-            d_stat = device_status.get(device['id'], {'online': False})
+            # Add a default for last_checked to prevent errors if a device is new
+            d_stat = device_status.get(device['id'], {'online': False, 'last_checked': None})
             is_online = d_stat['online']
             
             if is_online: total_online += 1
             else: total_offline += 1
             
+            # Format the timestamp into a readable string
+            last_checked_str = d_stat['last_checked'].strftime("%Y-%m-%d %H:%M:%S") if d_stat['last_checked'] else "N/A"
+
             devices_data.append({
                 **device,
-                'online': is_online
+                'online': is_online,
+                'last_checked': last_checked_str # Tambahkan field ini
             })
 
     packet = {
