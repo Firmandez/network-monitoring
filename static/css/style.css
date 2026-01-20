@@ -1328,6 +1328,39 @@ body.matrix-theme .log-item.status-offline {
     border-left-color: #080; /* Dimmer green for offline */
 }
 
+/* Tooltip overrides for Matrix Theme */
+body.matrix-theme .tooltip {
+    background: rgba(0, 20, 0, 0.9);
+    border-color: rgba(0, 255, 0, 0.4);
+    backdrop-filter: blur(5px);
+}
+
+body.matrix-theme .tooltip.status-online {
+    border-color: rgba(0, 255, 0, 0.6); /* Brighter green border for online */
+}
+body.matrix-theme .tooltip.status-offline {
+    border-color: rgba(0, 128, 0, 0.5); /* Dimmer green border for offline */
+}
+
+body.matrix-theme .tooltip .tooltip-type {
+    color: #0c0;
+}
+
+body.matrix-theme .tooltip strong {
+    color: #0f0;
+    border-bottom-color: rgba(0, 255, 0, 0.2);
+}
+
+body.matrix-theme .tooltip .status-indicator.online,
+body.matrix-theme .tooltip .status-indicator.online::before {
+    color: #0f0; background-color: #0f0; box-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme .tooltip .status-indicator.offline,
+body.matrix-theme .tooltip .status-indicator.offline::before {
+    color: #0a0; background-color: #0a0; box-shadow: 0 0 5px #0a0;
+}
+
 body.matrix-theme .floor-map {
     filter: grayscale(1) brightness(0.5) contrast(2) hue-rotate(120deg);
 }
@@ -1430,6 +1463,11 @@ body.matrix-theme .form-group select {
     background: #010;
     border-color: #050;
     color: #0f0;
+}
+
+body.matrix-theme .form-group input[type="checkbox"] {
+    accent-color: #0f0;
+    box-shadow: 0 0 5px #0f0; /* Tambahan biar glowing */
 }
 
 body.matrix-theme table {
