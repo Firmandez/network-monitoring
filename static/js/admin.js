@@ -95,7 +95,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 4. Handle search and filter inputs
     [searchInput, filterFloorSelect, filterTypeSelect].forEach(el => {
-        el.addEventListener('input', renderDevicesTable);
+        if (el) {
+            el.addEventListener('input', renderDevicesTable);
+        } else {
+            // Peringatan ini membantu diagnosis jika ada elemen HTML yang hilang.
+            console.warn("Peringatan: Elemen input untuk filter/pencarian tidak ditemukan di HTML. Salah satu fitur filter tidak akan berfungsi.");
+        }
     });
 
     // 5. Handle table clicks for Edit/Delete (Event Delegation)
