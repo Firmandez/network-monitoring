@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let allDevices = []; // Cache all devices locally
     const urlTemplate = mapPicker.dataset.urlTemplate;
 
+    // --- CRITICAL ELEMENT CHECK ---
+    if (!devicesTableBody) {
+        console.error("Fatal Error: The element '#devices-table tbody' was not found. Please ensure your HTML has a table with id='devices-table' and a <tbody> element inside.");
+        alert("Error: The device list table could not be found on the page. The page may not display correctly.");
+        return; // Stop script execution if the main table is missing
+    }
+
     // 1. Load initial devices
     loadAndRenderDevices();
 
