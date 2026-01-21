@@ -551,19 +551,40 @@ function hideTooltip() {
 function positionTooltip(event) {
     if (!tooltip) return;
 
+    const dot = event.target;
+    if (!dot) return;
+
+    const dotRect = dot.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
-    let x = event.pageX + 12;
-    let y = event.pageY + 12;
 
-    // Adjust if tooltip goes off screen
+    // Position the top-left corner of the tooltip at the center of the dot.
+    let x = dotRect.left + (dotRect.width / 2);
+    let y = dotRect.top + (dotRect.height / 2);
+    
+    let originX = 'left';
+    let originY = 'top';
+
+    // Adjust X position and origin if it goes off the right edge
     if (x + tooltipRect.width > window.innerWidth) {
-        x = event.pageX - tooltipRect.width - 40;
+        x = dotRect.left + (dotRect.width / 2) - tooltipRect.width;
+        originX = 'right';
     }
 
+    // Adjust Y position and origin if it goes off the bottom edge
     if (y + tooltipRect.height > window.innerHeight) {
-        y = event.pageY - tooltipRect.height - 40;
+        y = dotRect.top + (dotRect.height / 2) - tooltipRect.height;
+        originY = 'bottom';
+    }
+    
+    // Final check for left/top edges to prevent going off-screen
+    if (x < 0) {
+        x = 10;
+    }
+    if (y < 0) {
+        y = 10;
     }
 
+    tooltip.style.transformOrigin = `${originY} ${originX}`;
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
 }

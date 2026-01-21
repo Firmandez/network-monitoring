@@ -148,6 +148,30 @@ def ping_device(ip):
         print(f"⚠️ Ping Error ({ip}): {e}")
         return False
 
+# --- FUNGSI UNTUK MEMUAT LOG DARI DATABASE SAAT STARTUP ---
+def load_initial_logs():
+    """Memuat 100 log terakhir dari database ke memori saat aplikasi dimulai."""
+    print("Loading initial logs from database...")
+    with app.app_context():
+        db = get_db()
+        cur = db.cursor(cursor_factory=DictCursor)
+        # Join dengan tabel devices untuk mendapatkan nama perangkat
+        cur.execute("""
+            SELECT l.created_at, d.name as device_name, l.status, l.message
+            FROM event_logs l
+            JOIN devices d ON l.device_id = d.id
+            ORDER BY l.created_at DESC
+            LIMIT 100;
+        """)
+        rows = cur.fetchall()
+        cur.close()
+
+        with status_lock:
+            event_logs.clear()
+            for row in reversed(rows): # Dibalik agar urutan di frontend benar (tertua di atas)
+                event_logs.append({ "timestamp": row['created_at'].strftime("%Y-%m-%d %H:%M:%S"), "device": row['device_name'], "status": row['status'], "message": row['message'] })
+        print(f"Loaded {len(event_logs)} logs from database.")
+
 # --- BACKGROUND TASK ---
 def background_monitoring():
     print("Monitoring Service Started (Threading Mode)...")
@@ -180,8 +204,9 @@ def background_monitoring():
 
                 # 4. Proses hasil, bandingkan status, dan siapkan update
                 db_updates = []
+                log_db_inserts = [] # List untuk menampung log yang akan di-insert ke DB
                 with status_lock:
-                    new_logs = []
+                    new_logs_for_memory = []
                     for device_id, is_online in ping_results.items():
                         # Ambil status lama dari cache, atau buat state baru jika belum ada
                         current_state = device_status.get(device_id, {'status': 'online', 'failures': 0})
@@ -211,19 +236,22 @@ def background_monitoring():
                             # Update DB hanya untuk status final (online/offline)
                             db_updates.append((device_id, new_status == 'online', datetime.now()))
 
-                            # Buat log entry
-                            log_entry = {
+                            # Buat log entry untuk memori dan siapkan untuk DB
+                            message = f"{device_name} is now {new_status.capitalize()}"
+                            log_entry_for_memory = {
                                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "device": device_name,
                                 "status": new_status,
-                                "message": f"{device_name} is now {new_status.capitalize()}"
+                                "message": message
                             }
-                            new_logs.append(log_entry)
+                            new_logs_for_memory.append(log_entry_for_memory)
+                            log_db_inserts.append((device_id, new_status, message, datetime.now()))
+
                             print(f"{device_name} -> {new_status.capitalize()}")
                     
                     # Tambahkan log baru ke awal list
-                    if new_logs:
-                        event_logs.extend(new_logs)
+                    if new_logs_for_memory:
+                        event_logs.extend(new_logs_for_memory)
                         # Keep last 100 logs in memory, sort by timestamp descending
                         event_logs.sort(key=lambda x: x['timestamp'], reverse=True)
                         del event_logs[100:]
@@ -238,6 +266,17 @@ def background_monitoring():
                             last_checked = EXCLUDED.last_checked;
                     """
                     execute_batch(cur, upsert_query, db_updates)
+                
+                # 5b. Lakukan batch insert log ke database
+                if log_db_inserts:
+                    log_insert_query = """
+                        INSERT INTO event_logs (device_id, status, message, created_at)
+                        VALUES (%s, %s, %s, %s);
+                    """
+                    execute_batch(cur, log_insert_query, log_db_inserts)
+
+                # Commit semua perubahan DB sekaligus
+                if db_updates or log_db_inserts:
                     db.commit()
                 
                 cur.close()
@@ -273,6 +312,7 @@ def handle_connect():
     global monitoring_started
     with status_lock: # Use lock to prevent race conditions from multiple simultaneous connections
         if not monitoring_started:
+            load_initial_logs() # Muat log dari DB saat koneksi pertama
             start_monitoring()
 
     print(f"[Socket.IO] Client connected: {request.sid}")
@@ -289,12 +329,24 @@ def handle_disconnect():
 @socketio.on('clear_logs')
 @login_required
 def handle_clear_logs():
-    """Clears the in-memory event logs. Only logged-in users can do this."""
-    with status_lock:
-        event_logs.clear()
-    print(f"Event logs cleared by user: {g.user['username']}")
-    # Broadcast an update to all clients to refresh their log view
-    emit_update()
+    """Menghapus semua log dari memori dan database."""
+    with app.app_context():
+        db = get_db()
+        cur = db.cursor()
+        try:
+            with status_lock:
+                # Hapus dari database (TRUNCATE lebih cepat dari DELETE)
+                cur.execute("TRUNCATE TABLE event_logs RESTART IDENTITY;")
+                db.commit()
+                # Hapus dari memori
+                event_logs.clear()
+            print(f"Event logs cleared by user: {g.user['username']}")
+            emit_update() # Kirim update ke semua klien dengan log kosong
+        except Exception as e:
+            db.rollback()
+            print(f"Error clearing logs: {e}")
+        finally:
+            cur.close()
 
 @socketio.on('request_update')
 def handle_request_update():
