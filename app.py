@@ -206,7 +206,7 @@ def background_monitoring():
                         device_status[device_id] = current_state
 
                         # Jika status benar-benar berubah, buat log dan siapkan update DB
-                        if old_status != is_online:
+                        if old_status != new_status:
                             device_name = device_map[device_id]['name']
                             # Update DB hanya untuk status final (online/offline)
                             db_updates.append((device_id, new_status == 'online', datetime.now()))
