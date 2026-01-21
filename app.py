@@ -168,7 +168,6 @@ def background_monitoring():
 
                 # 3. Ping semua device secara paralel
                 ping_results = {}
-                with concurrent.futures.ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=50, thread_name_prefix="ping_") as executor:
                     future_to_device = {executor.submit(ping_device, d['ip']): d for d in current_devices}
                     for future in concurrent.futures.as_completed(future_to_device):
