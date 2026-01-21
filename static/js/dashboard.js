@@ -442,7 +442,7 @@ function renderDevices() {
         try {
             const dot = document.createElement('div');
             dot.className = 'device-dot';
-            dot.classList.add(device.online ? 'online' : 'offline');
+            dot.classList.add(device.status || 'offline'); // Gunakan device.status
 
             // Posisi
             dot.style.top = device.position.top;
@@ -471,7 +471,7 @@ function renderFocusViewDevices(floorId, container) {
         try {
             const dot = document.createElement('div');
             dot.className = 'device-dot'; // Use the main dot style
-            dot.classList.add(device.online ? 'online' : 'offline');
+            dot.classList.add(device.status || 'offline'); // Gunakan device.status
             dot.style.top = device.position.top;
             dot.style.left = device.position.left;
 
@@ -518,10 +518,10 @@ function showTooltip(device, event) {
 
     // Tambahkan class status ke tooltip utama untuk styling (misal: border color)
     tooltip.className = 'tooltip'; // Reset class dulu
-    tooltip.classList.add(device.online ? 'status-online' : 'status-offline');
+    tooltip.classList.add(`status-${device.status}`); // Gunakan device.status
 
-    const statusText = device.online ? 'Online' : 'Offline';
-    const statusClass = device.online ? 'online' : 'offline';
+    const statusText = device.status.charAt(0).toUpperCase() + device.status.slice(1);
+    const statusClass = device.status;
 
     tooltip.innerHTML = `
         <strong>
@@ -697,11 +697,11 @@ function showDeviceListModal(status) {
 
     switch (status) {
         case 'online':
-            initialDevices = allDevices.filter(d => d.online);
+            initialDevices = allDevices.filter(d => d.status === 'online');
             title = 'Online Devices';
             break;
         case 'offline':
-            initialDevices = allDevices.filter(d => !d.online);
+            initialDevices = allDevices.filter(d => d.status !== 'online'); // Offline & Unstable
             title = 'Offline Devices';
             break;
         case 'total':
@@ -758,13 +758,14 @@ function showDeviceListModal(status) {
 
         // Sort devices: offline first, then by name
         devices.sort((a, b) => {
-            if (a.online !== b.online) return a.online ? 1 : -1;
+            if (a.status === 'online' && b.status !== 'online') return 1;
+            if (a.status !== 'online' && b.status === 'online') return -1;
             return a.name.localeCompare(b.name);
         });
 
         devices.forEach(device => {
             const item = document.createElement('li');
-            item.className = `modal-device-item ${device.online ? 'online' : 'offline'}`;
+            item.className = `modal-device-item ${device.status}`;
             item.innerHTML = `
                 <div class="modal-device-info">
                     <span class="modal-device-name">${device.name}</span>
@@ -971,7 +972,7 @@ function generateFloorGrids() {
         
         // Hitung Stats
         const floorDevices = allDevices.filter(d => d.floor_id === floorId);
-        const onlineCount = floorDevices.filter(d => d.online).length;
+        const onlineCount = floorDevices.filter(d => d.status === 'online').length;
         const offlineCount = floorDevices.length - onlineCount;
         
         // Grid Item
@@ -1019,8 +1020,7 @@ function renderFloorGridDevices(floorId) {
     
     floorDevices.forEach(device => {
         const dot = document.createElement('div');
-        dot.className = 'floor-grid-dot';
-        dot.classList.add(device.online ? 'online' : 'offline');
+        dot.className = `floor-grid-dot ${device.status}`;
         
         dot.style.top = device.position.top;
         dot.style.left = device.position.left;
@@ -1100,7 +1100,7 @@ function updateFullscreenStats() {
         const gridItem = document.querySelector(`.floor-grid-item[data-floor-id="${floorId}"]`);
         if (gridItem) {
             const floorDevices = allDevices.filter(d => d.floor_id === floorId);
-            const onlineCount = floorDevices.filter(d => d.online).length;
+            const onlineCount = floorDevices.filter(d => d.status === 'online').length;
             const offlineCount = floorDevices.length - onlineCount;
             
             // Update Red Alert Border

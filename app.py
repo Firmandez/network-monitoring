@@ -133,6 +133,8 @@ def ping_device(ip):
         # on Unix '-W' expects seconds — using 1 second to avoid
         # long blocking pings that stall the server.
         timeout_val = '500' if platform.system().lower() == 'windows' else '1'
+        # long blocking pings. We'll use 0.5s for both for consistency.
+        timeout_val = '500' if platform.system().lower() == 'windows' else '0.5'
         command = ['ping', param, '1', timeout_param, timeout_val, ip]
         
         # Sembunyikan window cmd di Windows
@@ -167,6 +169,7 @@ def background_monitoring():
                 # 3. Ping semua device secara paralel
                 ping_results = {}
                 with concurrent.futures.ThreadPoolExecutor(max_workers=20, thread_name_prefix="ping_") as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=50, thread_name_prefix="ping_") as executor:
                     future_to_device = {executor.submit(ping_device, d['ip']): d for d in current_devices}
                     for future in concurrent.futures.as_completed(future_to_device):
                         device = future_to_device[future]
@@ -179,30 +182,52 @@ def background_monitoring():
                 # 4. Proses hasil, bandingkan status, dan siapkan update
                 db_updates = []
                 with status_lock:
+                    new_logs = []
                     for device_id, is_online in ping_results.items():
-                        # Default ke status berlawanan untuk memastikan log/update pertama kali
-                        old_status = old_statuses_db.get(device_id, not is_online)
+                        # Ambil status lama dari cache, atau buat state baru jika belum ada
+                        current_state = device_status.get(device_id, {'status': 'online', 'failures': 0})
+                        old_status = current_state['status']
+                        new_status = old_status
 
-                        # Update cache di memori untuk emit_update()
-                        device_status[device_id] = {'online': is_online, 'last_checked': datetime.now()}
+                        if is_online:
+                            # Jika berhasil, langsung set Online dan reset failures
+                            new_status = 'online'
+                            current_state['failures'] = 0
+                        else:
+                            # Jika gagal, increment failures dan tentukan status baru
+                            current_state['failures'] += 1
+                            if current_state['failures'] == 1:
+                                new_status = 'unstable' # Gagal pertama kali -> Unstable
+                            elif current_state['failures'] >= 2:
+                                new_status = 'offline'  # Gagal kedua kali -> Konfirm Offline
 
-                        # Jika status berubah, buat log dan siapkan update DB
+                        # Update cache di memori
+                        current_state['status'] = new_status
+                        current_state['last_checked'] = datetime.now()
+                        device_status[device_id] = current_state
+
+                        # Jika status benar-benar berubah, buat log dan siapkan update DB
                         if old_status != is_online:
                             device_name = device_map[device_id]['name']
-                            db_updates.append((device_id, is_online, datetime.now()))
+                            # Update DB hanya untuk status final (online/offline)
+                            db_updates.append((device_id, new_status == 'online', datetime.now()))
 
                             # Buat log entry
-                            status_text = "Online" if is_online else "Offline"
                             log_entry = {
                                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "device": device_name,
-                                "status": status_text,
-                                "message": f"{device_name} is now {status_text}"
+                                "status": new_status,
+                                "message": f"{device_name} is now {new_status.capitalize()}"
                             }
-                            event_logs.insert(0, log_entry)
-                            if len(event_logs) > 100: event_logs.pop() # Keep last 100 logs in memory
-                            
-                            print(f"{device_name} -> {status_text}")
+                            new_logs.append(log_entry)
+                            print(f"{device_name} -> {new_status.capitalize()}")
+                    
+                    # Tambahkan log baru ke awal list
+                    if new_logs:
+                        event_logs.extend(new_logs)
+                        # Keep last 100 logs in memory, sort by timestamp descending
+                        event_logs.sort(key=lambda x: x['timestamp'], reverse=True)
+                        del event_logs[100:]
 
                 # 5. Lakukan batch update ke database jika ada perubahan
                 if db_updates:
@@ -298,11 +323,13 @@ def emit_update(current_devices=None):
 
     with status_lock:
         for device in current_devices:
-            # Add a default for last_checked to prevent errors if a device is new
-            d_stat = device_status.get(device['id'], {'online': False, 'last_checked': None})
-            is_online = d_stat['online']
+            # Ambil state dari cache, atau default ke 'online' jika baru
+            d_stat = device_status.get(device['id'], {'status': 'online', 'failures': 0, 'last_checked': None})
+            status = d_stat['status']
             
-            if is_online: total_online += 1
+            if status == 'online': total_online += 1
+            elif status == 'offline': total_offline += 1
+            # Perangkat 'unstable' kita hitung sebagai 'offline' di statistik utama
             else: total_offline += 1
             
             # Format the timestamp into a readable string
@@ -310,7 +337,7 @@ def emit_update(current_devices=None):
 
             devices_data.append({
                 **device,
-                'online': is_online,
+                'status': status, # Ganti 'online' menjadi 'status'
                 'last_checked': last_checked_str # Tambahkan field ini
             })
 

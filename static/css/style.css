@@ -573,6 +573,9 @@ button, .filter-item {
 .tooltip.status-offline {
     border-color: rgba(231, 76, 60, 0.5);
 }
+.tooltip.status-unstable {
+    border-color: rgba(243, 156, 18, 0.6);
+}
 
 .tooltip.show {
     opacity: 1;
@@ -632,6 +635,15 @@ button, .filter-item {
 .tooltip .status-indicator.offline::before {
     background-color: #e74c3c;
     box-shadow: 0 0 5px #e74c3c;
+}
+
+/* Status Unstable (Kuning) */
+.tooltip .status-indicator.unstable {
+    color: #f39c12;
+}
+.tooltip .status-indicator.unstable::before {
+    background-color: #f39c12;
+    box-shadow: 0 0 5px #f39c12;
 }
 
 /* Info Meta (Last Checked) */
@@ -724,6 +736,7 @@ button, .filter-item {
 
 .log-item.status-online { border-left-color: #2ecc71; }
 .log-item.status-offline { border-left-color: #e74c3c; }
+.log-item.status-unstable { border-left-color: #f39c12; }
 
 .log-timestamp {
     color: #a0aec0; /* Adjusted to palette */
@@ -1581,6 +1594,8 @@ body.matrix-theme #map-picker {
 .modal-device-item.online { border-left-color: #2ecc71; }
 
 .modal-device-item.offline { border-left-color: #e74c3c; }
+
+.modal-device-item.unstable { border-left-color: #f39c12; }
 
 .modal-device-info { display: flex; flex-direction: column; }
 
