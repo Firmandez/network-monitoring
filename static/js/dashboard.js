@@ -251,11 +251,11 @@ function addDeviceDotInteraction(dot, device) {
         dot.addEventListener('touchstart', handleTouchStart);
         dot.addEventListener('touchend', handleTouchEnd);
         dot.addEventListener('touchcancel', handleTouchEnd); // Also hide on cancel
-        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        dot.addEventListener('click', () => window.open(`/device/${device.id}`, '_blank'));
         dot.addEventListener('contextmenu', e => e.preventDefault()); // Prevent default menu
     } else {
         // Desktop logic
-        dot.addEventListener('click', () => window.open(`http://${device.ip}`, '_blank'));
+        dot.addEventListener('click', () => window.open(`/device/${device.id}`, '_blank'));
         dot.addEventListener('mouseover', (e) => showTooltip(device, e));
         dot.addEventListener('mouseout', hideTooltip);
     }
@@ -787,6 +787,13 @@ function showDeviceListModal(status) {
         devices.forEach(device => {
             const item = document.createElement('li');
             item.className = `modal-device-item ${device.status}`;
+            // Make the item clickable to open detail page
+            item.style.cursor = 'pointer';
+            item.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'A' && !e.target.closest('a')) {
+                    window.open(`/device/${device.id}`, '_blank');
+                }
+            });
             item.innerHTML = `
                 <div class="modal-device-info">
                     <span class="modal-device-name">${device.name}</span>

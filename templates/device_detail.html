@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Detail: {{ device.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .detail-container {
+            background: rgba(15, 52, 96, 0.9);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            color: #eeeeee;
+        }
+        .detail-header {
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .detail-header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #3498db;
+        }
+        .detail-header .sub-header {
+            font-size: 14px;
+            color: #a0aec0;
+            text-transform: uppercase;
+        }
+        .detail-body {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 15px;
+            font-size: 16px;
+        }
+        .detail-body .label {
+            font-weight: 600;
+            color: #a0aec0;
+        }
+        .detail-body .value {
+            font-weight: 500;
+        }
+        .status-indicator {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-indicator.online { color: #2ecc71; }
+        .status-indicator.offline { color: #e74c3c; }
+        .status-indicator.unstable { color: #f39c12; }
+        .detail-footer {
+            margin-top: 30px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <div class="detail-header">
+            <div class="sub-header">{{ device.type_label }}</div>
+            <h1>{{ device.name }}</h1>
+        </div>
+        <div class="detail-body">
+            <div class="label">IP Address</div>
+            <div class="value">{{ device.ip }}</div>
+
+            <div class="label">Status</div>
+            <div class="value">
+                <span class="status-indicator {{ device.status }}">{{ device.status }}</span>
+            </div>
+
+            <div class="label">Last Checked</div>
+            <div class="value">{{ device.last_checked }}</div>
+
+            <div class="label">Floor</div>
+            <div class="value">{{ device.floor_label }}</div>
+        </div>
+        <div class="detail-footer">
+            <a href="http://{{ device.ip }}" target="_blank" class="btn">Access Device</a>
+        </div>
+    </div>
+</body>
+</html>
