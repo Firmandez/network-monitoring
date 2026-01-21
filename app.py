@@ -362,9 +362,6 @@ def handle_connect_error(data):
 
 def emit_update(current_devices=None):
     """Emit data update to all connected clients"""
-    devices_data = []
-    total_online = 0
-    total_offline = 0
     
     # FIX: Jika fungsi dipanggil tanpa argumen (misal saat koneksi baru),
     # ambil sendiri data device dari database.
@@ -372,36 +369,45 @@ def emit_update(current_devices=None):
         with app.app_context():
             current_devices = get_devices_from_db()
 
+    # The entire packet creation must be atomic to prevent race conditions
+    # where logs are cleared after device statuses are read but before logs are read.
     with status_lock:
+        devices_data = []
+        total_online = 0
+        total_offline = 0
+
         for device in current_devices:
             # Ambil state dari cache, atau default ke 'online' jika baru
             d_stat = device_status.get(device['id'], {'status': 'online', 'failures': 0, 'last_checked': None})
             status = d_stat['status']
             
-            if status == 'online': total_online += 1
-            elif status == 'offline': total_offline += 1
+            if status == 'online':
+                total_online += 1
+            elif status == 'offline':
+                total_offline += 1
             # Perangkat 'unstable' kita hitung sebagai 'offline' di statistik utama
-            else: total_offline += 1
+            else:
+                total_offline += 1
             
             # Format the timestamp into a readable string
             last_checked_str = d_stat['last_checked'].strftime("%Y-%m-%d %H:%M:%S") if d_stat['last_checked'] else "N/A"
 
             devices_data.append({
                 **device,
-                'status': status, # Ganti 'online' menjadi 'status'
-                'last_checked': last_checked_str # Tambahkan field ini
+                'status': status,
+                'last_checked': last_checked_str
             })
 
-    packet = {
-        'devices': devices_data,
-        'global': {
-            'total': len(current_devices),
-            'online': total_online,
-            'offline': total_offline
-        },
-        'logs': event_logs, # Send all logs, let frontend decide how many to show
-        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
+        packet = {
+            'devices': devices_data,
+            'global': {
+                'total': len(current_devices),
+                'online': total_online,
+                'offline': total_offline
+            },
+            'logs': list(event_logs), # Use a copy of the list at this moment
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
     
     socketio.emit('update_data', packet)
 
