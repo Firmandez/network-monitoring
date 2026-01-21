@@ -37,6 +37,17 @@
                 <div class="stat-label">Offline</div>
                 <div class="stat-value" id="stat-offline">0</div>
             </div>
+            <!-- TAMBAHKAN BLOK INI -->
+            <div class="user-status">
+                {% if user %}
+                    <span class="welcome-text">Welcome, <strong>{{ user.username }}</strong></span>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-admin">Admin Panel</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-logout">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-login">Admin Login</a>
+                {% endif %}
+            </div>
+            <!-- AKHIR BLOK -->
             <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Toggle Sidebar">
                 ☰ Menu
             </button>

@@ -295,6 +295,36 @@ def background_monitoring():
 def index():
     return render_template('index.html')
 
+@app.route('/device/<string:device_id>')
+@login_required
+def device_detail(device_id):
+    """Menampilkan halaman detail untuk satu perangkat."""
+    device = None
+    with app.app_context():
+        db = get_db()
+        cur = db.cursor(cursor_factory=DictCursor)
+        # 1. Ambil data statis perangkat
+        cur.execute("SELECT id, name, ip, type, floor_id FROM devices WHERE id = %s", (device_id,))
+        device_data = cur.fetchone()
+        cur.close()
+
+        if not device_data:
+            return "Device not found", 404
+
+        device = dict(device_data)
+
+    # 2. Ambil data status dinamis dari cache real-time
+    with status_lock:
+        d_stat = device_status.get(device_id, {'status': 'unknown', 'last_checked': None})
+        device['status'] = d_stat.get('status', 'unknown')
+        device['last_checked'] = d_stat['last_checked'].strftime("%Y-%m-%d %H:%M:%S") if d_stat.get('last_checked') else "N/A"
+
+    # 3. Ambil label dari config
+    device['type_label'] = DEVICE_TYPES.get(device['type'], {}).get('label', device['type'])
+    device['floor_label'] = FLOOR_LABELS.get(device['floor_id'], device['floor_id'])
+
+    return render_template('device_detail.html', device=device)
+
 @app.route('/api/config')
 def get_config():
     return jsonify({

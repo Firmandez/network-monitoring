@@ -14,6 +14,20 @@ let translateX = 0, translateY = 0;
 let isFullscreenMode = false;
 let clockInterval = null;
 
+// --- HELPER UNTUK AKSI YANG MEMBUTUHKAN LOGIN ---
+function performAuthenticatedAction(action) {
+    // We determine if the user is authenticated by checking for an element
+    // (misal: tombol 'Clear History' atau tombol 'Logout' yang akan kita tambahkan).
+    const isAuthenticated = !!document.querySelector('#clear-logs-btn, .btn-logout');
+
+    if (isAuthenticated) {
+        action();
+    } else {
+        // Jika belum login, langsung arahkan ke halaman login.
+        window.location.href = '/auth/login';
+    }
+}
+
 // DOM Elements - dengan null checks
 // Socket di-init di init() function
 const floorNav = document.getElementById('floor-nav');
@@ -228,6 +242,10 @@ function setupButtonListeners() {
 function addDeviceDotInteraction(dot, device) {
     const isMobile = window.innerWidth <= 768;
 
+    const openDetailPage = () => performAuthenticatedAction(
+        () => window.open(`/device/${device.id}`, '_blank')
+    );
+
     if (isMobile) {
         let pressTimer = null;
         let longPressTriggered = false;
@@ -251,11 +269,11 @@ function addDeviceDotInteraction(dot, device) {
         dot.addEventListener('touchstart', handleTouchStart);
         dot.addEventListener('touchend', handleTouchEnd);
         dot.addEventListener('touchcancel', handleTouchEnd); // Also hide on cancel
-        dot.addEventListener('click', () => window.open(`/device/${device.id}`, '_blank'));
+        dot.addEventListener('click', openDetailPage);
         dot.addEventListener('contextmenu', e => e.preventDefault()); // Prevent default menu
     } else {
         // Desktop logic
-        dot.addEventListener('click', () => window.open(`/device/${device.id}`, '_blank'));
+        dot.addEventListener('click', openDetailPage);
         dot.addEventListener('mouseover', (e) => showTooltip(device, e));
         dot.addEventListener('mouseout', hideTooltip);
     }
@@ -790,8 +808,11 @@ function showDeviceListModal(status) {
             // Make the item clickable to open detail page
             item.style.cursor = 'pointer';
             item.addEventListener('click', (e) => {
+                // Ensure the click is on the item itself, not the 'Access' button
                 if (e.target.tagName !== 'A' && !e.target.closest('a')) {
-                    window.open(`/device/${device.id}`, '_blank');
+                    performAuthenticatedAction(() =>
+                        window.open(`/device/${device.id}`, '_blank')
+                    );
                 }
             });
             item.innerHTML = `

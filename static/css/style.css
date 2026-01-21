@@ -131,6 +131,49 @@ button, .filter-item {
     align-items: center;
 }
 
+/* User Status Indicator in Header */
+.user-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.welcome-text {
+    font-size: 14px;
+    color: #a0aec0;
+}
+
+.welcome-text strong {
+    color: #eeeeee;
+    font-weight: 600;
+}
+
+.btn-logout {
+    background: #e74c3c;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.btn-logout:hover { background: #c0392b; }
+
+.btn-login {
+    background: #2ecc71;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.btn-login:hover { background: #27ae60; }
+
+/* Admin Panel Button */
+.btn-admin {
+    background: #f39c12;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.btn-admin:hover { background: #e67e22; }
+
 /* Primary Button Color */
 .fullscreen-btn {
     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); /* Biru Utama */
