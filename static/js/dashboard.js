@@ -504,27 +504,75 @@ function renderFocusViewDevices(floorId, container) {
 
 function setupFocusMapInteraction(containerEl, contentEl) {
     let zoom = 1, transX = 0, transY = 0;
+    let isDragging = false;
+    let startX, startY, startTransX, startTransY;
 
-    const updateTransform = () => contentEl.style.transform = `translate(${transX}px, ${transY}px) scale(${zoom})`;
+    const resetFocusMapPosition = () => {
+        zoom = 1;
+        transX = 0;
+        transY = 0;
+        updateTransform();
+    };
+
+    const updateTransform = () => {
+        if (contentEl) {
+            contentEl.style.transform = `translate(${transX}px, ${transY}px) scale(${zoom})`;
+        }
+    };
 
     const onWheel = e => {
         e.preventDefault();
         const rect = contentEl.getBoundingClientRect();
         const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
         const pointX = mouseX / zoom, pointY = mouseY / zoom;
-        const newZoom = Math.min(Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 0.9)), 5);
+        const newZoom = Math.min(Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 0.9)), 8); // Increased max zoom
         transX += mouseX - (pointX * newZoom);
         transY += mouseY - (pointY * newZoom);
         zoom = newZoom;
         updateTransform();
     };
 
+    const onMouseDown = e => {
+        if (e.target.closest('.device-dot')) return;
+        e.preventDefault();
+        isDragging = true;
+        containerEl.style.cursor = 'grabbing';
+        startX = e.clientX;
+        startY = e.clientY;
+        startTransX = transX;
+        startTransY = transY;
+    };
+
+    const onMouseMove = e => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.clientX - startX;
+        const y = e.clientY - startY;
+        transX = startTransX + x;
+        transY = startTransY + y;
+        updateTransform();
+    };
+
+    const onMouseUp = () => {
+        isDragging = false;
+        containerEl.style.cursor = 'grab';
+    };
+
     containerEl.addEventListener('wheel', onWheel);
+    containerEl.addEventListener('dblclick', resetFocusMapPosition); // Add double-click listener
+    containerEl.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mouseleave', onMouseUp); // Also stop on mouse leave
 
     // Return a cleanup function
     return () => {
         containerEl.removeEventListener('wheel', onWheel);
-        // Pan listeners would also be removed here if added
+        containerEl.removeEventListener('dblclick', resetFocusMapPosition); // Remove double-click listener
+        containerEl.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('mouseleave', onMouseUp);
     };
 }
 

@@ -41,11 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    mapPicker.addEventListener('click', (e) => {
-        if (e.target.id !== 'map-picker-img') return;
+    function updateMapCoordinates(clientX, clientY) {
         const rect = mapPicker.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
         const topPercent = ((y / rect.height) * 100).toFixed(2);
         const leftPercent = ((x / rect.width) * 100).toFixed(2);
         posTopInput.value = topPercent;
@@ -53,7 +52,19 @@ document.addEventListener('DOMContentLoaded', function() {
         clickMarker.style.top = `${topPercent}%`;
         clickMarker.style.left = `${leftPercent}%`;
         clickMarker.style.display = 'block';
+    }
+
+    mapPicker.addEventListener('click', (e) => {
+        if (e.target.id !== 'map-picker-img') return;
+        updateMapCoordinates(e.clientX, e.clientY);
     });
+
+    mapPicker.addEventListener('touchstart', (e) => {
+        if (e.target.id !== 'map-picker-img') return;
+        e.preventDefault(); // Mencegah scrolling saat memilih titik di peta
+        const touch = e.touches[0];
+        updateMapCoordinates(touch.clientX, touch.clientY);
+    }, { passive: false });
 
     // 3. Handle form submission (Add vs. Update)
     form.addEventListener('submit', async (e) => {

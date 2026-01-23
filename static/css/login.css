@@ -32,15 +32,26 @@ body {
     text-align: center;
 }
 
+.login-logo {
+    width: 100px; /* Ukuran logo yang pas */
+    height: auto;
+    margin-bottom: 20px; /* Jarak antara logo dan judul */
+    transition: transform 0.3s ease;
+}
+
+.login-logo:hover {
+    transform: scale(1.05); /* Efek hover pada logo */
+}
+
 .login-box h1 {
     color: #eeeeee;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Jarak lebih kecil ke deskripsi */
     font-weight: 600;
 }
 
 .login-box p {
     color: #a0aec0;
-    margin-bottom: 30px;
+    margin-bottom: 25px; /* Jarak ke form */
     font-size: 14px;
 }
 
@@ -74,7 +85,9 @@ body {
 }
 
 .btn-login {
-    width: 100%;
+    width: 100%; /* Tetap 100% untuk mobile */
+    max-width: 200px; /* Batasi lebar maksimum */
+    margin: 0 auto; /* Pusatkan tombol */
     padding: 12px;
     background: #3498db;
     color: #fff;
@@ -82,7 +95,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 600; /* Font lebih tebal */
     transition: background 0.3s;
 }
 
@@ -110,4 +123,31 @@ body {
 .app-footer strong {
     color: #eeeeee;
     font-weight: 600;
+}
+
+/* =========================
+   SOCIAL MEDIA LINKS
+   ========================= */
+.social-links {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.social-links a {
+    color: #a0aec0; /* Sub Text color */
+    transition: color 0.3s, transform 0.3s;
+    display: inline-block;
+}
+
+.social-links a:hover {
+    color: #3498db; /* Main blue */
+    transform: scale(1.2);
+}
+
+.social-links svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
 }

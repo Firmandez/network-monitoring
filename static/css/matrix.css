@@ -1,0 +1,267 @@
+/* =========================
+   EASTER EGG: MATRIX THEME
+   ========================= */
+body.matrix-theme {
+    background-color: #000; /* True matrix black */
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+
+    /* CSS Variable Overrides for Matrix Theme */
+    --scrollbar-track-bg: #010;
+    --scrollbar-thumb-bg: #0a0;
+    --scrollbar-thumb-hover-bg: #0f0;
+}
+
+body.matrix-theme .header,
+body.matrix-theme .sidebar,
+body.matrix-theme .stat-box,
+body.matrix-theme .log-panel,
+body.matrix-theme .map-info,
+body.matrix-theme .modal-content {
+    background: rgba(0, 20, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-color: rgba(0, 255, 0, 0.3);
+    color: #0f0;
+}
+
+body.matrix-theme .log-container {
+    background: #010;
+    border-color: #050;
+}
+
+body.matrix-theme .header-left h1,
+body.matrix-theme h2,
+body.matrix-theme h3,
+body.matrix-theme .stat-value,
+body.matrix-theme .modal-header h2 {
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme .subtitle,
+body.matrix-theme .stat-label,
+body.matrix-theme .last-update,
+body.matrix-theme .log-timestamp,
+body.matrix-theme .app-footer {
+    color: #0c0;
+}
+
+body.matrix-theme .floor-btn {
+    background: #020; /* Dark green, but visible */
+    border-color: #080;
+    color: #0c0;
+}
+
+body.matrix-theme .floor-btn.active,
+body.matrix-theme .btn,
+body.matrix-theme .modal-filter-btn.active,
+body.matrix-theme .fullscreen-btn,
+body.matrix-theme .sidebar-toggle-btn,
+body.matrix-theme .refresh-btn {
+    background: #0a0;
+    border-color: #0c0;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    color: #fff;
+}
+
+body.matrix-theme .floor-btn:hover,
+body.matrix-theme .btn:hover,
+body.matrix-theme .modal-filter-btn:hover,
+body.matrix-theme .fullscreen-btn:hover,
+body.matrix-theme .sidebar-toggle-btn:hover,
+body.matrix-theme .refresh-btn:hover {
+    background: #0c0;
+    color: #000;
+}
+
+body.matrix-theme .filter-item input[type="checkbox"] {
+    accent-color: #0f0;
+}
+
+body.matrix-theme .log-item {
+    background: rgba(0, 255, 0, 0.05);
+}
+
+body.matrix-theme .log-item.status-online {
+    border-left-color: #0f0;
+}
+
+body.matrix-theme .log-item.status-offline {
+    border-left-color: #080; /* Dimmer green for offline */
+}
+
+/* Tooltip overrides for Matrix Theme */
+body.matrix-theme .tooltip {
+    background: rgba(0, 20, 0, 0.9);
+    border-color: rgba(0, 255, 0, 0.4);
+    backdrop-filter: blur(5px);
+}
+
+body.matrix-theme .tooltip.status-online {
+    border-color: rgba(0, 255, 0, 0.6); /* Brighter green border for online */
+}
+body.matrix-theme .tooltip.status-offline {
+    border-color: rgba(0, 128, 0, 0.5); /* Dimmer green border for offline */
+}
+
+body.matrix-theme .tooltip .tooltip-type {
+    color: #0c0;
+}
+
+body.matrix-theme .tooltip strong {
+    color: #0f0;
+    border-bottom-color: rgba(0, 255, 0, 0.2);
+}
+
+body.matrix-theme .tooltip .status-indicator.online,
+body.matrix-theme .tooltip .status-indicator.online::before {
+    color: #0f0; background-color: #0f0; box-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme .tooltip .status-indicator.offline,
+body.matrix-theme .tooltip .status-indicator.offline::before {
+    color: #0a0; background-color: #0a0; box-shadow: 0 0 5px #0a0;
+}
+
+body.matrix-theme .floor-map {
+    filter: grayscale(1) brightness(0.5) contrast(2) hue-rotate(120deg);
+}
+
+body.matrix-theme .map-container {
+    background-color: #7f807f; /* Sesuai request wkwk */
+}
+
+body.matrix-theme .fullscreen-logo {
+    filter: grayscale(1) brightness(3) hue-rotate(120deg);
+}
+
+/* Fullscreen specifics for Matrix theme */
+body.matrix-theme .fullscreen-container {
+    background: #000;
+}
+
+body.matrix-theme .fullscreen-header,
+body.matrix-theme .fullscreen-footer {
+    background: #010;
+    border-color: #0f0;
+    color: #0f0;
+}
+
+body.matrix-theme .fullscreen-stat {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: #080;
+    color: #0f0;
+}
+
+body.matrix-theme .fullscreen-stat .stat-value,
+body.matrix-theme .fullscreen-stat .stat-label {
+    color: #0f0;
+}
+
+body.matrix-theme .exit-fullscreen-btn {
+    background: #0a0;
+    border-color: #0c0;
+    color: #fff;
+}
+
+body.matrix-theme .exit-fullscreen-btn:hover {
+    background: #a03020;
+}
+
+body.matrix-theme .floor-grid-item {
+    background: #010;
+    border-color: #080;
+}
+
+body.matrix-theme .floor-grid-item.critical {
+    border-color: #0f0 !important;
+    animation: matrix-pulse-border 2s infinite;
+}
+
+body.matrix-theme .floor-grid-item.critical .floor-grid-header {
+    background: linear-gradient(to right, rgba(0, 255, 0, 0.4), rgba(0, 255, 0, 0.1));
+    border-bottom-color: #0f0;
+}
+
+body.matrix-theme .floor-grid-header {
+    background: rgba(0, 255, 0, 0.1);
+    border-bottom-color: #080;
+}
+
+body.matrix-theme .floor-grid-map img {
+    filter: grayscale(1) brightness(0.5) contrast(2) hue-rotate(120deg);
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+body.matrix-theme .floor-grid-dot.online {
+    background-color: #0f0;
+    box-shadow: 0 0 8px #0f0;
+}
+
+body.matrix-theme .floor-grid-dot.offline {
+    background-color: #080; /* Dimmer green */
+    box-shadow: 0 0 8px #080;
+    animation: none; /* Disable default red pulse */
+}
+
+/* Admin page specifics for Matrix theme */
+body.matrix-theme .admin-container h2 {
+    border-bottom-color: #0f0;
+}
+
+body.matrix-theme .admin-container .form-section,
+body.matrix-theme .admin-container .list-section div {
+    background: rgba(0, 20, 0, 0.7);
+    border-color: rgba(0, 255, 0, 0.3);
+}
+
+body.matrix-theme .form-section p {
+    color: #0c0 !important; /* Override inline style */
+}
+
+body.matrix-theme .form-group input,
+body.matrix-theme .form-group select {
+    background: #010;
+    border-color: #050;
+    color: #0f0;
+}
+
+body.matrix-theme .form-group input[type="checkbox"] {
+    accent-color: #0f0;
+    box-shadow: 0 0 5px #0f0; /* Tambahan biar glowing */
+}
+
+body.matrix-theme table {
+    border-color: #050;
+}
+
+body.matrix-theme th {
+    border-color: #050;
+    background: #050;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+
+body.matrix-theme td {
+    border-color: #050;
+}
+
+body.matrix-theme tr:nth-child(even) {
+    background: #010; /* Dark green for alternating rows */
+}
+
+body.matrix-theme #map-picker {
+    border-color: #0f0;
+}
+
+/* Social Links override for Matrix Theme */
+body.matrix-theme .social-links a {
+    color: #0c0;
+}
+
+body.matrix-theme .social-links a:hover {
+    color: #0f0; /* Brighter green */
+    text-shadow: 0 0 8px #0f0;
+    transform: scale(1.2);
+}

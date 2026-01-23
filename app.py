@@ -8,12 +8,10 @@ from flask import Flask, g, render_template, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
+from eventlet.greenpool import GreenPool
 import psycopg2
 from psycopg2.extras import DictCursor, execute_batch
-import concurrent.futures
 import threading
-import subprocess
-import platform
 import atexit
 import signal
 import sys
@@ -27,6 +25,9 @@ from admin import admin_bp
 # Import config (DEVICES sekarang diambil dari DB)
 from config import FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES, SECRET_KEY
 
+# Import ping3 library
+import ping3
+
 # Muat environment variables dari .env
 load_dotenv()
 
@@ -39,7 +40,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 # --- TRUST PROXY HEADERS (untuk Caddy reverse proxy) ---
 # CRITICAL: Caddy forward X-Forwarded-* headers, Flask perlu trust ini
-app.config['TRUSTED_HOSTS'] = ['127.0.0.1', '192.168.68.109', '*']
+app.config['TRUSTED_HOSTS'] = ['127.0.0.1', '192.168.68.109', '*', 'localhost']
 
 # --- CSP HEADERS ---
 @app.after_request
@@ -120,32 +121,25 @@ def get_devices_from_db():
     return devices
 
 # --- FUNGSI PING ---
-def ping_device(ip):
+def ping_device(ip, timeout=1):
+    """
+    Pings a device using ping3 library.
+    Returns latency (float) on success, None on timeout, False on other errors.
+    """
     try:
-        if not ip: return False
-        
-        # Deteksi OS otomatis
-        param = '-n' if platform.system().lower() == 'windows' else '-c'
-        timeout_param = '-w' if platform.system().lower() == 'windows' else '-W'
-        
-        # Command ping
-        # NOTE: On Windows '-w' expects milliseconds (use 500ms),
-        # on Unix '-W' expects seconds — using 1 second to avoid
-        # long blocking pings that stall the server.
-        timeout_val = '500' if platform.system().lower() == 'windows' else '1'
-        # long blocking pings. We'll use 0.5s for both for consistency.
-        timeout_val = '500' if platform.system().lower() == 'windows' else '0.5'
-        command = ['ping', param, '1', timeout_param, timeout_val, ip]
-        
-        # Sembunyikan window cmd di Windows
-        kwargs = {'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
-        if platform.system().lower() == 'windows':
-            kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
-            
-        return subprocess.call(command, **kwargs) == 0
-        
+        if not ip:
+            return False
+        # ping3.ping returns False on fail, None on timeout, and latency as float on success.
+        # We'll use a timeout of 1 second and get the result in seconds.
+        latency = ping3.ping(ip, timeout=timeout, unit='s')
+        return latency
     except Exception as e:
-        print(f"⚠️ Ping Error ({ip}): {e}")
+        # ping3 can raise various exceptions (e.g., PermissionError on Linux without root)
+        # We'll log them but treat them as a failed ping.
+        if isinstance(e, PermissionError):
+             print(f"🔒 PermissionError pinging {ip}. Run as root or with 'sudo setcap cap_net_raw+ep $(which python)'. Treating as offline.")
+        else:
+             print(f"⚠️ Ping Error ({ip}): {e}")
         return False
 
 # --- FUNGSI UNTUK MEMUAT LOG DARI DATABASE SAAT STARTUP ---
@@ -190,40 +184,36 @@ def background_monitoring():
                 cur.execute("SELECT device_id, online FROM device_status")
                 old_statuses_db = {row['device_id']: row['online'] for row in cur.fetchall()}
 
-                # 3. Ping semua device secara paralel
+                # 3. Ping semua device secara paralel menggunakan GreenPool
+                pool = GreenPool(size=50) # Create a pool of greenlets
                 ping_results = {}
-                with concurrent.futures.ThreadPoolExecutor(max_workers=50, thread_name_prefix="ping_") as executor:
-                    future_to_device = {executor.submit(ping_device, d['ip']): d for d in current_devices}
-                    for future in concurrent.futures.as_completed(future_to_device):
-                        device = future_to_device[future]
-                        try:
-                            ping_results[device['id']] = future.result()
-                        except Exception as exc:
-                            print(f"Error pinging {device['name']}: {exc}")
-                            ping_results[device['id']] = False
+
+                def do_ping(device):
+                    # This wrapper function will be executed by the greenlet
+                    latency = ping_device(device['ip'])
+                    ping_results[device['id']] = latency
+
+                for device in current_devices:
+                    pool.spawn_n(do_ping, device)
+                
+                pool.waitall() # Wait for all pings to complete
 
                 # 4. Proses hasil, bandingkan status, dan siapkan update
                 db_updates = []
                 log_db_inserts = [] # List untuk menampung log yang akan di-insert ke DB
                 with status_lock:
                     new_logs_for_memory = []
-                    for device_id, is_online in ping_results.items():
-                        # Ambil status lama dari cache, atau buat state baru jika belum ada
-                        current_state = device_status.get(device_id, {'status': 'online', 'failures': 0})
+                    for device_id, latency in ping_results.items():
+                        # Ambil status lama dari cache, atau buat state baru jika belum ada.
+                        # Logika 'failures' tidak lagi diperlukan.
+                        current_state = device_status.get(device_id, {'status': 'online'})
                         old_status = current_state['status']
                         new_status = old_status
 
-                        if is_online:
-                            # Jika berhasil, langsung set Online dan reset failures
-                            new_status = 'online'
-                            current_state['failures'] = 0
-                        else:
-                            # Jika gagal, increment failures dan tentukan status baru
-                            current_state['failures'] += 1
-                            if current_state['failures'] == 1:
-                                new_status = 'unstable' # Gagal pertama kali -> Unstable
-                            elif current_state['failures'] >= 2:
-                                new_status = 'offline'  # Gagal kedua kali -> Konfirm Offline
+                        if isinstance(latency, float): # Ping berhasil, `latency` adalah float
+                            new_status = 'online' if latency <= 0.5 else 'unstable'
+                        else: # Ping gagal, `latency` adalah None atau False
+                            new_status = 'offline'
 
                         # Update cache di memori
                         current_state['status'] = new_status
