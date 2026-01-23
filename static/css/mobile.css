@@ -1,0 +1,114 @@
+/* =========================
+   MOBILE STYLES (max-width: 768px)
+   ========================= */
+@media (max-width: 768px) {
+    /* Sidebar jadi drawer di mobile, FIX: hapus display:none agar transisi jalan */
+    .sidebar { 
+        position: fixed; 
+        top: 0; 
+        left: -280px; /* Mulai dari luar layar */
+        width: 260px; /* Lebar sidebar */
+        height: 100vh; 
+        z-index: 1000; 
+        transition: left 0.3s ease-in-out; /* Animasi geser yang smooth */
+        /* FIX: Ganti background solid dengan glassmorphism agar efek langsung muncul */
+        background: rgba(10, 42, 74, 0.85); /* Warna dasar navy, tapi transparan */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(52, 152, 219, 0.3); /* Border tipis di kanan */
+    }
+    .sidebar.open { left: 0; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+
+    /* Show toggle button */
+    .sidebar-toggle-btn { display: block; }
+
+    /* Header adjustments */
+    .header { padding: 15px 20px; }
+    .header-left { flex: 1; }
+    .header-right { flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    .logo-container { gap: 8px; }
+    .header-logo { width: 80px; height: 80px; }
+    .header-left h1 { font-size: 18px; line-height: 1.1; }
+    .subtitle { font-size: 11px; margin-bottom: 1px; }
+    .stat-box { min-width: 80px; padding: 10px 15px; }
+    .stat-value { font-size: 24px; }
+    .stat-label { font-size: 11px; }
+
+    /* Hide fullscreen button on mobile */
+    .fullscreen-btn { display: none; }
+
+    /* Main content */
+    .container { flex-direction: column; min-height: auto; }
+    .main-content { padding: 15px; }
+    .map-container { min-height: 450px; touch-action: none; /* Enable touch zoom */ }    
+    .map-content { 
+        cursor: grab; 
+        aspect-ratio: unset; /* FIX: Biarkan map beradaptasi di mobile, jangan paksa 16:9 */
+    }
+    .map-content:active { cursor: grabbing; }
+
+    /* Device dots - larger for touch */
+    .device-dot { width: 20px; height: 20px; }
+    .device-dot:hover { transform: translate(-50%, -50%) scale(1.2); }
+
+    /* Tooltip - larger on mobile */
+    .tooltip { padding: 12px 16px; font-size: 12px; max-width: 250px; }
+
+    /* Map info - show mobile tips */
+    .map-info { padding: 12px 16px; font-size: 13px; }
+    .desktop-tip { display: none; }
+    .mobile-tip { display: inline; }
+
+    /* Log panel */
+    .log-panel { padding: 15px 20px; }
+    .log-header h3 { font-size: 16px; }
+    .log-item { padding: 8px; font-size: 12px; }
+
+    /* Overlay for mobile sidebar */
+    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    .sidebar-overlay.show { display: block; }
+
+    /* =========================
+       ADMIN DASHBOARD MOBILE
+       ========================= */
+    .admin-container {
+        flex-direction: column; /* Stack form & map vertically */
+        padding: 10px;
+    }
+
+    .admin-container .form-section,
+    .admin-container .map-section,
+    .admin-container .list-section {
+        width: 100%; /* Full width */
+        margin-bottom: 20px;
+    }
+
+    /* Map Picker adjustments */
+    #map-picker {
+        height: 300px; /* Fixed height for map picker on mobile */
+        position: relative;
+    }
+    #map-picker img {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Form adjustments */
+    .coord-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .list-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Table responsive scroll */
+    .list-section {
+        overflow-x: auto;
+    }
+    #devices-table {
+        min-width: 800px; /* Ensure table is readable by scrolling */
+    }
+}

@@ -1,13 +1,19 @@
+/* Reset & Box Sizing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #0A2A4A;
     color: #FFFFFF;
     display: flex;
     flex-direction: column; /* Stack items vertically */
-    height: 100vh; /* Use fixed height to prevent overflow */
+    height: 100vh; /* Fix height to viewport */
     justify-content: center; /* Center content vertically */
-    margin: 0;
-    overflow: hidden; /* Hide any potential scrollbars */
+    overflow: hidden; /* Disable scrollbars */
 }
 
 .login-container {
@@ -150,4 +156,27 @@ body {
     width: 24px;
     height: 24px;
     fill: currentColor;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+   ========================= */
+@media (max-width: 768px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto; /* Enable scroll on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .login-box {
+        padding: 30px 20px;
+        width: 100%;
+    }
+    
+    .login-logo {
+        width: 80px;
+        margin-bottom: 15px;
+    }
 }

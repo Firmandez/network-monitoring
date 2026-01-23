@@ -10,7 +10,6 @@ load_dotenv()
 # Format: (username, password)
 USERS_TO_CREATE = [
     ("admin", "laboranfti"),
-    ("firmandez", "alkhemix")
 ]
 
 conn = None

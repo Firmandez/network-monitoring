@@ -105,22 +105,24 @@ button, .filter-item {
 
 /* Primary Button Color */
 .fullscreen-btn {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); /* Biru Utama */
-    border: none;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #eeeeee;
+    padding: 10px 20px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: none;
 }
 
 .fullscreen-btn:hover {
-    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .header-text {
@@ -156,10 +158,6 @@ button, .filter-item {
     display: flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 8px 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .welcome-text {
@@ -173,26 +171,54 @@ button, .filter-item {
 }
 
 .btn-logout {
-    background: #e74c3c;
-    padding: 8px 12px;
-    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(231, 76, 60, 0.6);
+    color: #e74c3c !important;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.btn-logout:hover { background: #c0392b; }
+.btn-logout:hover { 
+    background: rgba(231, 76, 60, 0.15); 
+    border-color: #e74c3c; 
+    color: #ff6b6b !important; }
 
 .btn-login {
-    background: #2ecc71;
-    padding: 8px 12px;
-    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #eeeeee !important;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
-.btn-login:hover { background: #27ae60; }
+.btn-login:hover { 
+    background: rgba(52, 152, 219, 0.15); 
+    border-color: #3498db; 
+    color: #3498db !important; }
 
 /* Admin Panel Button */
 .btn-admin {
-    background: #f39c12;
-    padding: 8px 12px;
-    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #eeeeee !important;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
-.btn-admin:hover { background: #e67e22; }
+
+.btn-admin:hover { 
+    background: rgba(52, 152, 219, 0.15); 
+    border-color: #3498db; 
+    color: #3498db !important; }
 
 /* =========================
    STAT BOXES (Glassmorphism)
@@ -901,101 +927,11 @@ button, .filter-item {
     .fullscreen-grid { grid-template-columns: repeat(auto-fit, minmax(30%, 1fr)); }
 }
 
-/* Mobile Styles (up to 768px) */
-@media (max-width: 768px) {
-    /* Sidebar jadi drawer di mobile, FIX: hapus display:none agar transisi jalan */
-    .sidebar { 
-        position: fixed; 
-        top: 0; 
-        left: -280px; /* Mulai dari luar layar */
-        width: 260px; /* Lebar sidebar */
-        height: 100vh; 
-        z-index: 1000; 
-        transition: left 0.3s ease-in-out; /* Animasi geser yang smooth */
-        /* FIX: Ganti background solid dengan glassmorphism agar efek langsung muncul */
-        background: rgba(10, 42, 74, 0.85); /* Warna dasar navy, tapi transparan */
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-right: 1px solid rgba(52, 152, 219, 0.3); /* Border tipis di kanan */
-    }
-    .sidebar.open { left: 0; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
-
-    /* Show toggle button */
-    .sidebar-toggle-btn { display: block; }
-
-    /* Header adjustments */
-    .header { padding: 15px 20px; }
-    .header-left { flex: 1; }
-    .header-right { flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-    .logo-container { gap: 8px; }
-    .header-logo { width: 80px; height: 80px; }
-    .header-left h1 { font-size: 18px; line-height: 1.1; }
-    .subtitle { font-size: 11px; margin-bottom: 1px; }
-    .stat-box { min-width: 80px; padding: 10px 15px; }
-    .stat-value { font-size: 24px; }
-    .stat-label { font-size: 11px; }
-
-    /* Hide fullscreen button on mobile */
-    .fullscreen-btn { display: none; }
-
-    /* Main content */
-    .container { flex-direction: column; min-height: auto; }
-    .main-content { padding: 15px; }
-    .map-container { min-height: 450px; touch-action: none; /* Enable touch zoom */ }    
-    .map-content { 
-        cursor: grab; 
-        aspect-ratio: unset; /* FIX: Biarkan map beradaptasi di mobile, jangan paksa 16:9 */
-    }
-    .map-content:active { cursor: grabbing; }
-
-    /* Device dots - larger for touch */
-    .device-dot { width: 20px; height: 20px; }
-    .device-dot:hover { transform: translate(-50%, -50%) scale(1.2); }
-
-    /* Tooltip - larger on mobile */
-    .tooltip { padding: 12px 16px; font-size: 12px; max-width: 250px; }
-
-    /* Map info - show mobile tips */
-    .map-info { padding: 12px 16px; font-size: 13px; }
-    .desktop-tip { display: none; }
-    .mobile-tip { display: inline; }
-
-    /* Log panel */
-    .log-panel { padding: 15px 20px; }
-    .log-header h3 { font-size: 16px; }
-    .log-item { padding: 8px; font-size: 12px; }
-
-    /* Fullscreen mode - single column grid */
-    .fullscreen-grid { grid-template-columns: 1fr; grid-template-rows: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; padding: 8px; }
-    .fullscreen-header { padding: 8px 15px; height: 60px; }
-    .fullscreen-title h1 { font-size: 16px; }
-    .fullscreen-title p { font-size: 12px; }
-    .fullscreen-stats { gap: 15px; }
-    .fullscreen-stat { min-width: 70px; padding: 4px 12px; }
-    .fullscreen-stat .stat-value { font-size: 20px; }
-    .fullscreen-stat .stat-label { font-size: 10px; }
-    .fullscreen-footer { padding: 4px 15px; font-size: 11px; height: 25px; }
-
-    /* Floor grid items */
-    .floor-grid-header { padding: 4px 8px; height: 25px; font-size: 11px; }
-    .floor-grid-header h3 { font-size: 11px; }
-
-    /* Mini dots - larger for touch */
-    .floor-grid-dot { width: 12px; height: 12px; }
-    .floor-grid-dot.offline { width: 12px; height: 12px; }
-}
-
 /* Desktop Styles (above 768px) */
 @media (min-width: 769px) {
     .sidebar-toggle-btn { display: none; }
     .desktop-tip { display: inline; }
     .mobile-tip { display: none; }
-}
-
-/* Overlay for mobile sidebar */
-@media (max-width: 768px) {
-    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-    .sidebar-overlay.show { display: block; }
 }
 
 /* ====================================
@@ -1350,155 +1286,4 @@ button, .filter-item {
     width: 24px;
     height: 24px;
     fill: currentColor;
-}
-
-/* =========================
-   MODAL (Device List)
-   ========================= */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 42, 74, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 2000;
-    display: none; /* Hidden by default */
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.modal-overlay.show {
-    display: flex;
-    opacity: 1;
-    pointer-events: all;
-}
-
-.modal-content {
-    background: rgba(15, 52, 96, 0.9);
-    border: 1px solid rgba(52, 152, 219, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.show .modal-content {
-    transform: scale(1);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 25px;
-    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: #eeeeee;
-    font-size: 20px;
-}
-
-.modal-close-btn {
-    background: none;
-    border: none;
-    color: #a0aec0;
-    font-size: 30px;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.3s, transform 0.3s;
-}
-
-.modal-close-btn:hover {
-    color: #fff;
-    transform: rotate(90deg);
-}
-
-.modal-body {
-    padding: 25px;
-    overflow-y: auto;
-}
-
-.modal-device-list { 
-    list-style: none; 
-    padding: 0; 
-    margin: 0; }
-
-.modal-device-item { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    padding: 12px 15px; 
-    background: rgba(255, 255, 255, 0.05); 
-    border-radius: 8px; 
-    margin-bottom: 10px; 
-    border-left: 4px solid transparent; 
-    transition: background 0.3s, border-color 0.3s; }
-
-.modal-device-item:hover { 
-    background: rgba(255, 255, 255, 0.1); }
-
-.modal-device-item.online { 
-    border-left-color: #2ecc71; }
-
-.modal-device-item.offline { 
-    border-left-color: #e74c3c; }
-
-.modal-device-item.unstable { 
-    border-left-color: #f39c12; }
-
-.modal-device-info { 
-    display: flex; 
-    flex-direction: column; }
-
-.modal-device-name { 
-    font-weight: 600; 
-    color: #eeeeee; }
-
-.modal-device-ip { 
-    font-size: 13px; 
-    color: #a0aec0; }
-
-.modal-filter-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
-}
-
-.modal-filter-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #a0aec0;
-    padding: 8px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.3s ease;
-}
-
-.modal-filter-btn:hover {
-    background: rgba(52, 152, 219, 0.3);
-    color: #fff;
-}
-
-.modal-filter-btn.active {
-    background: #3498db;
-    color: #fff;
-    border-color: #3498db;
-    box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
 }

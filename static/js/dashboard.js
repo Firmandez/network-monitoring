@@ -189,18 +189,26 @@ function setupButtonListeners() {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     // Stat box listeners
-    const statTotalBox = document.querySelector('.header-right .stat-box:nth-child(1)');
-    const statOnlineBox = document.querySelector('.header-right .stat-box:nth-child(2)');
-    const statOfflineBox = document.querySelector('.header-right .stat-box:nth-child(3)');
+    // FIX: Gunakan ID elemen anak untuk menemukan parent .stat-box agar lebih robust
+    const statTotalEl = document.getElementById('stat-total');
+    const statOnlineEl = document.getElementById('stat-online');
+    const statOfflineEl = document.getElementById('stat-offline');
+    
+    const statTotalBox = statTotalEl ? statTotalEl.closest('.stat-box') : null;
+    const statOnlineBox = statOnlineEl ? statOnlineEl.closest('.stat-box') : null;
+    const statOfflineBox = statOfflineEl ? statOfflineEl.closest('.stat-box') : null;
 
     if (statTotalBox) statTotalBox.addEventListener('click', () => showDeviceListModal('total'));
     if (statOnlineBox) statOnlineBox.addEventListener('click', () => showDeviceListModal('online'));
     if (statOfflineBox) statOfflineBox.addEventListener('click', () => showDeviceListModal('offline'));
 
-    if (modalCloseBtn) modalCloseBtn.addEventListener('click', hideDeviceListModal);
-    if (deviceListModal) deviceListModal.addEventListener('click', (e) => {
+    const modalClose = modalCloseBtn || document.getElementById('modal-close-btn');
+    if (modalClose) modalClose.addEventListener('click', hideDeviceListModal);
+
+    const modal = deviceListModal || document.getElementById('device-list-modal');
+    if (modal) modal.addEventListener('click', (e) => {
         // Close modal if overlay is clicked, but not its content
-        if (e.target === deviceListModal) hideDeviceListModal();
+        if (e.target === modal) hideDeviceListModal();
     });
 
     if (fullscreenBtn) {
@@ -777,7 +785,12 @@ function resetMapPosition() {
 
 // --- MODAL FUNCTIONS ---
 function showDeviceListModal(status) {
-    if (!deviceListModal || !modalTitle || !modalBody) return;
+    // Re-query elements to ensure they exist (in case of loading race conditions)
+    const modal = deviceListModal || document.getElementById('device-list-modal');
+    const titleEl = modalTitle || document.getElementById('modal-title');
+    const bodyEl = modalBody || document.getElementById('modal-body');
+
+    if (!modal || !titleEl || !bodyEl) return;
 
     let initialDevices = [];
     let title = '';
@@ -798,8 +811,8 @@ function showDeviceListModal(status) {
             break;
     }
 
-    modalTitle.textContent = `${title} (${initialDevices.length})`;
-    modalBody.innerHTML = ''; // Clear previous content
+    titleEl.textContent = `${title} (${initialDevices.length})`;
+    bodyEl.innerHTML = ''; // Clear previous content
 
     // 1. Create filter controls
     const filterControls = document.createElement('div');
@@ -825,12 +838,12 @@ function showDeviceListModal(status) {
             typeBtn.dataset.type = type;
             filterControls.appendChild(typeBtn);
         });
-        modalBody.appendChild(filterControls);
+        bodyEl.appendChild(filterControls);
     }
 
     // 2. Create list container
     const listContainer = document.createElement('div');
-    modalBody.appendChild(listContainer);
+    bodyEl.appendChild(listContainer);
 
     // 3. Function to render the list
     function renderList(devices) {
@@ -895,12 +908,13 @@ function showDeviceListModal(status) {
         }
     });
 
-    deviceListModal.classList.add('show');
+    modal.classList.add('show');
 }
 
 function hideDeviceListModal() {
-    if (!deviceListModal) return;
-    deviceListModal.classList.remove('show');
+    const modal = deviceListModal || document.getElementById('device-list-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
 }
 
 // Sidebar Toggle Function
