@@ -576,7 +576,10 @@
 
             // 3. Setup WebRTC PeerConnection
             const pc = new RTCPeerConnection({
-                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' }
+                ],
+                iceTransportPolicy: 'all'
             });
 
             // Event saat track video diterima
@@ -586,6 +589,9 @@
                     // Sembunyikan loader saat video mulai main
                     const loader = videoEl.parentElement.querySelector('.stream-loader');
                     if (loader) loader.style.display = 'none';
+                    
+                    // Paksa play (kadang browser butuh trigger manual)
+                    videoEl.play().catch(e => console.error("Autoplay blocked:", e));
                 }
             };
 
@@ -602,15 +608,36 @@
 
             // 4. Signaling ke go2rtc
             try {
-                const offer = await pc.createOffer();
+                // Buat offer dengan opsi receive
+                const offer = await pc.createOffer({
+                    offerToReceiveVideo: true,
+                    offerToReceiveAudio: hasAudio
+                });
                 await pc.setLocalDescription(offer);
+
+                // PENTING: Tunggu ICE Gathering selesai agar SDP lengkap (berisi IP Candidate)
+                // Jika tidak ditunggu, server tidak tahu harus kirim video ke IP mana (buffering terus)
+                await new Promise(resolve => {
+                    if (pc.iceGatheringState === 'complete') {
+                        resolve();
+                    } else {
+                        const checkState = () => {
+                            if (pc.iceGatheringState === 'complete') {
+                                pc.removeEventListener('icegatheringstatechange', checkState);
+                                resolve();
+                            }
+                        };
+                        pc.addEventListener('icegatheringstatechange', checkState);
+                        // Timeout safety 1 detik (jika STUN lambat, kirim apa adanya)
+                        setTimeout(resolve, 1000);
+                    }
+                });
 
                 const signalingUrl = new URL(STREAM_SERVER + '/api/webrtc');
                 signalingUrl.searchParams.set('src', rtspUrl);
-
                 const res = await fetch(signalingUrl, {
                     method: 'POST',
-                    body: pc.localDescription.sdp
+                    body: pc.localDescription.sdp // Kirim SDP yang sudah lengkap dengan candidates
                 });
 
                 if (!res.ok) throw new Error('Signaling failed');
