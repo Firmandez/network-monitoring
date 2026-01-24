@@ -297,7 +297,24 @@
             z-index: 2;
         }
         
-        .stream-info button {
+        /* --- FIX CSS SYNTAX ERROR --- */
+        .stream-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end; /* Posisi Kanan Bawah */
+            align-items: center;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+            pointer-events: none;
+        }
+        
+        .stream-controls button {
             pointer-events: auto;
             background: none;
             border: none;
@@ -308,7 +325,7 @@
             transition: color 0.2s;
         }
         
-        .stream-info button:hover {
+        .stream-controls button:hover {
             color: #fff;
             transform: scale(1.1);
         }
@@ -327,6 +344,10 @@
             opacity: 1;
         }
 
+        .stream-card:hover .stream-controls {
+            opacity: 1;
+        }
+
         
         /* Helper untuk hasil pencarian kosong */
         .no-results {
@@ -341,6 +362,7 @@
         @media (max-width: 768px) {
             .stream-grid { grid-template-columns: 1fr; gap: 15px; }
             .stream-info { opacity: 1; }
+            .stream-controls { opacity: 1; }
             
             /* Mobile Navigation Logic */
             .mon-sidebar {
@@ -427,10 +449,14 @@
                             
                             <div class="stream-loader"></div>
                             
-                            <!-- Reverted to Iframe with MSE -->
+                            <!-- ROBUST AUDIO FIX: 
+                                 1. tracks=v : Memaksa go2rtc hanya kirim video track.
+                                 2. allow="autoplay" : Memenuhi policy browser.
+                            -->
                             <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video" 
+                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video&tracks=v" 
                                     src="" 
+                                    allow="autoplay; fullscreen"
                                     allowfullscreen 
                                     scrolling="no"></iframe>
                             
@@ -439,6 +465,9 @@
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
+                            </div>
+                            
+                            <div class="stream-controls">
                                 <!-- NEW: Rotate Button (Mobile) -->
                                 <button class="rotate-btn" onclick="rotateLandscape(this.closest('.stream-card'))" title="Landscape Mode">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/><path d="M11.536 14.01A8.473 8.473 0 0 1 8 14.5a8.473 8.473 0 0 1-3.536-.49l-.555.832A9.476 9.476 0 0 0 8 15.5a9.476 9.476 0 0 0 4.091-.658l-.555-.832zM3.5 13.5A7.5 7.5 0 0 1 8 13.5a7.5 7.5 0 0 1 4.5 0h-9z"/></svg>
