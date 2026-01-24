@@ -218,11 +218,71 @@
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 3;
-            pointer-events: none; /* Info tetap tidak bisa diklik agar tembus ke video */
+            pointer-events: none; 
         }
+        
+        /* --- NEW: SNAPSHOT & PLAY BUTTON STYLES --- */
+        .stream-snapshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2; /* Di atas loader, di bawah info */
+            display: block;
+            cursor: pointer;
+        }
+
+        .btn-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.9;
+            pointer-events: none; /* Klik tembus ke card */
+        }
+
+        /* Saat mode playing (Live Video) */
+        .stream-card.playing .stream-snapshot,
+        .stream-card.playing .btn-play-overlay {
+            display: none;
+        }
+        .stream-card.playing iframe { z-index: 10; }
 
         .stream-card:hover .stream-info {
             opacity: 1;
+        }
+
+                /* FULLSCREEN BUTTON STYLE */
+        .btn-fullscreen {
+            pointer-events: auto; /* Aktifkan klik */
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-fullscreen:hover {
+            background: #3498db;
+            border-color: #3498db;
         }
         
         /* Helper untuk hasil pencarian kosong */
@@ -286,14 +346,29 @@
                     <div class="accordion-content-inner">
                         <div class="stream-grid">
                             {% for cam in cameras %}
-                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
+                            <!-- Tambahkan onclick untuk toggle Live/Snapshot -->
+                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}" onclick="toggleStream(this)">
                                 <div class="stream-loader"></div>
-                                <!-- Default src kosong agar tidak loading di awal -->
+                                
+                                <!-- 1. SNAPSHOT IMAGE (Ringan) -->
+                                <img class="stream-snapshot" data-src="{{ stream_server }}/api/frame.jpeg?src={{ cam.rtsp }}" src="" alt="Preview">
+                                
+                                <!-- 2. PLAY BUTTON ICON -->
+                                <div class="btn-play-overlay"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/></svg></div>
+
+                                <!-- 3. LIVE VIDEO IFRAME (Berat - Load on Click) -->
                                 <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen></iframe>
                                 
                                 <div class="stream-info">
-                                    <span>{{ cam.name }}</span>
-                                    <span style="color: #2ecc71;">{{ cam.ip }}</span>
+                                    <div style="display: flex; flex-direction: column;">
+                                        <span style="font-weight: 600;">{{ cam.name }}</span>
+                                        <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
+                                    </div>
+                                    <button class="btn-fullscreen" onclick="toggleFullscreen(event, this)" title="Fullscreen HD">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                             {% endfor %}
@@ -411,6 +486,117 @@
             } else {
                 noResultsMsg.style.display = "none";
             }
+        });
+
+        // --- TOGGLE STREAM LOGIC ---
+        function toggleStream(card) {
+            const iframe = card.querySelector('iframe');
+            const isPlaying = card.classList.contains('playing');
+
+            if (isPlaying) {
+                // Stop Live -> Balik ke Snapshot
+                card.classList.remove('playing');
+                iframe.setAttribute('src', '');
+            } else {
+                // Start Live
+                card.classList.add('playing');
+                iframe.setAttribute('src', iframe.getAttribute('data-src'));
+            }
+        }
+
+        // --- FULLSCREEN HD LOGIC ---
+        function toggleFullscreen(event, btn) {
+            event.stopPropagation(); // Mencegah klik tembus ke kartu (toggleStream)
+            
+            const card = btn.closest('.stream-card');
+            const iframe = card.querySelector('iframe');
+            
+            // 1. Request Native Fullscreen
+            if (card.requestFullscreen) {
+                card.requestFullscreen();
+            } else if (card.webkitRequestFullscreen) { /* Safari */
+                card.webkitRequestFullscreen();
+            }
+
+            // 2. Switch ke High Res (Channel 101)
+            // URL asli mengandung ...%2F102 (encoded /102)
+            let currentSrc = iframe.getAttribute('data-src');
+            // Ganti 102 menjadi 101 di URL
+            let highResSrc = currentSrc.replace('102', '101'); 
+            
+            iframe.setAttribute('src', highResSrc);
+            card.classList.add('playing'); // Pastikan UI dalam mode playing
+            card.classList.add('fullscreen-mode'); // Penanda sedang fullscreen
+        }
+
+        // Listener saat keluar dari Fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                // User baru saja keluar dari fullscreen
+                const card = document.querySelector('.stream-card.fullscreen-mode');
+                if (card) {
+                    card.classList.remove('fullscreen-mode');
+                    const iframe = card.querySelector('iframe');
+                    
+                    // 3. Kembalikan ke Low Res (Channel 102)
+                    // Ambil dari data-src asli yang masih 102
+                    iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                }
+            }
+        });
+
+        // --- AUTO REFRESH SNAPSHOT (Setiap 5 Detik) ---
+        // Hanya refresh snapshot yang terlihat di layar dan TIDAK sedang diputar (Live)
+        setInterval(() => {
+            document.querySelectorAll('.stream-card.visible:not(.playing) .stream-snapshot').forEach(img => {
+                const baseUrl = img.getAttribute('data-src');
+                // Tambahkan timestamp agar browser tidak mengambil cache lama
+                img.src = `${baseUrl}&t=${Date.now()}`;
+            });
+        }, 3000);
+
+        // --- STRICT LAZY LOAD (Efficiency Booster) ---
+        const streamObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const card = entry.target.closest('.stream-card');
+                if (!card) return; // Safety check
+
+                const iframe = card.querySelector('iframe');
+                const img = card.querySelector('.stream-snapshot');
+
+                if (entry.isIntersecting) {
+                    // MASUK LAYAR
+                    card.classList.add('visible');
+                    
+                    // Load Snapshot pertama kali
+                    if (!img.getAttribute('src')) {
+                        img.src = img.getAttribute('data-src');
+                    }
+
+                    // Jika statusnya 'playing' (user pernah klik play), load videonya
+                    if (card.classList.contains('playing')) {
+                        if (!iframe.getAttribute('src')) {
+                            iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                        }
+                    }
+                } else {
+                    // KELUAR LAYAR -> MATIKAN SEMUA
+                    card.classList.remove('visible');
+                    
+                    // Unload Video (Hemat CPU)
+                    iframe.setAttribute('src', '');
+                    // Kita biarkan src image agar tidak flickering saat scroll balik cepat
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '50px 0px', // DIPERKETAT: Hanya load jika jaraknya 50px dari layar (sebelumnya 400px)
+            threshold: 0.01
+        });
+
+        // Observe semua kartu
+        document.querySelectorAll('.stream-card').forEach(card => {
+            streamObserver.observe(card);
         });
     </script>
 

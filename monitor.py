@@ -12,7 +12,7 @@ monitor_bp = Blueprint('monitor', __name__)
 # Sesuaikan credential default CCTV di sini
 RTSP_USER = "admin"
 RTSP_PASS = "k4m3r4cctvft1"
-RTSP_PATH = "/Streaming/Channels/101"
+RTSP_PATH = "/Streaming/Channels/102"
 
 @monitor_bp.route('/')
 @login_required
