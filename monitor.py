@@ -15,7 +15,7 @@ RTSP_PATH = "/stream1"
 
 # Alamat Server go2rtc (Streaming Engine)
 # Sesuaikan IP ini dengan IP server Proxmox/Debian Anda
-STREAM_SERVER_URL = "http://192.168.68.109:1984" 
+STREAM_SERVER_URL = "http://192.168.68.109:80" 
 
 @monitor_bp.route('/')
 @login_required
