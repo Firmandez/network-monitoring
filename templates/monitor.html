@@ -506,7 +506,12 @@
 
                     // 2. Upgrade ke HD (/101)
                     let currentSrc = iframe.getAttribute('data-src');
-                    let highResSrc = currentSrc.replace('102', '101'); 
+                    
+                    // FIX: Replace spesifik pada bagian Channel agar tidak merusak IP Address (misal 192.168.1.102)
+                    // Mencari pola encoded 'Channels/102' -> 'Channels%2F102'
+                    let highResSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
+                    // Fallback jika URL tidak ter-encode (Channels/102)
+                    if (highResSrc === currentSrc) highResSrc = currentSrc.replace('Channels/102', 'Channels/101');
                     
                     if (loader) loader.style.display = 'block';
                     iframe.setAttribute('src', highResSrc);
