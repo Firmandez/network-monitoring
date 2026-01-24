@@ -18,7 +18,7 @@ RTSP_PATH = "/stream1"
 # Sesuaikan IP ini dengan IP server Proxmox/Debian Anda
 STREAM_SERVER_URL = "http://192.168.68.109:1984" 
 
-@monitor_bp.route('/dashboard')
+@monitor_bp.route('/')
 @login_required
 def dashboard():
     allowed_users = ['insider']

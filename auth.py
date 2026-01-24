@@ -14,7 +14,7 @@ def login_required(view):
     @wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', next=request.path))
         return view(**kwargs)
     return wrapped_view
 
@@ -47,6 +47,12 @@ def login():
         if db_user and check_password_hash(db_user['password_hash'], pw):
             session.clear() # Hapus session lama sebelum membuat yang baru
             session['user_id'] = db_user['id']
+            
+            # 1. Cek apakah ada parameter 'next' (halaman tujuan awal)
+            next_url = request.args.get('next')
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
+
             # Jika user adalah 'admin' atau 'firmandez', arahkan ke dashboard admin
             if db_user['username'] in ['admin', 'firmandez']:
                 return redirect(url_for('admin.dashboard'))
