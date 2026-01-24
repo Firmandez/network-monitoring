@@ -258,25 +258,6 @@
             opacity: 1;
         }
 
-                /* FULLSCREEN BUTTON STYLE */
-        .btn-fullscreen {
-            pointer-events: auto; /* Aktifkan klik */
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            border-radius: 4px;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-fullscreen:hover {
-            background: #3498db;
-            border-color: #3498db;
-        }
         
         /* Helper untuk hasil pencarian kosong */
         .no-results {
@@ -322,8 +303,7 @@
         <aside class="ivms-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">
-                    <img src="{{ url_for('static', filename='images/logoNOC.png') }}" alt="Logo" style="height: 24px;">
-                    <span>iVMS Web</span>
+                    <span>Private Monitoring</span>
                 </div>
                 <div class="search-box">
                     <span class="search-icon">
@@ -386,11 +366,6 @@
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
-                                <button class="btn-fullscreen" onclick="toggleFullscreen(event, this)" title="Fullscreen HD">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
-                                    </svg>
-                                </button>
                             </div>
                         </div>
                         {% endfor %}
@@ -498,9 +473,9 @@
         });
 
         // --- FULLSCREEN HD LOGIC ---
-        function toggleFullscreen(event, btn) {
+        function toggleFullscreen(event, card) {
             event.stopPropagation();
-            const card = btn.closest('.stream-card');
+            // card diterima langsung dari ondblclick
             
             // 1. Request Native Fullscreen
             if (card.requestFullscreen) {
@@ -516,10 +491,11 @@
 
             if (fsElement) {
                 // --- MASUK FULLSCREEN ---
-                // Cek apakah elemen yang fullscreen adalah card atau iframe di dalamnya
-                const card = fsElement.closest ? fsElement.closest('.stream-card') : null;
+                // HANYA jika yang fullscreen adalah CARD WRAPPER (hasil double click)
+                // Jika yang fullscreen adalah iframe (native button), kita abaikan agar tidak reload/glitch
                 
-                if (card) {
+                if (fsElement.classList.contains('stream-card')) {
+                    const card = fsElement;
                     const iframe = card.querySelector('iframe');
                     const loader = card.querySelector('.stream-loader');
 
@@ -542,7 +518,6 @@
                 const card = document.querySelector('.stream-card.fullscreen-mode');
                 if (card) {
                     card.classList.remove('fullscreen-mode');
-                    card.classList.remove('playing'); // Reset status
                     const iframe = card.querySelector('iframe');
                     
                     // 3. Kembalikan ke Low Res (Channel 102)
