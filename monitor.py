@@ -63,6 +63,7 @@ def dashboard():
             groups[floor_name].append({
                 "id": cam['id'],
                 "name": cam['name'],
+                "ip": cam['ip'],
                 "rtsp": encoded_rtsp
             })
             

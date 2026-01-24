@@ -24,6 +24,12 @@
             z-index: 100;
         }
 
+        .monitor-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .monitor-title h1 { 
             font-size: 18px; 
             color: #a0aec0; 
@@ -40,10 +46,44 @@
             box-shadow: 0 0 10px #2ecc71;
         }
 
+        /* SEARCH BAR STYLE */
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #eee;
+            padding: 8px 15px 8px 35px; /* Padding kiri buat icon */
+            border-radius: 20px;
+            font-size: 13px;
+            width: 250px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #3498db;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+            background: #222;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+        }
+
         .monitor-container {
             padding: 20px;
             max-width: 1800px;
             margin: 0 auto;
+            min-height: 100vh;
         }
 
         .group-section { margin-bottom: 40px; }
@@ -61,7 +101,6 @@
         /* RESPONSIVE GRID SYSTEM */
         .stream-grid {
             display: grid;
-            /* Grid otomatis: Minimal lebar 400px, kalau layar muat lebih, dia nambah kolom */
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 20px;
         }
@@ -72,7 +111,7 @@
             border-radius: 6px;
             overflow: hidden;
             position: relative;
-            aspect-ratio: 16 / 9; /* Rasio standar video */
+            aspect-ratio: 16 / 9;
             transition: transform 0.2s, border-color 0.2s;
         }
         
@@ -85,7 +124,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none; /* Mencegah klik kanan di iframe jika perlu */
+            pointer-events: none;
         }
 
         .stream-info {
@@ -107,25 +146,43 @@
         .stream-card:hover .stream-info {
             opacity: 1;
         }
+        
+        /* Helper untuk hasil pencarian kosong */
+        .no-results {
+            color: #555;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
 
         /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .stream-grid { 
-                grid-template-columns: 1fr; /* 1 Kolom full di HP */
-                gap: 15px;
-            } 
-            .monitor-header { padding: 10px 15px; }
-            .monitor-title h1 { font-size: 16px; }
-            .stream-info { opacity: 1; /* Selalu tampil di HP */ }
+            .stream-grid { grid-template-columns: 1fr; gap: 15px; } 
+            .monitor-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+            .monitor-left { width: 100%; justify-content: space-between; }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
+            .search-box input:focus { width: 100%; }
+            .stream-info { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
     <div class="monitor-header">
-        <div class="monitor-title">
-            <h1><span class="live-dot"></span> PRIVATE MONITORING PAGE </h1>
+        <div class="monitor-left">
+            <div class="monitor-title">
+                <h1><span class="live-dot"></span> SYSTEM MONITOR</h1>
+            </div>
+            
+            <!-- SEARCH BAR -->
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="camSearch" placeholder="Search IP or Name..." autocomplete="off">
+            </div>
         </div>
+
         <div class="user-status">
             <span class="welcome-text" style="font-size: 12px;">ID: <strong>{{ user.username }}</strong></span>
             <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="border:none; padding: 5px 10px;">Exit</a>
@@ -133,21 +190,20 @@
     </div>
 
     <div class="monitor-container">
+        <div id="no-results-msg" class="no-results">No cameras found matching your search.</div>
+
         {% for group_name, cameras in groups.items() %}
-        <div class="group-section">
+        <div class="group-section" id="group-{{ loop.index }}">
             <h2 class="group-header">{{ group_name }}</h2>
             <div class="stream-grid">
                 {% for cam in cameras %}
-                <div class="stream-card">
-                    <!-- 
-                        Menggunakan Magic Link go2rtc.
-                        Ini akan otomatis membuat stream WebRTC on-the-fly dari URL RTSP.
-                    -->
+                <!-- Tambahkan data-name dan data-ip untuk filtering -->
+                <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
                     <iframe src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" allowfullscreen></iframe>
                     
                     <div class="stream-info">
                         <span>{{ cam.name }}</span>
-                        <span style="color: #2ecc71;">● LIVE</span>
+                        <span style="color: #2ecc71;">{{ cam.ip }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -155,6 +211,49 @@
         </div>
         {% endfor %}
     </div>
+
+    <script>
+        // Fitur Pencarian Real-time
+        const searchInput = document.getElementById('camSearch');
+        const noResultsMsg = document.getElementById('no-results-msg');
+
+        searchInput.addEventListener('keyup', function(e) {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.stream-card');
+            const groups = document.querySelectorAll('.group-section');
+            let totalVisible = 0;
+
+            // 1. Filter Kartu Kamera
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const ip = card.getAttribute('data-ip').toLowerCase();
+                
+                if (name.includes(term) || ip.includes(term)) {
+                    card.style.display = "";
+                    totalVisible++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // 2. Sembunyikan Judul Grup jika isinya kosong semua
+            groups.forEach(group => {
+                const visibleCardsInGroup = group.querySelectorAll('.stream-card:not([style*="display: none"])');
+                if (visibleCardsInGroup.length === 0) {
+                    group.style.display = "none";
+                } else {
+                    group.style.display = "";
+                }
+            });
+
+            // 3. Tampilkan pesan jika tidak ada hasil sama sekali
+            if (totalVisible === 0) {
+                noResultsMsg.style.display = "block";
+            } else {
+                noResultsMsg.style.display = "none";
+            }
+        });
+    </script>
 
 </body>
 </html>
