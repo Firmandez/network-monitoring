@@ -266,8 +266,19 @@
             pointer-events: none; 
         }
 
+        /* Overlay transparan untuk menangkap Double Click di area video */
+        .click-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Cover full iframe agar klik kanan native tidak muncul */
+            z-index: 15; /* Di atas iframe (2), di bawah info (20) */
+            cursor: pointer;
+        }
+
         /* Saat mode playing (Live Video) */
-        .stream-card.playing video { z-index: 10; }
+        .stream-card.playing iframe { z-index: 10; }
 
         .stream-card:hover .stream-info {
             opacity: 1;
@@ -413,20 +424,19 @@
                         <div class="stream-card" 
                              data-name="{{ cam.name }}" 
                              data-ip="{{ cam.ip }}"
-                             data-rtsp="{{ cam.rtsp }}"
-                             data-has-audio="{{ 'true' if cam.has_audio else 'false' }}"
                              data-quality="sd">
+                            
+                            <!-- Overlay untuk Double Click Fullscreen (Wrapper) -->
+                            <div class="click-overlay" ondblclick="toggleFullscreen(event, this)" oncontextmenu="return false;"></div>
                             
                             <div class="stream-loader"></div>
                             
-                            <!-- NATIVE VIDEO ELEMENT (Pengganti Iframe) -->
-                            <!-- muted autoplay playsinline wajib untuk autoplay di browser modern -->
-                            <video class="lazy-stream" 
-                                   muted 
-                                   autoplay 
-                                   playsinline 
-                                   ondblclick="toggleFullscreen(event, this)"
-                                   style="width: 100%; height: 100%; object-fit: fill; background: #000;"></video>
+                            <!-- Default: Iframe Sub-stream (/102) -->
+                            <iframe class="lazy-stream" 
+                                    data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" 
+                                    src="" 
+                                    allowfullscreen 
+                                    scrolling="no"></iframe>
                             
                             <div class="stream-info">
                                 <div style="display: flex; flex-direction: column;">
@@ -473,10 +483,10 @@
             document.querySelectorAll('.floor-grid').forEach(grid => {
                 grid.classList.remove('active');
                 
-                // Unload videos dari grid yang disembunyikan
+                // Unload videos from hidden grids to save resources
                 if (grid.id !== floorId) {
-                    const videos = grid.querySelectorAll('video');
-                    videos.forEach(video => stopStream(video));
+                    const iframes = grid.querySelectorAll('iframe');
+                    iframes.forEach(iframe => iframe.setAttribute('src', ''));
                 }
             });
 
@@ -550,129 +560,24 @@
             }
         });
 
-        // --- WEBRTC SIGNALING LOGIC (NATIVE) ---
-        const STREAM_SERVER = "{{ stream_server }}"; // http://host:1984
-
-        async function startStream(videoEl, quality = 'sd') {
-            // 1. Stop stream lama jika ada
-            stopStream(videoEl);
-
-            // 2. Tentukan URL RTSP (SD/HD)
-            let rtspUrl = decodeURIComponent(videoEl.closest('.stream-card').dataset.rtsp);
-            
-            if (quality === 'hd') {
-                // Ganti channel 102 ke 101
-                rtspUrl = rtspUrl.replace('/102', '/101');
-            } else {
-                // Pastikan channel 102
-                rtspUrl = rtspUrl.replace('/101', '/102');
-            }
-
-            // 3. Setup WebRTC PeerConnection
-            const pc = new RTCPeerConnection({
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' }
-                ],
-                iceTransportPolicy: 'all'
-            });
-
-            // Event saat track video diterima
-            pc.ontrack = (event) => {
-                if (videoEl.srcObject !== event.streams[0]) {
-                    videoEl.srcObject = event.streams[0];
-                    // Sembunyikan loader saat video mulai main
-                    const loader = videoEl.parentElement.querySelector('.stream-loader');
-                    if (loader) loader.style.display = 'none';
-                    
-                    // Paksa play (kadang browser butuh trigger manual)
-                    videoEl.play().catch(e => console.error("Autoplay blocked:", e));
-                }
-            };
-
-            // Tambahkan Transceiver Video
-            pc.addTransceiver('video', { direction: 'recvonly' });
-
-            // Tambahkan Transceiver Audio (Hanya jika kamera punya mic)
-            // Kita selalu negotiate audio jika ada, tapi di-mute di sisi <video> tag
-            // agar switching mute/unmute instan tanpa reload.
-            const hasAudio = videoEl.closest('.stream-card').dataset.hasAudio === 'true';
-            if (hasAudio) {
-                pc.addTransceiver('audio', { direction: 'recvonly' });
-            }
-
-            // 4. Signaling ke go2rtc
-            try {
-                // Buat offer dengan opsi receive
-                const offer = await pc.createOffer({
-                    offerToReceiveVideo: true,
-                    offerToReceiveAudio: hasAudio
-                });
-                await pc.setLocalDescription(offer);
-
-                // PENTING: Tunggu ICE Gathering selesai agar SDP lengkap (berisi IP Candidate)
-                // Jika tidak ditunggu, server tidak tahu harus kirim video ke IP mana (buffering terus)
-                await new Promise(resolve => {
-                    if (pc.iceGatheringState === 'complete') {
-                        resolve();
-                    } else {
-                        const checkState = () => {
-                            if (pc.iceGatheringState === 'complete') {
-                                pc.removeEventListener('icegatheringstatechange', checkState);
-                                resolve();
-                            }
-                        };
-                        pc.addEventListener('icegatheringstatechange', checkState);
-                        // Timeout safety 1 detik (jika STUN lambat, kirim apa adanya)
-                        setTimeout(resolve, 1000);
-                    }
-                });
-
-                const signalingUrl = new URL(STREAM_SERVER + '/api/webrtc');
-                signalingUrl.searchParams.set('src', rtspUrl);
-                const res = await fetch(signalingUrl, {
-                    method: 'POST',
-                    body: pc.localDescription.sdp // Kirim SDP yang sudah lengkap dengan candidates
-                });
-
-                if (!res.ok) throw new Error('Signaling failed');
-
-                const answer = await res.text();
-                await pc.setRemoteDescription(new RTCSessionDescription({
-                    type: 'answer',
-                    sdp: answer
-                }));
-
-                // Simpan referensi PC di elemen video untuk cleanup nanti
-                videoEl.peerConnection = pc;
-
-            } catch (err) {
-                console.error("Stream Error:", err);
-            }
-        }
-
-        function stopStream(videoEl) {
-            if (videoEl.peerConnection) {
-                videoEl.peerConnection.close();
-                videoEl.peerConnection = null;
-            }
-            videoEl.srcObject = null;
-            // Tampilkan loader lagi untuk next load
-            const loader = videoEl.parentElement.querySelector('.stream-loader');
-            if (loader) loader.style.display = 'block';
-        }
-
         // --- MUTE/UNMUTE LOGIC ---
         function toggleMute(event, btn) {
             event.stopPropagation();
             const card = btn.closest('.stream-card');
-            const video = card.querySelector('video');
+            const iframe = card.querySelector('iframe');
+            const loader = card.querySelector('.stream-loader');
             
             // Cek status saat ini (berdasarkan class 'muted')
             const isMuted = btn.classList.contains('muted');
             
+            // Ambil URL saat ini (bisa dari src aktif atau data-src)
+            let currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
+            let newSrc;
+
             if (isMuted) {
-                // UNMUTE
-                video.muted = false;
+                // UNMUTE: Tambahkan audio (media=video+audio)
+                // Replace parameter media=video menjadi media=video+audio
+                newSrc = currentSrc.replace('media=video', 'media=video+audio');
                 
                 // Update UI Button
                 btn.classList.remove('muted');
@@ -680,14 +585,23 @@
                 btn.querySelector('.icon-mute').style.display = 'none';
                 btn.querySelector('.icon-unmute').style.display = 'block';
             } else {
-                // MUTE
-                video.muted = true;
+                // MUTE: Hapus audio (media=video)
+                newSrc = currentSrc.replace('media=video+audio', 'media=video');
                 
                 // Update UI Button
                 btn.classList.add('muted');
                 btn.title = "Unmute";
                 btn.querySelector('.icon-mute').style.display = 'block';
                 btn.querySelector('.icon-unmute').style.display = 'none';
+            }
+
+            // Simpan state baru ke data-src agar persist saat fullscreen/lazyload
+            iframe.setAttribute('data-src', newSrc);
+
+            // Reload iframe jika sedang aktif
+            if (iframe.getAttribute('src')) {
+                if (loader) loader.style.display = 'block';
+                iframe.setAttribute('src', newSrc);
             }
         }
 
@@ -716,20 +630,28 @@
             fullscreenCard = card;
             card.setAttribute('data-fullscreen-requested', 'true');
             
-            const video = card.querySelector('video');
+            const iframe = card.querySelector('iframe');
             const loader = card.querySelector('.stream-loader');
             
             // 1. STOP semua stream lain SEBELUM fullscreen (hemat bandwidth)
             document.querySelectorAll('.stream-card').forEach(otherCard => {
                 if (otherCard !== card) {
-                    const otherVideo = otherCard.querySelector('video');
-                    if (otherVideo) stopStream(otherVideo);
+                    const otherIframe = otherCard.querySelector('iframe');
+                    if (otherIframe) {
+                        otherIframe.setAttribute('src', '');
+                    }
                 }
             });
             
-            // 2. Reload Stream dengan Kualitas HD
+            // 2. Upgrade ke HD (/101)
+            let currentSrc = iframe.getAttribute('data-src');
+            
+            // FIX: Robust Replace menggunakan Regex untuk menangani encoded (%2F) maupun decoded (/)
+            // Mengubah Channels/102 atau Channels%2F102 menjadi ...101
+            let highResSrc = currentSrc.replace(/Channels(%2F|\/)102/, 'Channels$1101');
+            
             if (loader) loader.style.display = 'block';
-            startStream(video, 'hd');
+            iframe.setAttribute('src', highResSrc);
             
             // Tandai quality
             card.setAttribute('data-quality', 'hd');
@@ -779,7 +701,7 @@
                 if (!card) card = fullscreenCard;
                 
                 if (card) {
-                    const video = card.querySelector('video');
+                    const iframe = card.querySelector('iframe');
                     const loader = card.querySelector('.stream-loader');
                     const btnFs = card.querySelector('.btn-fs-custom');
 
@@ -802,7 +724,7 @@
                 const card = document.querySelector('.stream-card[data-is-fullscreen="true"]') || fullscreenCard;
                 
                 if (card) {
-                    const video = card.querySelector('video');
+                    const iframe = card.querySelector('iframe');
                     const loader = card.querySelector('.stream-loader');
                     const btnFs = card.querySelector('.btn-fs-custom');
 
@@ -824,17 +746,17 @@
                     if (loader) loader.style.display = 'block';
                     
                     // Kembalikan ke Sub-stream (/102) - Low bandwidth
-                    startStream(video, 'sd');
+                    iframe.setAttribute('src', iframe.getAttribute('data-src'));
                     
                     // RESTART visible streams (fresh live feed, bukan resume)
                     setTimeout(() => {
                         document.querySelectorAll('.stream-card.visible').forEach(visibleCard => {
                             if (visibleCard !== card) {
-                                const visibleVideo = visibleCard.querySelector('video');
+                                const visibleIframe = visibleCard.querySelector('iframe');
                                 
                                 // Restart live stream dari awal (realtime feed)
-                                if (visibleVideo && !visibleVideo.srcObject) {
-                                    startStream(visibleVideo, 'sd');
+                                if (visibleIframe && !visibleIframe.getAttribute('src')) {
+                                    visibleIframe.setAttribute('src', visibleIframe.getAttribute('data-src'));
                                 }
                             }
                         });
@@ -878,7 +800,7 @@
                 // Safety check: pastikan ini adalah stream-card
                 if (!card.classList.contains('stream-card')) return;
 
-                const video = card.querySelector('video');
+                const iframe = card.querySelector('iframe');
                 const loader = card.querySelector('.stream-loader');
                 
                 // Skip jika card sedang fullscreen
@@ -895,9 +817,9 @@
                     const parentGrid = card.closest('.floor-grid');
                     const isParentActive = parentGrid && parentGrid.classList.contains('active');
                     
-                    if (!isFullscreenActive && !video.srcObject && isParentActive) {
+                    if (!isFullscreenActive && !iframe.getAttribute('src') && isParentActive) {
                         if (loader) loader.style.display = 'block';
-                        startStream(video, 'sd');
+                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
                     }
                 } else {
                     // KELUAR LAYAR (HIDDEN)
@@ -905,8 +827,8 @@
                     
                     // Unload Video (Hemat CPU & Bandwidth)
                     // Tapi jangan unload jika sedang fullscreen
-                    if (!card.hasAttribute('data-is-fullscreen') && video.srcObject) {
-                        stopStream(video);
+                    if (!card.hasAttribute('data-is-fullscreen') && iframe.getAttribute('src')) {
+                        iframe.setAttribute('src', '');
                         if (loader) loader.style.display = 'none';
                     }
                 }
