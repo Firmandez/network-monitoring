@@ -16,6 +16,7 @@ import atexit
 import signal
 import sys
 import os
+import random
 from datetime import datetime
 
 # Import Blueprints, DB, dan Config
@@ -121,7 +122,7 @@ def get_devices_from_db():
     return devices
 
 # --- FUNGSI PING ---
-def ping_device(ip, timeout=1):
+def ping_device(ip, timeout=1, seq=0):
     """
     Pings a device using ping3 library.
     Returns latency (float) on success, None on timeout, False on other errors.
@@ -131,7 +132,8 @@ def ping_device(ip, timeout=1):
             return False
         # ping3.ping returns False on fail, None on timeout, and latency as float on success.
         # We'll use a timeout of 1 second and get the result in seconds.
-        latency = ping3.ping(ip, timeout=timeout, unit='s')
+        # FIX: Pass 'seq' to ensure unique identification of packets in concurrent threads
+        latency = ping3.ping(ip, timeout=timeout, unit='s', seq=seq)
         return latency
     except Exception as e:
         # ping3 can raise various exceptions (e.g., PermissionError on Linux without root)
@@ -190,7 +192,10 @@ def background_monitoring():
 
                 def do_ping(device):
                     # This wrapper function will be executed by the greenlet
-                    latency = ping_device(device['ip'])
+                    # FIX: Generate unique sequence number (0-65535) to prevent packet collision/cross-talk
+                    # between threads. This fixes "Offline devices marked as Online".
+                    seq_id = random.randint(0, 65535)
+                    latency = ping_device(device['ip'], seq=seq_id)
                     ping_results[device['id']] = latency
 
                 for device in current_devices:
