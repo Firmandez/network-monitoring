@@ -325,19 +325,10 @@
                     <div class="accordion-content-inner">
                         <div class="stream-grid">
                             {% for cam in cameras %}
-                            <!-- Tambahkan onclick untuk toggle Live/Snapshot -->
-                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}" onclick="toggleStream(this)">
+                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
                                 <div class="stream-loader"></div>
                                 
-                                <!-- 1. SNAPSHOT IMAGE (Ringan) -->
-                                <img class="stream-snapshot" 
-                                     data-src="{{ stream_server }}/api/frame.jpeg?src={{ cam.rtsp }}" 
-                                     src="" 
-                                     alt="" 
-                                     onload="this.previousElementSibling.style.display='none'" 
-                                     onerror="this.previousElementSibling.style.display='none'">
-                                
-                                <!-- 3. LIVE VIDEO IFRAME (Berat - Load on Click) -->
+                                <!-- Default: Iframe Sub-stream (/102) yang diload via JS -->
                                 <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen></iframe>
                                 
                                 <div class="stream-info">
@@ -395,7 +386,7 @@
                     currentItem.classList.remove('active');
                     currentItem.querySelector('.accordion-content').style.maxHeight = null;
                     
-                    // Unload video
+                    // Unload video saat accordion ditutup
                     const iframes = currentItem.querySelectorAll('iframe');
                     iframes.forEach(iframe => {
                         iframe.setAttribute('src', '');
@@ -462,27 +453,9 @@
             }
         });
 
-        // --- TOGGLE STREAM LOGIC ---
-        function toggleStream(card) {
-            const iframe = card.querySelector('iframe');
-            const loader = card.querySelector('.stream-loader');
-            const isPlaying = card.classList.contains('playing');
-
-            if (isPlaying) {
-                // Stop Live -> Balik ke Snapshot
-                card.classList.remove('playing');
-                iframe.setAttribute('src', '');
-            } else {
-                // Start Live
-                card.classList.add('playing');
-                if (loader) loader.style.display = 'block'; // Munculkan loader saat video loading
-                iframe.setAttribute('src', iframe.getAttribute('data-src'));
-            }
-        }
-
         // --- FULLSCREEN HD LOGIC ---
         function toggleFullscreen(event, btn) {
-            event.stopPropagation(); // Mencegah klik tembus ke kartu (toggleStream)
+            event.stopPropagation();
             
             const card = btn.closest('.stream-card');
             const iframe = card.querySelector('iframe');
@@ -495,7 +468,13 @@
                 card.webkitRequestFullscreen();
             }
 
-            // 2. Switch ke High Res (Channel 101)
+            // 2. UNLOAD SEMUA VIDEO LAIN (PENTING UNTUK PERFORMA)
+            // Agar CPU fokus merender 1 video HD saja
+            document.querySelectorAll('iframe').forEach(el => {
+                if (el !== iframe) el.setAttribute('src', '');
+            });
+
+            // 3. Switch ke High Res (Channel 101)
             // URL asli mengandung ...%2F102 (encoded /102)
             let currentSrc = iframe.getAttribute('data-src');
             // Ganti 102 menjadi 101 di URL
@@ -516,22 +495,19 @@
                     card.classList.remove('fullscreen-mode');
                     const iframe = card.querySelector('iframe');
                     
-                    // 3. Kembalikan ke Low Res (Channel 102)
+                    // 4. Kembalikan ke Low Res (Channel 102)
                     // Ambil dari data-src asli yang masih 102
                     iframe.setAttribute('src', iframe.getAttribute('data-src'));
                 }
+                // 5. RELOAD KEMBALI VIDEO GRID YANG TERLIHAT
+                // Karena tadi dimatikan saat masuk fullscreen
+                document.querySelectorAll('.stream-card.visible iframe').forEach(iframe => {
+                    if (!iframe.getAttribute('src')) {
+                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                    }
+                });
             }
         });
-
-        // --- AUTO REFRESH SNAPSHOT (Setiap 5 Detik) ---
-        // Hanya refresh snapshot yang terlihat di layar dan TIDAK sedang diputar (Live)
-        setInterval(() => {
-            document.querySelectorAll('.stream-card.visible:not(.playing) .stream-snapshot').forEach(img => {
-                const baseUrl = img.getAttribute('data-src');
-                // Tambahkan timestamp agar browser tidak mengambil cache lama
-                img.src = `${baseUrl}&t=${Date.now()}`;
-            });
-        }, 3000);
 
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
@@ -540,20 +516,16 @@
                 if (!card) return; // Safety check
 
                 const iframe = card.querySelector('iframe');
-                const img = card.querySelector('.stream-snapshot');
+                const loader = card.querySelector('.stream-loader');
 
                 if (entry.isIntersecting) {
                     // MASUK LAYAR
                     card.classList.add('visible');
                     
-                    // Load Snapshot pertama kali
-                    if (!img.getAttribute('src')) {
-                        img.src = img.getAttribute('data-src');
-                    }
-
-                    // Jika statusnya 'playing' (user pernah klik play), load videonya
-                    if (card.classList.contains('playing')) {
+                    // Load Video Preview (/102)
+                    if (!document.fullscreenElement) {
                         if (!iframe.getAttribute('src')) {
+                            if (loader) loader.style.display = 'block';
                             iframe.setAttribute('src', iframe.getAttribute('data-src'));
                         }
                     }
@@ -563,7 +535,6 @@
                     
                     // Unload Video (Hemat CPU)
                     iframe.setAttribute('src', '');
-                    // Kita biarkan src image agar tidak flickering saat scroll balik cepat
                 }
             });
         }, {
