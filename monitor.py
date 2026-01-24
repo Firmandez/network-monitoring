@@ -11,11 +11,11 @@ monitor_bp = Blueprint('monitor', __name__)
 # Sesuaikan credential default CCTV di sini
 RTSP_USER = "admin"
 RTSP_PASS = "k4m3r4cctvft1"
-RTSP_PATH = "/stream1"
+RTSP_PATH = "/Streaming/Channels/101"
 
 # Alamat Server go2rtc (Streaming Engine)
 # Sesuaikan IP ini dengan IP server Proxmox/Debian Anda
-STREAM_SERVER_URL = "http://192.168.68.109:80" 
+STREAM_SERVER_URL = "http://192.168.68.109:1984" 
 
 @monitor_bp.route('/')
 @login_required
@@ -54,8 +54,8 @@ def dashboard():
                 groups[floor_name] = []
             
             # Construct URL RTSP secara dinamis dari IP database
-            # Format: rtsp://user:pass@IP:554/stream1
-            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}:{RTSP_PATH}"
+            # Format: rtsp://user:pass@IP/Streaming/Channels/101
+            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}{RTSP_PATH}"
             
             groups[floor_name].append({
                 "id": cam['id'],
