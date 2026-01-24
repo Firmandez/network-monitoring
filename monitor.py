@@ -10,8 +10,7 @@ monitor_bp = Blueprint('monitor', __name__)
 # --- KONFIGURASI DEFAULT RTSP ---
 # Sesuaikan credential default CCTV di sini
 RTSP_USER = "admin"
-RTSP_PASS = "k4m3r4cctvft!"
-RTSP_PORT = "554"
+RTSP_PASS = "k4m3r4cctvft1"
 RTSP_PATH = "/stream1"
 
 # Alamat Server go2rtc (Streaming Engine)
@@ -56,7 +55,7 @@ def dashboard():
             
             # Construct URL RTSP secara dinamis dari IP database
             # Format: rtsp://user:pass@IP:554/stream1
-            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}:{RTSP_PORT}{RTSP_PATH}"
+            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}:{RTSP_PATH}"
             
             groups[floor_name].append({
                 "id": cam['id'],
