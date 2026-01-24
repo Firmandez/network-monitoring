@@ -267,6 +267,27 @@
             pointer-events: none; 
         }
 
+        .stream-card iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #000;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Fullscreen optimizations */
+        .stream-card.fullscreen-mode {
+            background: #000;
+        }
+
+        .stream-card.fullscreen-mode iframe {
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+
         .stream-card video {
             width: 100%;
             height: 100%;
@@ -300,7 +321,7 @@
         }
 
         /* Saat mode playing (Live Video) */
-        .stream-card.playing video { z-index: 10; }
+        .stream-card.playing iframe { z-index: 10; }
 
         .stream-card:hover .stream-info {
             opacity: 1;
@@ -406,15 +427,12 @@
                             
                             <div class="stream-loader"></div>
                             
-                            <!-- WHEP Video Player -->
-                            <video class="lazy-stream"
-                                   data-src="{{ url_for('monitor.whep_proxy') }}?src={{ cam.rtsp_sd }}"
-                                   data-hd-src="{{ url_for('monitor.whep_proxy') }}?src={{ cam.rtsp_hd }}"
-                                   autoplay
-                                   muted
-                                   playsinline
-                                   poster="">
-                            </video>
+                            <!-- Reverted to Iframe with MSE -->
+                            <iframe class="lazy-stream" 
+                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video" 
+                                    src="" 
+                                    allowfullscreen 
+                                    scrolling="no"></iframe>
                             
                             <div class="stream-info">
                                 <div style="display: flex; flex-direction: column;">
@@ -529,92 +547,6 @@
             }
         });
 
-        // --- WHEP CLIENT CLASS ---
-        // Menangani koneksi WebRTC ke go2rtc
-        class WHEPClient {
-            constructor(videoElement, url) {
-                this.video = videoElement;
-                this.url = url;
-                this.pc = null;
-                this.isConnected = false;
-            }
-
-            async connect() {
-                // Cegah koneksi ganda
-                if (this.isConnected) return;
-                
-                if (this.pc) this.close();
-
-                this.pc = new RTCPeerConnection({
-                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                });
-
-                this.pc.addTransceiver('video', { direction: 'recvonly' });
-
-                this.pc.ontrack = (event) => {
-                    console.log(`[WHEP] Track received for ${this.url}`);
-                    this.video.srcObject = event.streams[0];
-                    
-                    // Paksa play (penting untuk browser modern)
-                    this.video.play().then(() => {
-                        // Sembunyikan loader jika berhasil play
-                        const loader = this.video.parentElement.querySelector('.stream-loader');
-                        if (loader) loader.style.display = 'none';
-                    }).catch(e => {
-                        console.error("[WHEP] Autoplay blocked:", e);
-                    });
-                };
-
-                this.pc.onconnectionstatechange = () => {
-                    console.log(`[WHEP] State: ${this.pc.connectionState}`);
-                    if (this.pc.connectionState === 'failed') this.close();
-                };
-
-                try {
-                    const offer = await this.pc.createOffer();
-                    await this.pc.setLocalDescription(offer);
-
-                    const response = await fetch(this.url, {
-                        method: 'POST',
-                        body: offer.sdp,
-                        headers: { 'Content-Type': 'application/sdp' }
-                    });
-
-                    if (!response.ok) throw new Error(`Server Error: ${response.status}`);
-
-                    const answer = await response.text();
-                    await this.pc.setRemoteDescription({ type: 'answer', sdp: answer });
-                    this.isConnected = true;
-                } catch (error) {
-                    console.error("[WHEP] Connection failed:", error);
-                    this.close();
-                }
-            }
-
-            close() {
-                if (this.pc) {
-                    this.pc.close();
-                    this.pc = null;
-                }
-                this.video.srcObject = null;
-                this.isConnected = false;
-                
-                // Munculkan loader lagi saat close
-                const loader = this.video.parentElement.querySelector('.stream-loader');
-                if (loader) loader.style.display = 'block';
-            }
-        }
-
-        // --- STREAM SWITCHER HELPER (Fix Memory Leak) ---
-        function switchStream(video, newUrl) {
-            if (video.whepClient) {
-                video.whepClient.close();
-                delete video.whepClient;
-            }
-            video.whepClient = new WHEPClient(video, newUrl);
-            video.whepClient.connect();
-        }
-
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -623,7 +555,7 @@
                 // Safety check: pastikan ini adalah stream-card
                 if (!card.classList.contains('stream-card')) return;
 
-                const video = card.querySelector('video');
+                const iframe = card.querySelector('iframe');
                 const loader = card.querySelector('.stream-loader');
                 
                 if (entry.isIntersecting) {
@@ -633,12 +565,10 @@
                     const parentGrid = card.closest('.floor-grid');
                     const isParentActive = parentGrid && parentGrid.classList.contains('active');
                     
-                    // Init WHEP jika belum ada client dan parent aktif
-                    if (!video.whepClient && isParentActive) {
-                        // Default load SD
-                        const url = video.getAttribute('data-src');
-                        video.whepClient = new WHEPClient(video, url);
-                        video.whepClient.connect();
+                    // Load iframe jika belum di-load dan parent aktif
+                    if (!iframe.getAttribute('src') && isParentActive) {
+                        if (loader) loader.style.display = 'block';
+                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
                     }
                 } else {
                     // KELUAR LAYAR (HIDDEN)
@@ -646,9 +576,9 @@
                     
                     // Unload Video (Hemat CPU & Bandwidth)
                     // Tapi jangan unload jika sedang fullscreen
-                    if (!card.dataset.locked && video.whepClient) {
-                        video.whepClient.close();
-                        delete video.whepClient;
+                    if (!card.dataset.locked && iframe.getAttribute('src')) {
+                        iframe.setAttribute('src', '');
+                        if (loader) loader.style.display = 'block'; // Reset loader
                     }
                 }
             });
@@ -725,13 +655,14 @@
             
             if (fullscreenElement && fullscreenElement.classList.contains('stream-card')) {
                 // ENTER FULLSCREEN -> Switch to HD (/101)
-                const video = fullscreenElement.querySelector('video');
+                const iframe = fullscreenElement.querySelector('iframe');
                 fullscreenElement.dataset.locked = "1"; // Lock observer agar tidak close stream
-                const hdUrl = video.getAttribute('data-hd-src');
+                const currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
                 
-                if (hdUrl) {
+                if (currentSrc && currentSrc.includes('Channels%2F102')) {
                     console.log("Switching to HD Stream...");
-                    switchStream(video, hdUrl);
+                    const hdSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
+                    iframe.setAttribute('src', hdSrc);
                 }
 
                 // Change Icon to Exit Fullscreen
@@ -744,12 +675,12 @@
                 // EXIT FULLSCREEN -> Revert all to SD (/102)
                 document.querySelectorAll('.stream-card').forEach(card => {
                     delete card.dataset.locked; // Unlock observer
-                    const video = card.querySelector('video');
-                    const sdUrl = video.getAttribute('data-src');
-                    // Jika client ada dan URL saat ini bukan SD, kembalikan ke SD
-                    if (video.whepClient && video.whepClient.url !== sdUrl) {
+                    const iframe = card.querySelector('iframe');
+                    const sdUrl = iframe.getAttribute('data-src');
+                    // Jika iframe sedang berjalan dan URL-nya bukan SD, kembalikan ke SD
+                    if (iframe.getAttribute('src') && iframe.getAttribute('src') !== sdUrl) {
                         console.log("Reverting to SD Stream...");
-                        switchStream(video, sdUrl);
+                        iframe.setAttribute('src', sdUrl);
                     }
                 });
 

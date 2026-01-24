@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, g, abort, request, Response, url_for
+from flask import Blueprint, render_template, g, abort, request
 from auth import login_required
 from db import get_db
 from psycopg2.extras import DictCursor
 from config import FLOOR_LABELS
 from urllib.parse import quote
-import requests
 
 # Nama blueprint disamarkan jadi 'monitor'
 monitor_bp = Blueprint('monitor', __name__)
@@ -21,6 +20,11 @@ def dashboard():
     
     if g.user['username'] not in allowed_users:
         return render_template('eror_403.html', message="Restricted Page."), 403
+
+    # --- DYNAMIC STREAM SERVER URL ---
+    # Otomatis mendeteksi IP Host (LAN atau Tailscale)
+    host_ip = request.host.split(':')[0]
+    stream_server_url = f"http://{host_ip}:1984"
 
     # 2. Ambil Data CCTV dari Database
     groups = {}
@@ -52,43 +56,19 @@ def dashboard():
             
             # Construct URL RTSP secara dinamis dari IP database
             # Format: rtsp://user:pass@IP/Streaming/Channels/101
-            # Kita siapkan SD (102) dan HD (101)
-            base_rtsp = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}/Streaming/Channels"
-            
-            encoded_sd = quote(f"{base_rtsp}/102", safe='')
-            encoded_hd = quote(f"{base_rtsp}/101", safe='')
+            # Default ke sub-stream (SD /102)
+            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}/Streaming/Channels/102"
+            encoded_rtsp = quote(rtsp_url, safe='')
             
             groups[floor_name].append({
                 "id": cam['id'],
                 "name": cam['name'],
                 "ip": cam['ip'],
-                "rtsp_sd": encoded_sd,
-                "rtsp_hd": encoded_hd
+                "rtsp": encoded_rtsp
             })
             
     except Exception as e:
         print(f"Error loading CCTV from DB: {e}")
 
     # 3. Render Template dengan data dinamis
-    return render_template('monitor.html', groups=groups)
-
-@monitor_bp.route('/api/whep', methods=['POST'])
-@login_required
-def whep_proxy():
-    """
-    Proxy request WHEP dari frontend ke go2rtc untuk menghindari masalah CORS.
-    Frontend -> Flask (Port 5000) -> go2rtc (Port 1984)
-    """
-    src = request.args.get('src')
-    if not src:
-        return "Missing src parameter", 400
-    
-    # Target ke go2rtc lokal (server-side request tidak terkena CORS)
-    go2rtc_url = "http://127.0.0.1:1984/api/whep"
-    
-    try:
-        # Forward POST request beserta body (SDP Offer) dan headers
-        resp = requests.post(go2rtc_url, params={'src': src}, data=request.get_data(), headers={'Content-Type': request.headers.get('Content-Type')})
-        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
-    except Exception as e:
-        return f"WHEP Proxy Error: {e}", 500
+    return render_template('monitor.html', groups=groups, stream_server=stream_server_url)
