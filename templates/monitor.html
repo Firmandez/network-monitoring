@@ -580,14 +580,6 @@
                             document.webkitFullscreenElement || 
                             document.mozFullScreenElement || 
                             document.msFullscreenElement;
-        
-            if (fsElement) {
-        // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
-        function handleFullscreenChange() {
-            const fsElement = document.fullscreenElement || 
-                            document.webkitFullscreenElement || 
-                            document.mozFullScreenElement || 
-                            document.msFullscreenElement;
 
             if (fsElement) {
                 // --- MASUK FULLSCREEN ---
@@ -690,7 +682,7 @@
                 
                 fullscreenCard = null;
             }
-        }}}
+        }
         // Listen to all fullscreen events (cross-browser)
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
