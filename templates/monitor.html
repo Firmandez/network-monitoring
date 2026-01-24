@@ -182,6 +182,7 @@
             background-color: transparent;
             position: relative;
             z-index: 2;
+            overflow: hidden;
         }
 
         .stream-loader {
@@ -329,7 +330,7 @@
                                 <div class="stream-loader"></div>
                                 
                                 <!-- Default: Iframe Sub-stream (/102) yang diload via JS -->
-                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen></iframe>
+                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen scrolling="no"></iframe>
                                 
                                 <div class="stream-info">
                                     <div style="display: flex; flex-direction: column;">
