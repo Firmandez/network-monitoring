@@ -124,7 +124,28 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none;
+            background-color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stream-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid #333;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin { 
+            0% { transform: translate(-50%, -50%) rotate(0deg); } 
+            100% { transform: translate(-50%, -50%) rotate(360deg); } 
         }
 
         .stream-info {
@@ -141,6 +162,8 @@
             align-items: flex-end;
             opacity: 0;
             transition: opacity 0.3s;
+            z-index: 3;
+            pointer-events: none; /* Info tetap tidak bisa diklik agar tembus ke video */
         }
 
         .stream-card:hover .stream-info {
@@ -178,7 +201,9 @@
             
             <!-- SEARCH BAR -->
             <div class="search-box">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </span>
                 <input type="text" id="camSearch" placeholder="Search IP or Name..." autocomplete="off">
             </div>
         </div>
@@ -199,7 +224,13 @@
                 {% for cam in cameras %}
                 <!-- Tambahkan data-name dan data-ip untuk filtering -->
                 <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
-                    <iframe src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" allowfullscreen></iframe>
+                    <!-- 
+                        OPTIMISASI PERFORMA:
+                        Gunakan 'data-src' alih-alih 'src'. 
+                        Script di bawah akan mengisi 'src' hanya saat elemen terlihat di layar.
+                    -->
+                    <div class="stream-loader"></div>
+                    <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" src="" allowfullscreen></iframe>
                     
                     <div class="stream-info">
                         <span>{{ cam.name }}</span>
@@ -252,6 +283,37 @@
             } else {
                 noResultsMsg.style.display = "none";
             }
+        });
+
+        // --- FITUR PENGHEMAT CPU (LAZY LOAD & UNLOAD) ---
+        // Hanya memutar video yang terlihat di layar.
+        // Video yang di-scroll lewat akan dimatikan decoding-nya.
+        
+        const streamObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                const iframe = entry.target;
+                
+                if (entry.isIntersecting) {
+                    // KAMERA MASUK LAYAR -> NYALAKAN
+                    // Hanya set src jika belum diset (mencegah reload berulang)
+                    if (iframe.getAttribute('src') !== iframe.getAttribute('data-src')) {
+                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                    }
+                } else {
+                    // KAMERA KELUAR LAYAR -> MATIKAN
+                    // Kosongkan src untuk menghentikan proses decoding CPU
+                    iframe.setAttribute('src', '');
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '400px 0px', // Pre-load video 400px sebelum masuk layar agar smooth
+            threshold: 0.01
+        });
+
+        // Daftarkan semua iframe ke observer
+        document.querySelectorAll('.lazy-stream').forEach(iframe => {
+            streamObserver.observe(iframe);
         });
     </script>
 
