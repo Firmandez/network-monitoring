@@ -408,8 +408,8 @@
                             
                             <!-- WHEP Video Player -->
                             <video class="lazy-stream"
-                                   data-src="{{ stream_server }}/api/whep?src={{ cam.rtsp_sd }}"
-                                   data-hd-src="{{ stream_server }}/api/whep?src={{ cam.rtsp_hd }}"
+                                   data-src="{{ url_for('monitor.whep_proxy') }}?src={{ cam.rtsp_sd }}"
+                                   data-hd-src="{{ url_for('monitor.whep_proxy') }}?src={{ cam.rtsp_hd }}"
                                    autoplay
                                    muted
                                    playsinline

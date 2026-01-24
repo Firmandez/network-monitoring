@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, g, abort, request
+from flask import Blueprint, render_template, g, abort, request, Response, url_for
 from auth import login_required
 from db import get_db
 from psycopg2.extras import DictCursor
 from config import FLOOR_LABELS
 from urllib.parse import quote
+import requests
 
 # Nama blueprint disamarkan jadi 'monitor'
 monitor_bp = Blueprint('monitor', __name__)
@@ -76,3 +77,24 @@ def dashboard():
 
     # 3. Render Template dengan data dinamis
     return render_template('monitor.html', groups=groups, stream_server=stream_server_url)
+
+@monitor_bp.route('/api/whep', methods=['POST'])
+@login_required
+def whep_proxy():
+    """
+    Proxy request WHEP dari frontend ke go2rtc untuk menghindari masalah CORS.
+    Frontend -> Flask (Port 5000) -> go2rtc (Port 1984)
+    """
+    src = request.args.get('src')
+    if not src:
+        return "Missing src parameter", 400
+    
+    # Target ke go2rtc lokal (server-side request tidak terkena CORS)
+    go2rtc_url = "http://127.0.0.1:1984/api/whep"
+    
+    try:
+        # Forward POST request beserta body (SDP Offer) dan headers
+        resp = requests.post(go2rtc_url, params={'src': src}, data=request.get_data(), headers={'Content-Type': request.headers.get('Content-Type')})
+        return Response(resp.content, status=resp.status_code, content_type=resp.headers.get('Content-Type'))
+    except Exception as e:
+        return f"WHEP Proxy Error: {e}", 500
