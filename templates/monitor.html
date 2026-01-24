@@ -454,7 +454,8 @@
                                  2. allow="autoplay" : Memenuhi policy browser.
                             -->
                             <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video&tracks=v" 
+                                    data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp_sd }}&media=video" 
+                                    data-hd-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp_hd }}&media=video"
                                     src="" 
                                     allow="autoplay; fullscreen"
                                     allowfullscreen 
@@ -686,11 +687,12 @@
                 // ENTER FULLSCREEN -> Switch to HD (/101)
                 const iframe = fullscreenElement.querySelector('iframe');
                 fullscreenElement.dataset.locked = "1"; // Lock observer agar tidak close stream
-                const currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
                 
-                if (currentSrc && currentSrc.includes('Channels%2F102')) {
+                const hdSrc = iframe.getAttribute('data-hd-src');
+                const currentSrc = iframe.getAttribute('src');
+                
+                if (hdSrc && currentSrc !== hdSrc) {
                     console.log("Switching to HD Stream...");
-                    const hdSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
                     iframe.setAttribute('src', hdSrc);
                 }
 

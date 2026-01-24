@@ -56,15 +56,18 @@ def dashboard():
             
             # Construct URL RTSP secara dinamis dari IP database
             # Format: rtsp://user:pass@IP/Streaming/Channels/101
-            # Default ke sub-stream (SD /102)
-            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}/Streaming/Channels/102"
-            encoded_rtsp = quote(rtsp_url, safe='')
+            # Kita siapkan SD (102) dan HD (101)
+            base_rtsp = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}/Streaming/Channels"
+            
+            encoded_sd = quote(f"{base_rtsp}/102", safe='')
+            encoded_hd = quote(f"{base_rtsp}/101", safe='')
             
             groups[floor_name].append({
                 "id": cam['id'],
                 "name": cam['name'],
                 "ip": cam['ip'],
-                "rtsp": encoded_rtsp
+                "rtsp_sd": encoded_sd,
+                "rtsp_hd": encoded_hd
             })
             
     except Exception as e:
