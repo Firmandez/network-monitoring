@@ -68,4 +68,4 @@ def dashboard():
         print(f"Error loading CCTV from DB: {e}")
 
     # 3. Render Template dengan data dinamis
-    return render_template('monitor_dashboard.html', groups=groups, stream_server=STREAM_SERVER_URL)
+    return render_template('monitor.html', groups=groups, stream_server=STREAM_SERVER_URL)
