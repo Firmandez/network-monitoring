@@ -9,7 +9,7 @@ load_dotenv()
 # Daftar user yang akan dibuat atau di-update
 # Format: (username, password)
 USERS_TO_CREATE = [
-    ("admin", "laboranfti"),
+    ("insider", "mastergame2004"),
 ]
 
 conn = None

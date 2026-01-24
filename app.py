@@ -23,6 +23,7 @@ from datetime import datetime
 from auth import auth_bp, login_required
 from db import get_db, close_db
 from admin import admin_bp
+from monitor import monitor_bp
 # Import config (DEVICES sekarang diambil dari DB)
 from config import FLOOR_MAPS, FLOOR_LABELS, DEVICE_TYPES, SECRET_KEY
 
@@ -449,6 +450,7 @@ def start_monitoring():
 # --- REGISTER BLUEPRINTS ---
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(monitor_bp, url_prefix='/monitor')
 
 # --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
