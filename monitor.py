@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, g, abort
+from flask import Blueprint, render_template, g, abort, request
 from auth import login_required
 from db import get_db
 from psycopg2.extras import DictCursor
@@ -14,10 +14,6 @@ RTSP_USER = "admin"
 RTSP_PASS = "k4m3r4cctvft1"
 RTSP_PATH = "/Streaming/Channels/101"
 
-# Alamat Server go2rtc (Streaming Engine)
-# Sesuaikan IP ini dengan IP server Proxmox/Debian Anda
-STREAM_SERVER_URL = "http://192.168.68.109:1984" 
-
 @monitor_bp.route('/')
 @login_required
 def dashboard():
@@ -25,6 +21,12 @@ def dashboard():
     
     if g.user['username'] not in allowed_users:
         return render_template('eror_403.html', message="Restricted Page."), 403
+
+    # --- DYNAMIC STREAM SERVER URL ---
+    # Otomatis mendeteksi IP Host (LAN atau Tailscale)
+    # Mengasumsikan go2rtc berjalan di host yang sama pada port 1984
+    host_ip = request.host.split(':')[0]
+    stream_server_url = f"http://{host_ip}:1984"
 
     # 2. Ambil Data CCTV dari Database
     groups = {}
@@ -71,4 +73,4 @@ def dashboard():
         print(f"Error loading CCTV from DB: {e}")
 
     # 3. Render Template dengan data dinamis
-    return render_template('monitor.html', groups=groups, stream_server=STREAM_SERVER_URL)
+    return render_template('monitor.html', groups=groups, stream_server=stream_server_url)

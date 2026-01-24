@@ -86,16 +86,71 @@
             min-height: 100vh;
         }
 
-        .group-section { margin-bottom: 40px; }
+        /* ACCORDION STYLES */
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .accordion-item {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .accordion-item.active {
+            border-color: #3498db;
+        }
         
-        .group-header {
-            color: #555;
-            font-size: 14px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #222;
-            padding-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .accordion-header {
+            width: 100%;
+            background: #1a1a1a;
+            color: #eee;
+            padding: 15px 20px;
+            text-align: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .accordion-header:hover {
+            background: #222;
+        }
+
+        .accordion-header .header-meta {
+            font-size: 12px;
+            color: #777;
+            font-weight: normal;
+            margin-left: 10px;
+        }
+
+        .accordion-header .icon {
+            transition: transform 0.3s;
+            color: #3498db;
+        }
+
+        .accordion-item.active .accordion-header .icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #000;
+        }
+
+        .accordion-content-inner {
+            padding: 20px;
         }
 
         /* RESPONSIVE GRID SYSTEM */
@@ -217,33 +272,94 @@
     <div class="monitor-container">
         <div id="no-results-msg" class="no-results">No cameras found matching your search.</div>
 
-        {% for group_name, cameras in groups.items() %}
-        <div class="group-section" id="group-{{ loop.index }}">
-            <h2 class="group-header">{{ group_name }}</h2>
-            <div class="stream-grid">
-                {% for cam in cameras %}
-                <!-- Tambahkan data-name dan data-ip untuk filtering -->
-                <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
-                    <!-- 
-                        OPTIMISASI PERFORMA:
-                        Gunakan 'data-src' alih-alih 'src'. 
-                        Script di bawah akan mengisi 'src' hanya saat elemen terlihat di layar.
-                    -->
-                    <div class="stream-loader"></div>
-                    <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" src="" allowfullscreen></iframe>
-                    
-                    <div class="stream-info">
-                        <span>{{ cam.name }}</span>
-                        <span style="color: #2ecc71;">{{ cam.ip }}</span>
+        <div class="accordion">
+            {% for group_name, cameras in groups.items() %}
+            <div class="accordion-item">
+                <button class="accordion-header" type="button">
+                    <div>
+                        {{ group_name }}
+                        <span class="header-meta">({{ cameras|length }} Cameras)</span>
+                    </div>
+                    <span class="icon">▼</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <div class="stream-grid">
+                            {% for cam in cameras %}
+                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
+                                <div class="stream-loader"></div>
+                                <!-- Default src kosong agar tidak loading di awal -->
+                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" src="" allowfullscreen></iframe>
+                                
+                                <div class="stream-info">
+                                    <span>{{ cam.name }}</span>
+                                    <span style="color: #2ecc71;">{{ cam.ip }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 
     <script>
+        // --- ACCORDION LOGIC (EFISIENSI TINGGI) ---
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const currentItem = header.parentElement;
+                const isActive = currentItem.classList.contains('active');
+
+                // 1. Tutup SEMUA accordion lain & Matikan Videonya
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    if (item !== currentItem) {
+                        item.classList.remove('active');
+                        item.querySelector('.accordion-content').style.maxHeight = null;
+                        
+                        // UNLOAD VIDEO: Kosongkan src untuk hemat bandwidth/CPU
+                        const iframes = item.querySelectorAll('iframe');
+                        iframes.forEach(iframe => {
+                            iframe.setAttribute('src', '');
+                        });
+                    }
+                });
+
+                // 2. Toggle accordion yang diklik
+                if (!isActive) {
+                    // BUKA
+                    currentItem.classList.add('active');
+                    const content = currentItem.querySelector('.accordion-content');
+                    content.style.maxHeight = content.scrollHeight + "px";
+
+                    // LOAD VIDEO: Isi src dari data-src
+                    const iframes = currentItem.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        const src = iframe.getAttribute('data-src');
+                        if (src) iframe.setAttribute('src', src);
+                    });
+                } else {
+                    // TUTUP (Manual klik header yang sedang aktif)
+                    currentItem.classList.remove('active');
+                    currentItem.querySelector('.accordion-content').style.maxHeight = null;
+                    
+                    // Unload video
+                    const iframes = currentItem.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        iframe.setAttribute('src', '');
+                    });
+                }
+            });
+        });
+
+        // Buka accordion pertama secara default saat load
+        if (accordionHeaders.length > 0) {
+            accordionHeaders[0].click();
+        }
+
         // Fitur Pencarian Real-time
         const searchInput = document.getElementById('camSearch');
         const noResultsMsg = document.getElementById('no-results-msg');
@@ -251,10 +367,10 @@
         searchInput.addEventListener('keyup', function(e) {
             const term = e.target.value.toLowerCase();
             const cards = document.querySelectorAll('.stream-card');
-            const groups = document.querySelectorAll('.group-section');
+            const items = document.querySelectorAll('.accordion-item');
             let totalVisible = 0;
 
-            // 1. Filter Kartu Kamera
+            // 1. Filter Kartu
             cards.forEach(card => {
                 const name = card.getAttribute('data-name').toLowerCase();
                 const ip = card.getAttribute('data-ip').toLowerCase();
@@ -267,13 +383,25 @@
                 }
             });
 
-            // 2. Sembunyikan Judul Grup jika isinya kosong semua
-            groups.forEach(group => {
-                const visibleCardsInGroup = group.querySelectorAll('.stream-card:not([style*="display: none"])');
-                if (visibleCardsInGroup.length === 0) {
-                    group.style.display = "none";
+            // 2. Logika Accordion saat Searching
+            items.forEach(item => {
+                const visibleCards = item.querySelectorAll('.stream-card:not([style*="display: none"])');
+                
+                if (term.length > 0) {
+                    // Jika sedang mencari
+                    if (visibleCards.length > 0) {
+                        item.style.display = "";
+                        // Otomatis BUKA accordion yang ada hasil pencariannya
+                        if (!item.classList.contains('active')) {
+                            item.querySelector('.accordion-header').click();
+                        }
+                    } else {
+                        item.style.display = "none";
+                    }
                 } else {
-                    group.style.display = "";
+                    // Jika search kosong, kembalikan tampilan normal (tutup semua kecuali yang aktif manual)
+                    item.style.display = "";
+                    // Opsional: Tutup semua jika search di-clear, atau biarkan status terakhir
                 }
             });
 
@@ -283,37 +411,6 @@
             } else {
                 noResultsMsg.style.display = "none";
             }
-        });
-
-        // --- FITUR PENGHEMAT CPU (LAZY LOAD & UNLOAD) ---
-        // Hanya memutar video yang terlihat di layar.
-        // Video yang di-scroll lewat akan dimatikan decoding-nya.
-        
-        const streamObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                const iframe = entry.target;
-                
-                if (entry.isIntersecting) {
-                    // KAMERA MASUK LAYAR -> NYALAKAN
-                    // Hanya set src jika belum diset (mencegah reload berulang)
-                    if (iframe.getAttribute('src') !== iframe.getAttribute('data-src')) {
-                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
-                    }
-                } else {
-                    // KAMERA KELUAR LAYAR -> MATIKAN
-                    // Kosongkan src untuk menghentikan proses decoding CPU
-                    iframe.setAttribute('src', '');
-                }
-            });
-        }, {
-            root: null,
-            rootMargin: '400px 0px', // Pre-load video 400px sebelum masuk layar agar smooth
-            threshold: 0.01
-        });
-
-        // Daftarkan semua iframe ke observer
-        document.querySelectorAll('.lazy-stream').forEach(iframe => {
-            streamObserver.observe(iframe);
         });
     </script>
 
