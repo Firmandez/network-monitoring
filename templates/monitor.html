@@ -266,6 +266,15 @@
             z-index: 20; /* Pastikan di atas iframe (z-index 10 saat playing) */
             pointer-events: none; 
         }
+
+        .stream-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            background-color: #000;
+            position: relative;
+            z-index: 2;
+        }
         
         .stream-info button {
             pointer-events: auto;
@@ -283,8 +292,15 @@
             transform: scale(1.1);
         }
 
+        /* --- NEW: Rotate Button (Mobile Only) --- */
+        .rotate-btn { display: none; }
+        
+        @media (max-width: 768px) {
+            .rotate-btn { display: inline-block; margin-right: 5px; }
+        }
+
         /* Saat mode playing (Live Video) */
-        .stream-card.playing iframe { z-index: 10; }
+        .stream-card.playing video { z-index: 10; }
 
         .stream-card:hover .stream-info {
             opacity: 1;
@@ -390,21 +406,29 @@
                             
                             <div class="stream-loader"></div>
                             
-                            <!-- Default: Iframe Sub-stream (/102) 
-                                 media=video : Meminta video saja (muted).
-                            -->
-                            <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video" 
-                                    src="" 
-                                    allowfullscreen 
-                                    scrolling="no"></iframe>
+                            <!-- WHEP Video Player -->
+                            <video class="lazy-stream"
+                                   data-src="{{ stream_server }}/api/whep?src={{ cam.rtsp_sd }}"
+                                   data-hd-src="{{ stream_server }}/api/whep?src={{ cam.rtsp_hd }}"
+                                   autoplay
+                                   muted
+                                   playsinline
+                                   poster="">
+                            </video>
                             
                             <div class="stream-info">
                                 <div style="display: flex; flex-direction: column;">
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
-                                <button onclick="toggleFullscreen(this.closest('.stream-card'))" title="Fullscreen (HD)">
+                                <!-- NEW: Rotate Button (Mobile) -->
+                                <button class="rotate-btn" onclick="rotateLandscape(this.closest('.stream-card'))" title="Landscape Mode">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/><path d="M11.536 14.01A8.473 8.473 0 0 1 8 14.5a8.473 8.473 0 0 1-3.536-.49l-.555.832A9.476 9.476 0 0 0 8 15.5a9.476 9.476 0 0 0 4.091-.658l-.555-.832zM3.5 13.5A7.5 7.5 0 0 1 8 13.5a7.5 7.5 0 0 1 4.5 0h-9z"/></svg>
+                                    <span style="font-size: 10px; margin-left: 2px;">Rotate</span>
+                                </button>
+                                
+                                <!-- Fullscreen Toggle Button -->
+                                <button class="fs-toggle-btn" onclick="toggleFullscreen(this.closest('.stream-card'))" title="Fullscreen (HD)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>
                                 </button>
                             </div>
@@ -505,6 +529,52 @@
             }
         });
 
+        // --- WHEP CLIENT CLASS ---
+        // Menangani koneksi WebRTC ke go2rtc
+        class WHEPClient {
+            constructor(videoElement, url) {
+                this.video = videoElement;
+                this.url = url;
+                this.pc = null;
+            }
+
+            async connect() {
+                if (this.pc) this.close();
+
+                this.pc = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+
+                this.pc.addTransceiver('video', { direction: 'recvonly' });
+
+                this.pc.ontrack = (event) => {
+                    this.video.srcObject = event.streams[0];
+                };
+
+                const offer = await this.pc.createOffer();
+                await this.pc.setLocalDescription(offer);
+
+                const response = await fetch(this.url, {
+                    method: 'POST',
+                    body: offer.sdp,
+                    headers: { 'Content-Type': 'application/sdp' }
+                });
+
+                if (response.ok) {
+                    const answer = await response.text();
+                    await this.pc.setRemoteDescription({ type: 'answer', sdp: answer });
+                }
+            }
+
+            close() {
+                if (this.pc) {
+                    this.pc.close();
+                    this.pc = null;
+                }
+                this.video.srcObject = null;
+            }
+        }
+
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -513,23 +583,26 @@
                 // Safety check: pastikan ini adalah stream-card
                 if (!card.classList.contains('stream-card')) return;
 
-                const iframe = card.querySelector('iframe');
+                const video = card.querySelector('video');
                 const loader = card.querySelector('.stream-loader');
                 
                 if (entry.isIntersecting) {
                     // MASUK LAYAR (VISIBLE)
                     card.classList.add('visible');
                     
-                    // Load Video Preview (/102) hanya jika:
-                    // 1. Tidak ada yang fullscreen
-                    // 2. Iframe belum di-load
-                    // 3. Parent grid sedang aktif
                     const parentGrid = card.closest('.floor-grid');
                     const isParentActive = parentGrid && parentGrid.classList.contains('active');
                     
-                    if (!iframe.getAttribute('src') && isParentActive) {
+                    // Init WHEP jika belum ada client dan parent aktif
+                    if (!video.whepClient && isParentActive) {
                         if (loader) loader.style.display = 'block';
-                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                        
+                        // Default load SD
+                        const url = video.getAttribute('data-src');
+                        video.whepClient = new WHEPClient(video, url);
+                        video.whepClient.connect().then(() => {
+                            if (loader) loader.style.display = 'none';
+                        });
                     }
                 } else {
                     // KELUAR LAYAR (HIDDEN)
@@ -537,9 +610,10 @@
                     
                     // Unload Video (Hemat CPU & Bandwidth)
                     // Tapi jangan unload jika sedang fullscreen
-                    if (iframe.getAttribute('src')) {
-                        iframe.setAttribute('src', '');
-                        if (loader) loader.style.display = 'none';
+                    if (!document.fullscreenElement && video.whepClient) {
+                        video.whepClient.close();
+                        delete video.whepClient;
+                        if (loader) loader.style.display = 'block'; // Reset loader for next time
                     }
                 }
             });
@@ -594,29 +668,60 @@
             }
         }
 
+        // --- ROTATE LANDSCAPE (Mobile) ---
+        function rotateLandscape(card) {
+            // 1. Request Fullscreen
+            if (!document.fullscreenElement) {
+                card.requestFullscreen().then(() => {
+                    // 2. Try to lock orientation (Android/Chrome mostly)
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(e => console.log('Orientation lock not supported/allowed:', e));
+                    }
+                }).catch(err => console.error(err));
+            }
+        }
+
+        // SVG Icons
+        const iconEnterFs = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>`;
+        const iconExitFs = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/></svg>`;
+
         document.addEventListener('fullscreenchange', () => {
             const fullscreenElement = document.fullscreenElement;
             
             if (fullscreenElement && fullscreenElement.classList.contains('stream-card')) {
                 // ENTER FULLSCREEN -> Switch to HD (/101)
-                const iframe = fullscreenElement.querySelector('iframe');
-                // Use current src or fallback to data-src if not yet loaded
-                const currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
+                const video = fullscreenElement.querySelector('video');
+                const hdUrl = video.getAttribute('data-hd-src');
                 
-                // Replace encoded /102 with /101
-                if (currentSrc && currentSrc.includes('Channels%2F102')) {
-                    const hdSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
-                    iframe.setAttribute('src', hdSrc);
+                if (video.whepClient && hdUrl) {
+                    console.log("Switching to HD Stream...");
+                    // Reconnect using HD URL
+                    video.whepClient.url = hdUrl;
+                    video.whepClient.connect().catch(err => console.error("HD Switch Error:", err));
+                }
+
+                // Change Icon to Exit Fullscreen
+                const btn = fullscreenElement.querySelector('.fs-toggle-btn');
+                if(btn) {
+                    btn.innerHTML = iconExitFs;
+                    btn.title = "Exit Fullscreen";
                 }
             } else {
                 // EXIT FULLSCREEN -> Revert all to SD (/102)
-                document.querySelectorAll('.stream-card iframe').forEach(iframe => {
-                    const defaultSrc = iframe.getAttribute('data-src');
-                    const currentSrc = iframe.getAttribute('src');
-                    // Only reset if currently loaded AND different (was HD)
-                    if (currentSrc && currentSrc !== defaultSrc) {
-                        iframe.setAttribute('src', defaultSrc);
+                document.querySelectorAll('.stream-card video').forEach(video => {
+                    const sdUrl = video.getAttribute('data-src');
+                    // Jika client ada dan URL saat ini bukan SD, kembalikan ke SD
+                    if (video.whepClient && video.whepClient.url !== sdUrl) {
+                        console.log("Reverting to SD Stream...");
+                        video.whepClient.url = sdUrl;
+                        video.whepClient.connect();
                     }
+                });
+
+                // Revert Icons
+                document.querySelectorAll('.fs-toggle-btn').forEach(btn => {
+                    btn.innerHTML = iconEnterFs;
+                    btn.title = "Fullscreen (HD)";
                 });
             }
         });

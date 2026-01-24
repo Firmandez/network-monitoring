@@ -12,7 +12,6 @@ monitor_bp = Blueprint('monitor', __name__)
 # Sesuaikan credential default CCTV di sini
 RTSP_USER = "admin"
 RTSP_PASS = "k4m3r4cctvft1"
-RTSP_PATH = "/Streaming/Channels/102"
 
 @monitor_bp.route('/')
 @login_required
@@ -58,15 +57,18 @@ def dashboard():
             
             # Construct URL RTSP secara dinamis dari IP database
             # Format: rtsp://user:pass@IP/Streaming/Channels/101
-            rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}{RTSP_PATH}"
-            # Encode URL agar aman saat dikirim sebagai parameter GET HTTP
-            encoded_rtsp = quote(rtsp_url, safe='')
+            # Kita siapkan SD (102) dan HD (101)
+            base_rtsp = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}/Streaming/Channels"
+            
+            encoded_sd = quote(f"{base_rtsp}/102", safe='')
+            encoded_hd = quote(f"{base_rtsp}/101", safe='')
             
             groups[floor_name].append({
                 "id": cam['id'],
                 "name": cam['name'],
                 "ip": cam['ip'],
-                "rtsp": encoded_rtsp
+                "rtsp_sd": encoded_sd,
+                "rtsp_hd": encoded_hd
             })
             
     except Exception as e:
