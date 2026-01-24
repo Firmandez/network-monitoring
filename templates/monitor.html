@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Monitor System</title>
+    <title>Private Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* Override & Specific Styles for Monitor Dashboard */
@@ -290,7 +290,7 @@
     <div class="monitor-header">
         <div class="monitor-left">
             <div class="monitor-title">
-                <h1><span class="live-dot"></span> SYSTEM MONITOR</h1>
+                <h1><span class="live-dot"></span>PRIVATE MONITORING SYSTEM</h1>
             </div>
             
             <!-- SEARCH BAR -->
@@ -330,7 +330,12 @@
                                 <div class="stream-loader"></div>
                                 
                                 <!-- 1. SNAPSHOT IMAGE (Ringan) -->
-                                <img class="stream-snapshot" data-src="{{ stream_server }}/api/frame.jpeg?src={{ cam.rtsp }}" src="" alt="Preview">
+                                <img class="stream-snapshot" 
+                                     data-src="{{ stream_server }}/api/frame.jpeg?src={{ cam.rtsp }}" 
+                                     src="" 
+                                     alt="" 
+                                     onload="this.previousElementSibling.style.display='none'" 
+                                     onerror="this.previousElementSibling.style.display='none'">
                                 
                                 <!-- 3. LIVE VIDEO IFRAME (Berat - Load on Click) -->
                                 <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen></iframe>
@@ -460,6 +465,7 @@
         // --- TOGGLE STREAM LOGIC ---
         function toggleStream(card) {
             const iframe = card.querySelector('iframe');
+            const loader = card.querySelector('.stream-loader');
             const isPlaying = card.classList.contains('playing');
 
             if (isPlaying) {
@@ -469,6 +475,7 @@
             } else {
                 // Start Live
                 card.classList.add('playing');
+                if (loader) loader.style.display = 'block'; // Munculkan loader saat video loading
                 iframe.setAttribute('src', iframe.getAttribute('data-src'));
             }
         }
@@ -479,6 +486,7 @@
             
             const card = btn.closest('.stream-card');
             const iframe = card.querySelector('iframe');
+            const loader = card.querySelector('.stream-loader');
             
             // 1. Request Native Fullscreen
             if (card.requestFullscreen) {
@@ -493,6 +501,7 @@
             // Ganti 102 menjadi 101 di URL
             let highResSrc = currentSrc.replace('102', '101'); 
             
+            if (loader) loader.style.display = 'block'; // Munculkan loader saat transisi ke HD
             iframe.setAttribute('src', highResSrc);
             card.classList.add('playing'); // Pastikan UI dalam mode playing
             card.classList.add('fullscreen-mode'); // Penanda sedang fullscreen
