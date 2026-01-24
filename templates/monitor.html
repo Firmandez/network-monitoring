@@ -266,67 +266,11 @@
             pointer-events: none; 
         }
 
-        /* Overlay transparan untuk menangkap Double Click di area video */
-        .click-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%; /* Cover full iframe agar klik kanan native tidak muncul */
-            z-index: 15; /* Di atas iframe (2), di bawah info (20) */
-            cursor: pointer;
-        }
-
         /* Saat mode playing (Live Video) */
         .stream-card.playing iframe { z-index: 10; }
 
         .stream-card:hover .stream-info {
             opacity: 1;
-        }
-        
-        /* --- CUSTOM CONTROLS (Bottom Bar) --- */
-        .stream-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 5px 10px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            display: flex;
-            justify-content: flex-end; /* Tombol di kanan */
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 20;
-            /* pointer-events: none; Hapus ini agar tombol bisa diklik, tapi area kosong tembus */
-        }
-        
-        .stream-card:hover .stream-controls {
-            opacity: 1;
-        }
-
-        .btn-fs-custom {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            border-radius: 4px;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-            pointer-events: auto; /* Aktifkan klik pada tombol */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        
-        .btn-fs-custom:hover {
-            background: #3498db;
-            border-color: #3498db;
-        }
-
-        .btn-mute-custom {
-            margin-right: 8px; /* Jarak dengan tombol fullscreen */
         }
 
         
@@ -426,14 +370,14 @@
                              data-ip="{{ cam.ip }}"
                              data-quality="sd">
                             
-                            <!-- Overlay untuk Double Click Fullscreen (Wrapper) -->
-                            <div class="click-overlay" ondblclick="toggleFullscreen(event, this)" oncontextmenu="return false;"></div>
-                            
                             <div class="stream-loader"></div>
                             
-                            <!-- Default: Iframe Sub-stream (/102) -->
+                            <!-- Default: Iframe Sub-stream (/102) 
+                                 media=video+audio : Meminta audio jika ada.
+                                 Browser modern akan otomatis MUTE autoplay video+audio.
+                            -->
                             <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video" 
+                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video+audio" 
                                     src="" 
                                     allowfullscreen 
                                     scrolling="no"></iframe>
@@ -443,23 +387,6 @@
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
-                                <div class="quality-badge" style="background: #333; padding: 2px 8px; border-radius: 3px; font-size: 10px;">SD</div>
-                            </div>
-                            
-                            <!-- Custom Controls Bar -->
-                            <div class="stream-controls">
-                                <button class="btn-fs-custom btn-mute-custom muted" onclick="toggleMute(event, this)" title="Unmute">
-                                    <!-- Icon Muted (Default) -->
-                                    <svg class="icon-mute" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zM6 5.04 4.312 6.39A.5.5 0 0 1 4 6.5H2v3h2a.5.5 0 0 1 .312.11L6 10.96V5.04zm7.854.606a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 1 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg>
-                                    <!-- Icon Unmuted -->
-                                    <svg class="icon-unmute" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/><path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 8.99 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zM6 5.04 4.312 6.39A.5.5 0 0 1 4 6.5H2v3h2a.5.5 0 0 1 .312.11L6 10.96V5.04z"/></svg>
-                                </button>
-                                <button class="btn-fs-custom" onclick="toggleFullscreen(event, this)" title="Fullscreen">
-                                    <!-- Icon Expand -->
-                                    <svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/></svg>
-                                    <!-- Icon Compress (Exit) -->
-                                    <svg class="icon-compress" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/></svg>
-                                </button>
                             </div>
                         </div>
                         {% endfor %}
@@ -558,238 +485,6 @@
             }
         });
 
-        // --- MUTE/UNMUTE LOGIC ---
-        function toggleMute(event, btn) {
-            event.stopPropagation();
-            const card = btn.closest('.stream-card');
-            const iframe = card.querySelector('iframe');
-            const loader = card.querySelector('.stream-loader');
-            
-            // Cek status saat ini (berdasarkan class 'muted')
-            const isMuted = btn.classList.contains('muted');
-            
-            // Ambil URL saat ini (bisa dari src aktif atau data-src)
-            let currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
-            let newSrc;
-
-            if (isMuted) {
-                // UNMUTE: Tambahkan audio (media=video+audio)
-                // Replace parameter media=video menjadi media=video+audio
-                newSrc = currentSrc.replace('media=video', 'media=video+audio');
-                
-                // Update UI Button
-                btn.classList.remove('muted');
-                btn.title = "Mute";
-                btn.querySelector('.icon-mute').style.display = 'none';
-                btn.querySelector('.icon-unmute').style.display = 'block';
-            } else {
-                // MUTE: Hapus audio (media=video)
-                newSrc = currentSrc.replace('media=video+audio', 'media=video');
-                
-                // Update UI Button
-                btn.classList.add('muted');
-                btn.title = "Unmute";
-                btn.querySelector('.icon-mute').style.display = 'block';
-                btn.querySelector('.icon-unmute').style.display = 'none';
-            }
-
-            // Simpan state baru ke data-src agar persist saat fullscreen/lazyload
-            iframe.setAttribute('data-src', newSrc);
-
-            // Reload iframe jika sedang aktif
-            if (iframe.getAttribute('src')) {
-                if (loader) loader.style.display = 'block';
-                iframe.setAttribute('src', newSrc);
-            }
-        }
-
-        // --- FULLSCREEN HD LOGIC ---
-        let isFullscreenActive = false;
-        let fullscreenCard = null;
-
-        function toggleFullscreen(event, element) {
-            event.stopPropagation();
-            const card = element.closest('.stream-card');
-            
-            // CEK: Apakah sedang fullscreen? Jika ya, Exit.
-            if (document.fullscreenElement || 
-                document.webkitFullscreenElement || 
-                document.mozFullScreenElement || 
-                document.msFullscreenElement) {
-                
-                // Jika card ini yang sedang fullscreen, maka exit
-                if (card.classList.contains('fullscreen-mode')) {
-                    exitFullscreen();
-                    return;
-                }
-            }
-            
-            // Tandai card yang akan fullscreen
-            fullscreenCard = card;
-            card.setAttribute('data-fullscreen-requested', 'true');
-            
-            const iframe = card.querySelector('iframe');
-            const loader = card.querySelector('.stream-loader');
-            
-            // 1. STOP semua stream lain SEBELUM fullscreen (hemat bandwidth)
-            document.querySelectorAll('.stream-card').forEach(otherCard => {
-                if (otherCard !== card) {
-                    const otherIframe = otherCard.querySelector('iframe');
-                    if (otherIframe) {
-                        otherIframe.setAttribute('src', '');
-                    }
-                }
-            });
-            
-            // 2. Upgrade ke HD (/101)
-            let currentSrc = iframe.getAttribute('data-src');
-            
-            // FIX: Robust Replace menggunakan Regex untuk menangani encoded (%2F) maupun decoded (/)
-            // Mengubah Channels/102 atau Channels%2F102 menjadi ...101
-            let highResSrc = currentSrc.replace(/Channels(%2F|\/)102/, 'Channels$1101');
-            
-            if (loader) loader.style.display = 'block';
-            iframe.setAttribute('src', highResSrc);
-            
-            // Tandai quality
-            card.setAttribute('data-quality', 'hd');
-            updateQualityBadge(card, 'hd');
-            card.classList.add('playing');
-            
-            // 3. Request fullscreen setelah delay kecil (biar stream mulai load)
-            setTimeout(() => {
-                if (card.requestFullscreen) {
-                    card.requestFullscreen();
-                } else if (card.webkitRequestFullscreen) {
-                    card.webkitRequestFullscreen();
-                } else if (card.mozRequestFullScreen) {
-                    card.mozRequestFullScreen();
-                } else if (card.msRequestFullscreen) {
-                    card.msRequestFullscreen();
-                }
-            }, 200);
-        }
-
-        // Helper: Update quality badge
-        function updateQualityBadge(card, quality) {
-            const badge = card.querySelector('.quality-badge');
-            if (badge) {
-                badge.textContent = quality.toUpperCase();
-                badge.style.background = quality === 'hd' ? '#e74c3c' : '#333';
-            }
-        }
-
-        // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
-        function handleFullscreenChange() {
-            const fsElement = document.fullscreenElement || 
-                            document.webkitFullscreenElement || 
-                            document.mozFullScreenElement || 
-                            document.msFullscreenElement;
-
-            if (fsElement) {
-                // --- MASUK FULLSCREEN ---
-                isFullscreenActive = true;
-                
-                // Cari card yang menjadi parent dari fullscreen element
-                let card = fsElement.classList.contains('stream-card') 
-                    ? fsElement 
-                    : fsElement.closest('.stream-card');
-                
-                // Jika tidak ketemu dari fsElement, gunakan card yang di-request
-                if (!card) card = fullscreenCard;
-                
-                if (card) {
-                    const iframe = card.querySelector('iframe');
-                    const loader = card.querySelector('.stream-loader');
-                    const btnFs = card.querySelector('.btn-fs-custom');
-
-                    // Update Icon Button -> Jadi Compress (Exit)
-                    if (btnFs) {
-                        btnFs.querySelector('.icon-expand').style.display = 'none';
-                        btnFs.querySelector('.icon-compress').style.display = 'block';
-                        btnFs.title = "Exit Fullscreen";
-                    }
-
-                    // Tandai card sebagai fullscreen
-                    card.classList.add('fullscreen-mode');
-                    card.setAttribute('data-is-fullscreen', 'true');
-                    
-                }
-            } else {
-                // --- KELUAR FULLSCREEN ---
-                isFullscreenActive = false;
-                
-                const card = document.querySelector('.stream-card[data-is-fullscreen="true"]') || fullscreenCard;
-                
-                if (card) {
-                    const iframe = card.querySelector('iframe');
-                    const loader = card.querySelector('.stream-loader');
-                    const btnFs = card.querySelector('.btn-fs-custom');
-
-                    // Update Icon Button -> Jadi Expand (Enter)
-                    if (btnFs) {
-                        btnFs.querySelector('.icon-expand').style.display = 'block';
-                        btnFs.querySelector('.icon-compress').style.display = 'none';
-                        btnFs.title = "Fullscreen";
-                    }
-                    
-                    // Remove fullscreen markers
-                    card.classList.remove('fullscreen-mode');
-                    card.removeAttribute('data-is-fullscreen');
-                    card.removeAttribute('data-fullscreen-requested');
-                    card.setAttribute('data-quality', 'sd');
-                    updateQualityBadge(card, 'sd');
-                    
-                    // Show loader saat switch back to SD
-                    if (loader) loader.style.display = 'block';
-                    
-                    // Kembalikan ke Sub-stream (/102) - Low bandwidth
-                    iframe.setAttribute('src', iframe.getAttribute('data-src'));
-                    
-                    // RESTART visible streams (fresh live feed, bukan resume)
-                    setTimeout(() => {
-                        document.querySelectorAll('.stream-card.visible').forEach(visibleCard => {
-                            if (visibleCard !== card) {
-                                const visibleIframe = visibleCard.querySelector('iframe');
-                                
-                                // Restart live stream dari awal (realtime feed)
-                                if (visibleIframe && !visibleIframe.getAttribute('src')) {
-                                    visibleIframe.setAttribute('src', visibleIframe.getAttribute('data-src'));
-                                }
-                            }
-                        });
-                    }, 500);
-                }
-                
-                fullscreenCard = null;
-            }
-        }
-        // Listen to all fullscreen events (cross-browser)
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
-
-        // Keyboard shortcut: ESC untuk keluar dari fullscreen
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isFullscreenActive) {
-                exitFullscreen();
-            }
-        });
-        
-        // Helper Exit Fullscreen
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-        }
-
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -801,9 +496,6 @@
                 const iframe = card.querySelector('iframe');
                 const loader = card.querySelector('.stream-loader');
                 
-                // Skip jika card sedang fullscreen
-                if (card.hasAttribute('data-is-fullscreen')) return;
-
                 if (entry.isIntersecting) {
                     // MASUK LAYAR (VISIBLE)
                     card.classList.add('visible');
@@ -815,7 +507,7 @@
                     const parentGrid = card.closest('.floor-grid');
                     const isParentActive = parentGrid && parentGrid.classList.contains('active');
                     
-                    if (!isFullscreenActive && !iframe.getAttribute('src') && isParentActive) {
+                    if (!iframe.getAttribute('src') && isParentActive) {
                         if (loader) loader.style.display = 'block';
                         iframe.setAttribute('src', iframe.getAttribute('data-src'));
                     }
@@ -825,7 +517,7 @@
                     
                     // Unload Video (Hemat CPU & Bandwidth)
                     // Tapi jangan unload jika sedang fullscreen
-                    if (!card.hasAttribute('data-is-fullscreen') && iframe.getAttribute('src')) {
+                    if (iframe.getAttribute('src')) {
                         iframe.setAttribute('src', '');
                         if (loader) loader.style.display = 'none';
                     }
