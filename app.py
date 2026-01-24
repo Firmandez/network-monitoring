@@ -48,7 +48,7 @@ app.config['TRUSTED_HOSTS'] = ['127.0.0.1', '192.168.68.109', '*', 'localhost']
 @app.after_request
 def set_security_headers(response):
     # PERMISSIVE CSP untuk Socket.IO + source maps
-    response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    response.headers['Content-Security-Policy'] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.socket.io https:; connect-src 'self' ws: wss: https://cdn.socket.io https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'self' http: https:;"
     return response
 
 # --- CONTEXT PROCESSOR (Suntikkan variabel ke semua template) ---
