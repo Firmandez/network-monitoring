@@ -24,7 +24,7 @@ def dashboard():
     allowed_users = ['insider']
     
     if g.user['username'] not in allowed_users:
-        return render_template('error_403.html', message="Restricted Page."), 403
+        return render_template('eror_403.html', message="Restricted Page."), 403
 
     # 2. Ambil Data CCTV dari Database
     groups = {}
