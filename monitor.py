@@ -3,6 +3,7 @@ from auth import login_required
 from db import get_db
 from psycopg2.extras import DictCursor
 from config import FLOOR_LABELS
+from urllib.parse import quote
 
 # Nama blueprint disamarkan jadi 'monitor'
 monitor_bp = Blueprint('monitor', __name__)
@@ -56,11 +57,13 @@ def dashboard():
             # Construct URL RTSP secara dinamis dari IP database
             # Format: rtsp://user:pass@IP/Streaming/Channels/101
             rtsp_url = f"rtsp://{RTSP_USER}:{RTSP_PASS}@{cam['ip']}{RTSP_PATH}"
+            # Encode URL agar aman saat dikirim sebagai parameter GET HTTP
+            encoded_rtsp = quote(rtsp_url, safe='')
             
             groups[floor_name].append({
                 "id": cam['id'],
                 "name": cam['name'],
-                "rtsp": rtsp_url
+                "rtsp": encoded_rtsp
             })
             
     except Exception as e:
