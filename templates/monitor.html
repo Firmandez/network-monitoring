@@ -7,171 +7,200 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* Override & Specific Styles for Monitor Dashboard */
-        body {
-            background-color: #000000; /* Pure black for better contrast */
-            overflow-y: auto;
-        }
-        
-        .monitor-header {
-            background: #111;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .monitor-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .monitor-title h1 { 
-            font-size: 18px; 
-            color: #a0aec0; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-weight: normal;
+        /* iVMS-like Layout Structure */
+        body, html {
+            height: 100%;
             margin: 0;
+            overflow: hidden; /* Prevent body scroll, handle in panels */
+            background-color: #121212;
         }
         
-        .live-dot {
-            width: 10px; height: 10px; background: #2ecc71; border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 10px #2ecc71;
+        .ivms-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* SEARCH BAR STYLE */
+        /* --- SIDEBAR (Folder/Tree View) --- */
+        .ivms-sidebar {
+            width: 300px;
+            background-color: #1f1f1f;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            z-index: 50;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #181818;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-title {
+            color: #eee;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .search-box {
             position: relative;
+            width: 100%;
         }
         
         .search-box input {
-            background: #1a1a1a;
+            background: #2a2a2a;
             border: 1px solid #333;
             color: #eee;
-            padding: 8px 15px 8px 35px; /* Padding kiri buat icon */
-            border-radius: 20px;
+            padding: 10px 15px 10px 35px;
+            border-radius: 4px;
             font-size: 13px;
-            width: 250px;
+            width: 100%;
             outline: none;
-            transition: all 0.3s ease;
         }
 
         .search-box input:focus {
             border-color: #3498db;
-            width: 300px;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
-            background: #222;
+            background: #333;
         }
 
         .search-icon {
             position: absolute;
-            left: 12px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
-            color: #666;
+            color: #888;
             pointer-events: none;
         }
 
-        .monitor-container {
-            padding: 20px;
-            max-width: 1800px;
-            margin: 0 auto;
-            min-height: 100vh;
+        .floor-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
         }
 
-        /* ACCORDION STYLES */
-        .accordion {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .accordion-item {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: border-color 0.3s;
-        }
-
-        .accordion-item.active {
-            border-color: #3498db;
-        }
-        
-        .accordion-header {
-            width: 100%;
-            background: #1a1a1a;
-            color: #eee;
-            padding: 15px 20px;
-            text-align: left;
-            border: none;
-            outline: none;
+        .floor-item {
+            padding: 12px 20px;
             cursor: pointer;
+            color: #aaa;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .floor-item:hover {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .floor-item.active {
+            background: #2a2a2a;
+            color: #3498db;
+            border-left-color: #3498db;
+            font-weight: 600;
+        }
+
+        .floor-item .count-badge {
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .floor-item.active .count-badge {
+            background: #3498db;
+            color: #fff;
+        }
+
+        /* --- MAIN CONTENT (Grid View) --- */
+        .ivms-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header {
+            height: 50px;
+            background: #181818;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .current-view-title {
+            color: #eee;
             font-size: 16px;
             font-weight: 600;
-            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .accordion-header:hover {
-            background: #222;
+        .back-btn {
+            display: none; /* Hidden on Desktop */
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            padding: 5px;
+            margin-right: 10px;
         }
 
-        .accordion-header .header-meta {
-            font-size: 12px;
-            color: #777;
-            font-weight: normal;
-            margin-left: 10px;
-        }
-
-        .accordion-header .icon {
-            transition: transform 0.3s;
-            color: #3498db;
-        }
-
-        .accordion-item.active .accordion-header .icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background: #000;
-        }
-
-        .accordion-content-inner {
+        .grid-container {
+            flex: 1;
+            overflow-y: auto;
             padding: 20px;
+            position: relative;
+        }
+
+        .floor-grid {
+            display: none; /* Hidden by default */
+        }
+
+        .floor-grid.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* RESPONSIVE GRID SYSTEM */
         .stream-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
+            gap: 10px; /* Tighter gap like iVMS */
         }
 
         .stream-card {
-            background: #000;
+            background: #111;
             border: 1px solid #222;
-            border-radius: 6px;
+            border-radius: 2px; /* Sharper corners */
             overflow: hidden;
             position: relative;
             aspect-ratio: 16 / 9;
             transition: transform 0.2s, border-color 0.2s;
+            user-select: none; /* Mencegah teks ter-blok/ter-select saat diklik */
         }
         
         .stream-card:hover {
-            border-color: #3498db;
+            border-color: #555;
             z-index: 10;
         }
 
@@ -206,39 +235,23 @@
 
         .stream-info {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
             color: #ccc;
             padding: 10px;
             font-size: 12px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: flex-start;
             opacity: 0;
             transition: opacity 0.3s;
-            z-index: 3;
+            z-index: 20; /* Pastikan di atas iframe (z-index 10 saat playing) */
             pointer-events: none; 
-        }
-        
-        /* --- NEW: SNAPSHOT & PLAY BUTTON STYLES --- */
-        .stream-snapshot {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2; /* Di atas loader, di bawah info */
-            display: block;
-            cursor: pointer;
         }
 
         /* Saat mode playing (Live Video) */
-        .stream-card.playing .stream-snapshot {
-            display: none;
-        }
         .stream-card.playing iframe { z-index: 10; }
 
         .stream-card:hover .stream-info {
@@ -276,129 +289,163 @@
 
         /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .stream-grid { grid-template-columns: 1fr; gap: 15px; } 
-            .monitor-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-            .monitor-left { width: 100%; justify-content: space-between; }
-            .search-box { width: 100%; }
-            .search-box input { width: 100%; }
-            .search-box input:focus { width: 100%; }
+            .stream-grid { grid-template-columns: 1fr; gap: 15px; }
             .stream-info { opacity: 1; }
+            
+            /* Mobile Navigation Logic */
+            .ivms-sidebar {
+                width: 100%;
+                position: absolute;
+                height: 100%;
+                z-index: 100;
+                transform: translateX(0);
+            }
+            
+            .ivms-sidebar.hidden {
+                transform: translateX(-100%);
+            }
+
+            .ivms-main {
+                width: 100%;
+            }
+
+            .back-btn {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="monitor-header">
-        <div class="monitor-left">
-            <div class="monitor-title">
-                <h1><span class="live-dot"></span>PRIVATE MONITORING SYSTEM</h1>
-            </div>
-            
-            <!-- SEARCH BAR -->
-            <div class="search-box">
-                <span class="search-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                </span>
-                <input type="text" id="camSearch" placeholder="Search IP or Name..." autocomplete="off">
-            </div>
-        </div>
-
-        <div class="user-status">
-            <span class="welcome-text" style="font-size: 12px;">ID: <strong>{{ user.username }}</strong></span>
-            <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="border:none; padding: 5px 10px;">Exit</a>
-        </div>
-    </div>
-
-    <div class="monitor-container">
-        <div id="no-results-msg" class="no-results">No cameras found matching your search.</div>
-
-        <div class="accordion">
-            {% for group_name, cameras in groups.items() %}
-            <div class="accordion-item">
-                <button class="accordion-header" type="button">
-                    <div>
-                        {{ group_name }}
-                        <span class="header-meta">({{ cameras|length }} Cameras)</span>
-                    </div>
-                    <span class="icon">▼</span>
-                </button>
-                <div class="accordion-content">
-                    <div class="accordion-content-inner">
-                        <div class="stream-grid">
-                            {% for cam in cameras %}
-                            <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
-                                <div class="stream-loader"></div>
-                                
-                                <!-- Default: Iframe Sub-stream (/102) yang diload via JS -->
-                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen scrolling="no"></iframe>
-                                
-                                <div class="stream-info">
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-weight: 600;">{{ cam.name }}</span>
-                                        <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
-                                    </div>
-                                    <button class="btn-fullscreen" onclick="toggleFullscreen(event, this)" title="Fullscreen HD">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
+    <div class="ivms-layout">
+        <!-- SIDEBAR: LIST OF FLOORS -->
+        <aside class="ivms-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <img src="{{ url_for('static', filename='images/logoNOC.png') }}" alt="Logo" style="height: 24px;">
+                    <span>iVMS Web</span>
+                </div>
+                <div class="search-box">
+                    <span class="search-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                    </span>
+                    <input type="text" id="camSearch" placeholder="Search Camera..." autocomplete="off">
                 </div>
             </div>
-            {% endfor %}
-        </div>
+            
+            <div class="floor-list">
+                {% for group_name, cameras in groups.items() %}
+                <div class="floor-item" onclick="selectFloor('floor-{{ loop.index }}', '{{ group_name }}')">
+                    <span>{{ group_name }}</span>
+                    <span class="count-badge">{{ cameras|length }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="padding: 15px; border-top: 1px solid #333; font-size: 12px; color: #666; text-align: center;">
+                Logged in as <strong style="color: #888;">{{ user.username }}</strong>
+                <br>
+                <a href="{{ url_for('auth.logout') }}" style="color: #e74c3c; text-decoration: none; margin-top: 5px; display: inline-block;">Logout</a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT: VIDEO GRIDS -->
+        <main class="ivms-main">
+            <div class="main-header">
+                <div class="current-view-title">
+                    <button class="back-btn" onclick="showSidebar()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+                    </button>
+                    <span id="active-floor-title">Select a Floor</span>
+                </div>
+                <div class="user-status">
+                    <!-- Optional Toolbar -->
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div id="no-results-msg" class="no-results">No cameras found matching your search.</div>
+
+                {% for group_name, cameras in groups.items() %}
+                <div id="floor-{{ loop.index }}" class="floor-grid">
+                    <div class="stream-grid">
+                        {% for cam in cameras %}
+                        <!-- Added ondblclick for quick fullscreen -->
+                        <div class="stream-card" 
+                             data-name="{{ cam.name }}" 
+                             data-ip="{{ cam.ip }}"
+                             ondblclick="toggleFullscreen(event, this)">
+                            
+                            <div class="stream-loader"></div>
+                            
+                            <!-- Default: Iframe Sub-stream (/102) -->
+                            <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen scrolling="no"></iframe>
+                            
+                            <div class="stream-info">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight: 600;">{{ cam.name }}</span>
+                                    <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
+                                </div>
+                                <button class="btn-fullscreen" onclick="toggleFullscreen(event, this)" title="Fullscreen HD">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
     </div>
 
     <script>
-        // --- ACCORDION LOGIC (EFISIENSI TINGGI) ---
-        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        // --- NAVIGATION LOGIC ---
+        function selectFloor(floorId, floorName) {
+            // 1. Update Sidebar Active State
+            document.querySelectorAll('.floor-item').forEach(item => item.classList.remove('active'));
+            // Find the clicked item (simple way: event.target or just re-query)
+            // For simplicity, we assume the user clicked the right one. 
+            // In a real app, pass 'this' to the function.
+            // Here we just highlight based on text content or ID if we had it on the element.
+            // Let's just rely on the visual change of the grid for now, or add 'this' to onclick.
+            event.currentTarget.classList.add('active');
 
-        accordionHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                const currentItem = header.parentElement;
-                const isActive = currentItem.classList.contains('active');
-
-                // 1. Tutup SEMUA accordion lain & Matikan Videonya
-                document.querySelectorAll('.accordion-item').forEach(item => {
-                    if (item !== currentItem) {
-                        item.classList.remove('active');
-                        item.querySelector('.accordion-content').style.maxHeight = null;
-                        
-                        // UNLOAD VIDEO: Kosongkan src untuk hemat bandwidth/CPU
-                        const iframes = item.querySelectorAll('iframe');
-                        iframes.forEach(iframe => {
-                            iframe.setAttribute('src', '');
-                        });
-                    }
-                });
-
-                // 2. Toggle accordion yang diklik
-                if (!isActive) {
-                    // BUKA
-                    currentItem.classList.add('active');
-                    const content = currentItem.querySelector('.accordion-content');
-                    content.style.maxHeight = content.scrollHeight + "px";
-                } else {
-                    // TUTUP (Manual klik header yang sedang aktif)
-                    currentItem.classList.remove('active');
-                    currentItem.querySelector('.accordion-content').style.maxHeight = null;
-                    
-                    // Unload video saat accordion ditutup
-                    const iframes = currentItem.querySelectorAll('iframe');
-                    iframes.forEach(iframe => {
-                        iframe.setAttribute('src', '');
-                    });
+            // 2. Show Grid
+            document.querySelectorAll('.floor-grid').forEach(grid => {
+                grid.classList.remove('active');
+                
+                // Unload videos from hidden grids to save resources
+                if (grid.id !== floorId) {
+                    const iframes = grid.querySelectorAll('iframe');
+                    iframes.forEach(iframe => iframe.setAttribute('src', ''));
                 }
             });
-        });
 
-        // Buka accordion pertama secara default saat load
-        if (accordionHeaders.length > 0) {
-            accordionHeaders[0].click();
+            const targetGrid = document.getElementById(floorId);
+            if (targetGrid) {
+                targetGrid.classList.add('active');
+            }
+
+            // 3. Update Title
+            document.getElementById('active-floor-title').innerText = floorName;
+
+            // 4. Mobile Logic: Hide Sidebar
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+
+        function showSidebar() {
+            document.getElementById('sidebar').classList.remove('hidden');
+        }
+
+        // Select first floor by default on Desktop
+        const firstFloor = document.querySelector('.floor-item');
+        if (firstFloor && window.innerWidth > 768) {
+            firstFloor.click();
         }
 
         // Fitur Pencarian Real-time
@@ -408,7 +455,7 @@
         searchInput.addEventListener('keyup', function(e) {
             const term = e.target.value.toLowerCase();
             const cards = document.querySelectorAll('.stream-card');
-            const items = document.querySelectorAll('.accordion-item');
+            const floorGrids = document.querySelectorAll('.floor-grid');
             let totalVisible = 0;
 
             // 1. Filter Kartu
@@ -424,27 +471,23 @@
                 }
             });
 
-            // 2. Logika Accordion saat Searching
-            items.forEach(item => {
-                const visibleCards = item.querySelectorAll('.stream-card:not([style*="display: none"])');
-                
-                if (term.length > 0) {
-                    // Jika sedang mencari
+            // 2. Show all grids if searching, or revert to active tab
+            if (term.length > 0) {
+                floorGrids.forEach(grid => {
+                    const visibleCards = grid.querySelectorAll('.stream-card:not([style*="display: none"])');
                     if (visibleCards.length > 0) {
-                        item.style.display = "";
-                        // Otomatis BUKA accordion yang ada hasil pencariannya
-                        if (!item.classList.contains('active')) {
-                            item.querySelector('.accordion-header').click();
-                        }
+                        grid.style.display = "block"; // Force show
                     } else {
-                        item.style.display = "none";
+                        grid.style.display = "none";
                     }
-                } else {
-                    // Jika search kosong, kembalikan tampilan normal (tutup semua kecuali yang aktif manual)
-                    item.style.display = "";
-                    // Opsional: Tutup semua jika search di-clear, atau biarkan status terakhir
-                }
-            });
+                });
+                document.getElementById('active-floor-title').innerText = "Search Results";
+            } else {
+                // Reset view: Hide all, then click the active one or first one
+                floorGrids.forEach(grid => grid.style.display = ""); // Remove inline style
+                const activeItem = document.querySelector('.floor-item.active') || document.querySelector('.floor-item');
+                if (activeItem) activeItem.click();
+            }
 
             // 3. Tampilkan pesan jika tidak ada hasil sama sekali
             if (totalVisible === 0) {
@@ -457,10 +500,7 @@
         // --- FULLSCREEN HD LOGIC ---
         function toggleFullscreen(event, btn) {
             event.stopPropagation();
-            
             const card = btn.closest('.stream-card');
-            const iframe = card.querySelector('iframe');
-            const loader = card.querySelector('.stream-loader');
             
             // 1. Request Native Fullscreen
             if (card.requestFullscreen) {
@@ -468,39 +508,48 @@
             } else if (card.webkitRequestFullscreen) { /* Safari */
                 card.webkitRequestFullscreen();
             }
-
-            // 2. UNLOAD SEMUA VIDEO LAIN (PENTING UNTUK PERFORMA)
-            // Agar CPU fokus merender 1 video HD saja
-            document.querySelectorAll('iframe').forEach(el => {
-                if (el !== iframe) el.setAttribute('src', '');
-            });
-
-            // 3. Switch ke High Res (Channel 101)
-            // URL asli mengandung ...%2F102 (encoded /102)
-            let currentSrc = iframe.getAttribute('data-src');
-            // Ganti 102 menjadi 101 di URL
-            let highResSrc = currentSrc.replace('102', '101'); 
-            
-            if (loader) loader.style.display = 'block'; // Munculkan loader saat transisi ke HD
-            iframe.setAttribute('src', highResSrc);
-            card.classList.add('playing'); // Pastikan UI dalam mode playing
-            card.classList.add('fullscreen-mode'); // Penanda sedang fullscreen
         }
 
-        // Listener saat keluar dari Fullscreen
+        // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
         document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) {
-                // User baru saja keluar dari fullscreen
+            const fsElement = document.fullscreenElement;
+
+            if (fsElement) {
+                // --- MASUK FULLSCREEN ---
+                // Cek apakah elemen yang fullscreen adalah card atau iframe di dalamnya
+                const card = fsElement.closest ? fsElement.closest('.stream-card') : null;
+                
+                if (card) {
+                    const iframe = card.querySelector('iframe');
+                    const loader = card.querySelector('.stream-loader');
+
+                    // 1. Unload video lain (Hemat Resource)
+                    document.querySelectorAll('iframe').forEach(el => {
+                        if (el !== iframe) el.setAttribute('src', '');
+                    });
+
+                    // 2. Upgrade ke HD (/101)
+                    let currentSrc = iframe.getAttribute('data-src');
+                    let highResSrc = currentSrc.replace('102', '101'); 
+                    
+                    if (loader) loader.style.display = 'block';
+                    iframe.setAttribute('src', highResSrc);
+                    card.classList.add('playing');
+                    card.classList.add('fullscreen-mode');
+                }
+            } else {
+                // --- KELUAR FULLSCREEN ---
                 const card = document.querySelector('.stream-card.fullscreen-mode');
                 if (card) {
                     card.classList.remove('fullscreen-mode');
+                    card.classList.remove('playing'); // Reset status
                     const iframe = card.querySelector('iframe');
                     
-                    // 4. Kembalikan ke Low Res (Channel 102)
+                    // 3. Kembalikan ke Low Res (Channel 102)
                     // Ambil dari data-src asli yang masih 102
                     iframe.setAttribute('src', iframe.getAttribute('data-src'));
                 }
-                // 5. RELOAD KEMBALI VIDEO GRID YANG TERLIHAT
+                // 4. RELOAD KEMBALI VIDEO GRID YANG TERLIHAT
                 // Karena tadi dimatikan saat masuk fullscreen
                 document.querySelectorAll('.stream-card.visible iframe').forEach(iframe => {
                     if (!iframe.getAttribute('src')) {
