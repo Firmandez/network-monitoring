@@ -211,6 +211,7 @@
             position: relative;
             z-index: 2;
             overflow: hidden;
+            pointer-events: none;
         }
 
         /* Fullscreen optimizations */
@@ -264,6 +265,22 @@
             transition: opacity 0.3s;
             z-index: 20; /* Pastikan di atas iframe (z-index 10 saat playing) */
             pointer-events: none; 
+        }
+        
+        .stream-info button {
+            pointer-events: auto;
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+            transition: color 0.2s;
+        }
+        
+        .stream-info button:hover {
+            color: #fff;
+            transform: scale(1.1);
         }
 
         /* Saat mode playing (Live Video) */
@@ -368,16 +385,16 @@
                         <div class="stream-card" 
                              data-name="{{ cam.name }}" 
                              data-ip="{{ cam.ip }}"
-                             data-quality="sd">
+                             data-quality="sd"
+                             ondblclick="toggleFullscreen(this)">
                             
                             <div class="stream-loader"></div>
                             
                             <!-- Default: Iframe Sub-stream (/102) 
-                                 media=video+audio : Meminta audio jika ada.
-                                 Browser modern akan otomatis MUTE autoplay video+audio.
+                                 media=video : Meminta video saja (muted).
                             -->
                             <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video+audio" 
+                                    data-src="{{ stream_server }}/stream.html?src={{ cam.rtsp }}&mode=mse&media=video" 
                                     src="" 
                                     allowfullscreen 
                                     scrolling="no"></iframe>
@@ -387,6 +404,9 @@
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
+                                <button onclick="toggleFullscreen(this.closest('.stream-card'))" title="Fullscreen (HD)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>
+                                </button>
                             </div>
                         </div>
                         {% endfor %}
@@ -562,6 +582,44 @@
         if (firstFloor && window.innerWidth > 768) {
             firstFloor.click();
         }
+
+        // --- FULLSCREEN LOGIC (HD SWITCH) ---
+        function toggleFullscreen(card) {
+            if (!document.fullscreenElement) {
+                card.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const fullscreenElement = document.fullscreenElement;
+            
+            if (fullscreenElement && fullscreenElement.classList.contains('stream-card')) {
+                // ENTER FULLSCREEN -> Switch to HD (/101)
+                const iframe = fullscreenElement.querySelector('iframe');
+                // Use current src or fallback to data-src if not yet loaded
+                const currentSrc = iframe.getAttribute('src') || iframe.getAttribute('data-src');
+                
+                // Replace encoded /102 with /101
+                if (currentSrc && currentSrc.includes('Channels%2F102')) {
+                    const hdSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
+                    iframe.setAttribute('src', hdSrc);
+                }
+            } else {
+                // EXIT FULLSCREEN -> Revert all to SD (/102)
+                document.querySelectorAll('.stream-card iframe').forEach(iframe => {
+                    const defaultSrc = iframe.getAttribute('data-src');
+                    const currentSrc = iframe.getAttribute('src');
+                    // Only reset if currently loaded AND different (was HD)
+                    if (currentSrc && currentSrc !== defaultSrc) {
+                        iframe.setAttribute('src', defaultSrc);
+                    }
+                });
+            }
+        });
     </script>
 
 </body>
