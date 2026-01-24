@@ -501,12 +501,6 @@
             document.getElementById('sidebar').classList.remove('hidden');
         }
 
-        // Select first floor by default on Desktop
-        const firstFloor = document.querySelector('.floor-item');
-        if (firstFloor && window.innerWidth > 768) {
-            firstFloor.click();
-        }
-
         // Fitur Pencarian Real-time
         const searchInput = document.getElementById('camSearch');
         const noResultsMsg = document.getElementById('no-results-msg');
@@ -949,6 +943,12 @@
                     streamObserver.observe(card);
                 });
             }, 100);
+        }
+
+        // Select first floor by default on Desktop (Moved to bottom to ensure streamObserver is initialized)
+        const firstFloor = document.querySelector('.floor-item');
+        if (firstFloor && window.innerWidth > 768) {
+            firstFloor.click();
         }
     </script>
 
