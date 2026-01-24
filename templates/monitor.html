@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* Override & Specific Styles for Monitor Dashboard */
-        /* iVMS-like Layout Structure */
         body, html {
             height: 100%;
             margin: 0;
@@ -15,14 +14,14 @@
             background-color: #121212;
         }
         
-        .ivms-layout {
+        .mon-layout {
             display: flex;
             height: 100vh;
             width: 100vw;
         }
 
         /* --- SIDEBAR (Folder/Tree View) --- */
-        .ivms-sidebar {
+        .mon-sidebar {
             width: 300px;
             background-color: #1f1f1f;
             border-right: 1px solid #333;
@@ -122,7 +121,7 @@
         }
 
         /* --- MAIN CONTENT (Grid View) --- */
-        .ivms-main {
+        .mon-main {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -151,7 +150,7 @@
         }
 
         .back-btn {
-            display: none; /* Hidden on Desktop */
+            display: none;
             background: none;
             border: none;
             color: #ccc;
@@ -168,7 +167,7 @@
         }
 
         .floor-grid {
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .floor-grid.active {
@@ -185,18 +184,18 @@
         .stream-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 10px; /* Tighter gap like iVMS */
+            gap: 10px;
         }
 
         .stream-card {
             background: #111;
             border: 1px solid #222;
-            border-radius: 2px; /* Sharper corners */
+            border-radius: 2px;
             overflow: hidden;
             position: relative;
             aspect-ratio: 16 / 9;
             transition: transform 0.2s, border-color 0.2s;
-            user-select: none; /* Mencegah teks ter-blok/ter-select saat diklik */
+            user-select: none;
         }
         
         .stream-card:hover {
@@ -208,10 +207,20 @@
             width: 100%;
             height: 100%;
             border: none;
-            background-color: transparent;
+            background-color: #000;
             position: relative;
             z-index: 2;
             overflow: hidden;
+        }
+
+        /* Fullscreen optimizations */
+        .stream-card.fullscreen-mode {
+            background: #000;
+        }
+
+        .stream-card.fullscreen-mode iframe {
+            width: 100vw !important;
+            height: 100vh !important;
         }
 
         .stream-loader {
@@ -226,6 +235,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* Hide loader when iframe is loaded */
+        .stream-card iframe[src]:not([src=""]) ~ .stream-loader {
+            display: none;
         }
         
         @keyframes spin { 
@@ -274,7 +289,7 @@
             .stream-info { opacity: 1; }
             
             /* Mobile Navigation Logic */
-            .ivms-sidebar {
+            .mon-sidebar {
                 width: 100%;
                 position: absolute;
                 height: 100%;
@@ -282,11 +297,11 @@
                 transform: translateX(0);
             }
             
-            .ivms-sidebar.hidden {
+            .mon-sidebar.hidden {
                 transform: translateX(-100%);
             }
 
-            .ivms-main {
+            .mon-main {
                 width: 100%;
             }
 
@@ -298,9 +313,9 @@
 </head>
 <body>
 
-    <div class="ivms-layout">
+    <div class="mon-layout">
         <!-- SIDEBAR: LIST OF FLOORS -->
-        <aside class="ivms-sidebar" id="sidebar">
+        <aside class="mon-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">
                     <span>Private Monitoring</span>
@@ -330,7 +345,7 @@
         </aside>
 
         <!-- MAIN CONTENT: VIDEO GRIDS -->
-        <main class="ivms-main">
+        <main class="mon-main">
             <div class="main-header">
                 <div class="current-view-title">
                     <button class="back-btn" onclick="showSidebar()">
@@ -354,18 +369,25 @@
                         <div class="stream-card" 
                              data-name="{{ cam.name }}" 
                              data-ip="{{ cam.ip }}"
+                             data-quality="sd"
                              ondblclick="toggleFullscreen(event, this)">
                             
                             <div class="stream-loader"></div>
                             
                             <!-- Default: Iframe Sub-stream (/102) -->
-                            <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen scrolling="no"></iframe>
+                            <iframe class="lazy-stream" 
+                                    data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" 
+                                    src="" 
+                                    allowfullscreen 
+                                    scrolling="no"
+                                    loading="lazy"></iframe>
                             
                             <div class="stream-info">
                                 <div style="display: flex; flex-direction: column;">
                                     <span style="font-weight: 600;">{{ cam.name }}</span>
                                     <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
                                 </div>
+                                <div class="quality-badge" style="background: #333; padding: 2px 8px; border-radius: 3px; font-size: 10px;">SD</div>
                             </div>
                         </div>
                         {% endfor %}
@@ -381,11 +403,6 @@
         function selectFloor(floorId, floorName) {
             // 1. Update Sidebar Active State
             document.querySelectorAll('.floor-item').forEach(item => item.classList.remove('active'));
-            // Find the clicked item (simple way: event.target or just re-query)
-            // For simplicity, we assume the user clicked the right one. 
-            // In a real app, pass 'this' to the function.
-            // Here we just highlight based on text content or ID if we had it on the element.
-            // Let's just rely on the visual change of the grid for now, or add 'this' to onclick.
             event.currentTarget.classList.add('active');
 
             // 2. Show Grid
@@ -411,6 +428,9 @@
             if (window.innerWidth <= 768) {
                 document.getElementById('sidebar').classList.add('hidden');
             }
+
+            // 5. Re-observe streams di grid yang baru aktif
+            reloadVisibleStreams();
         }
 
         function showSidebar() {
@@ -473,110 +493,275 @@
         });
 
         // --- FULLSCREEN HD LOGIC ---
+        let isFullscreenActive = false;
+        let fullscreenCard = null;
+
         function toggleFullscreen(event, card) {
             event.stopPropagation();
-            // card diterima langsung dari ondblclick
             
-            // 1. Request Native Fullscreen
+            // Tandai card yang akan fullscreen
+            fullscreenCard = card;
+            card.setAttribute('data-fullscreen-requested', 'true');
+            
+            // Request Native Fullscreen
             if (card.requestFullscreen) {
                 card.requestFullscreen();
             } else if (card.webkitRequestFullscreen) { /* Safari */
                 card.webkitRequestFullscreen();
+            } else if (card.mozRequestFullScreen) { /* Firefox */
+                card.mozRequestFullScreen();
+            } else if (card.msRequestFullscreen) { /* IE/Edge */
+                card.msRequestFullscreen();
+            }
+        }
+
+        // Helper: Update quality badge
+        function updateQualityBadge(card, quality) {
+            const badge = card.querySelector('.quality-badge');
+            if (badge) {
+                badge.textContent = quality.toUpperCase();
+                badge.style.background = quality === 'hd' ? '#e74c3c' : '#333';
             }
         }
 
         // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
-        document.addEventListener('fullscreenchange', () => {
-            const fsElement = document.fullscreenElement;
+        function handleFullscreenChange() {
+            const fsElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
 
             if (fsElement) {
                 // --- MASUK FULLSCREEN ---
-                // HANYA jika yang fullscreen adalah CARD WRAPPER (hasil double click)
-                // Jika yang fullscreen adalah iframe (native button), kita abaikan agar tidak reload/glitch
+                isFullscreenActive = true;
                 
-                if (fsElement.classList.contains('stream-card')) {
-                    const card = fsElement;
+                // Cari card yang menjadi parent dari fullscreen element
+                let card = fsElement.classList.contains('stream-card') 
+                    ? fsElement 
+                    : fsElement.closest('.stream-card');
+                
+                // Jika tidak ketemu dari fsElement, gunakan card yang di-request
+                if (!card) card = fullscreenCard;
+                
+                if (card) {
                     const iframe = card.querySelector('iframe');
                     const loader = card.querySelector('.stream-loader');
 
-                    // 1. Unload video lain (Hemat Resource)
-                    document.querySelectorAll('iframe').forEach(el => {
-                        if (el !== iframe) el.setAttribute('src', '');
+                    // Tandai card sebagai fullscreen
+                    card.classList.add('fullscreen-mode');
+                    card.setAttribute('data-is-fullscreen', 'true');
+                    card.setAttribute('data-quality', 'hd');
+                    updateQualityBadge(card, 'hd');
+
+                    // 1. STOP semua stream lain (hemat bandwidth & CPU untuk live CCTV)
+                    document.querySelectorAll('.stream-card').forEach(otherCard => {
+                        if (otherCard !== card) {
+                            const otherIframe = otherCard.querySelector('iframe');
+                            if (otherIframe) {
+                                otherIframe.setAttribute('src', ''); // Full stop, bukan pause
+                            }
+                        }
                     });
 
-                    // 2. Upgrade ke HD (/101)
+                    // 2. Upgrade ke HD (/101) - Main stream
                     let currentSrc = iframe.getAttribute('data-src');
                     
-                    // FIX: Replace spesifik pada bagian Channel agar tidak merusak IP Address (misal 192.168.1.102)
-                    // Mencari pola encoded 'Channels/102' -> 'Channels%2F102'
-                    let highResSrc = currentSrc.replace('Channels%2F102', 'Channels%2F101');
-                    // Fallback jika URL tidak ter-encode (Channels/102)
-                    if (highResSrc === currentSrc) highResSrc = currentSrc.replace('Channels/102', 'Channels/101');
+                    // Replace channel 102 (sub-stream) menjadi 101 (main stream) untuk HD
+                    let highResSrc = currentSrc
+                        .replace('Channels%2F102', 'Channels%2F101')
+                        .replace('Channels/102', 'Channels/101')
+                        .replace('%2F102', '%2F101')
+                        .replace('/102', '/101');
                     
+                    // Simpan URL HD untuk reference
+                    iframe.setAttribute('data-hd-src', highResSrc);
+                    
+                    // Show loader saat switching quality
                     if (loader) loader.style.display = 'block';
+                    
+                    // Load HD stream (LIVE)
                     iframe.setAttribute('src', highResSrc);
                     card.classList.add('playing');
-                    card.classList.add('fullscreen-mode');
+                    
+                    // Notify player: entering fullscreen HD mode
+                    setTimeout(() => {
+                        try {
+                            iframe.contentWindow.postMessage({
+                                type: 'fullscreen',
+                                status: 'enter',
+                                quality: 'hd',
+                                stream: 'live'
+                            }, '*');
+                        } catch (e) {
+                            console.log('Cannot communicate with iframe:', e);
+                        }
+                        
+                        // Auto-hide loader after connection established
+                        setTimeout(() => {
+                            if (loader) loader.style.display = 'none';
+                        }, 3000);
+                    }, 500);
                 }
             } else {
                 // --- KELUAR FULLSCREEN ---
-                const card = document.querySelector('.stream-card.fullscreen-mode');
+                isFullscreenActive = false;
+                
+                const card = document.querySelector('.stream-card[data-is-fullscreen="true"]') || fullscreenCard;
+                
                 if (card) {
-                    card.classList.remove('fullscreen-mode');
                     const iframe = card.querySelector('iframe');
+                    const loader = card.querySelector('.stream-loader');
                     
-                    // 3. Kembalikan ke Low Res (Channel 102)
-                    // Ambil dari data-src asli yang masih 102
-                    iframe.setAttribute('src', iframe.getAttribute('data-src'));
-                }
-                // 4. RELOAD KEMBALI VIDEO GRID YANG TERLIHAT
-                // Karena tadi dimatikan saat masuk fullscreen
-                document.querySelectorAll('.stream-card.visible iframe').forEach(iframe => {
-                    if (!iframe.getAttribute('src')) {
-                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                    // Remove fullscreen markers
+                    card.classList.remove('fullscreen-mode');
+                    card.removeAttribute('data-is-fullscreen');
+                    card.removeAttribute('data-fullscreen-requested');
+                    card.setAttribute('data-quality', 'sd');
+                    updateQualityBadge(card, 'sd');
+                    
+                    // Notify player: exiting fullscreen
+                    try {
+                        iframe.contentWindow.postMessage({
+                            type: 'fullscreen',
+                            status: 'exit',
+                            quality: 'sd',
+                            stream: 'live'
+                        }, '*');
+                    } catch (e) {
+                        console.log('Cannot communicate with iframe:', e);
                     }
-                });
+                    
+                    // Show loader saat switch back to SD
+                    if (loader) loader.style.display = 'block';
+                    
+                    // Kembalikan ke Sub-stream (/102) - Low bandwidth
+                    setTimeout(() => {
+                        iframe.setAttribute('src', iframe.getAttribute('data-src'));
+                        
+                        // Auto-hide loader
+                        setTimeout(() => {
+                            if (loader) loader.style.display = 'none';
+                        }, 2000);
+                    }, 100);
+                    
+                    // RESTART visible streams (fresh live feed, bukan resume)
+                    setTimeout(() => {
+                        document.querySelectorAll('.stream-card.visible').forEach(visibleCard => {
+                            if (visibleCard !== card) {
+                                const visibleIframe = visibleCard.querySelector('iframe');
+                                
+                                // Restart live stream dari awal (realtime feed)
+                                if (visibleIframe && !visibleIframe.getAttribute('src')) {
+                                    visibleIframe.setAttribute('src', visibleIframe.getAttribute('data-src'));
+                                }
+                            }
+                        });
+                    }, 500);
+                }
+                
+                fullscreenCard = null;
+            }
+        }
+
+        // Listen to all fullscreen events (cross-browser)
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+        // Keyboard shortcut: ESC untuk keluar dari fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isFullscreenActive) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
             }
         });
 
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const card = entry.target.closest('.stream-card');
-                if (!card) return; // Safety check
+                const card = entry.target;
+                
+                // Safety check: pastikan ini adalah stream-card
+                if (!card.classList.contains('stream-card')) return;
 
                 const iframe = card.querySelector('iframe');
                 const loader = card.querySelector('.stream-loader');
+                
+                // Skip jika card sedang fullscreen
+                if (card.hasAttribute('data-is-fullscreen')) return;
 
                 if (entry.isIntersecting) {
-                    // MASUK LAYAR
+                    // MASUK LAYAR (VISIBLE)
                     card.classList.add('visible');
                     
-                    // Load Video Preview (/102)
-                    if (!document.fullscreenElement) {
-                        if (!iframe.getAttribute('src')) {
-                            if (loader) loader.style.display = 'block';
+                    // Load Video Preview (/102) hanya jika:
+                    // 1. Tidak ada yang fullscreen
+                    // 2. Iframe belum di-load
+                    // 3. Parent grid sedang aktif
+                    const parentGrid = card.closest('.floor-grid');
+                    const isParentActive = parentGrid && parentGrid.classList.contains('active');
+                    
+                    if (!isFullscreenActive && !iframe.getAttribute('src') && isParentActive) {
+                        if (loader) loader.style.display = 'block';
+                        
+                        // Delay kecil untuk smooth loading
+                        setTimeout(() => {
                             iframe.setAttribute('src', iframe.getAttribute('data-src'));
-                        }
+                        }, 50);
                     }
                 } else {
-                    // KELUAR LAYAR -> MATIKAN SEMUA
+                    // KELUAR LAYAR (HIDDEN)
                     card.classList.remove('visible');
                     
-                    // Unload Video (Hemat CPU)
-                    iframe.setAttribute('src', '');
+                    // Unload Video (Hemat CPU & Bandwidth)
+                    // Tapi jangan unload jika sedang fullscreen
+                    if (!card.hasAttribute('data-is-fullscreen') && iframe.getAttribute('src')) {
+                        iframe.setAttribute('src', '');
+                        if (loader) loader.style.display = 'none';
+                    }
                 }
             });
         }, {
-            root: null,
-            rootMargin: '50px 0px', // DIPERKETAT: Hanya load jika jaraknya 50px dari layar (sebelumnya 400px)
-            threshold: 0.01
+            root: null, // viewport browser
+            rootMargin: '100px 0px', // Load 100px sebelum masuk viewport (balance antara UX & performance)
+            threshold: 0.1 // 10% dari card harus terlihat untuk trigger
         });
 
-        // Observe semua kartu
-        document.querySelectorAll('.stream-card').forEach(card => {
-            streamObserver.observe(card);
-        });
+        // Observe semua kartu stream
+        function initObserver() {
+            document.querySelectorAll('.stream-card').forEach(card => {
+                streamObserver.observe(card);
+            });
+        }
+
+        // Initialize observer setelah DOM ready
+        initObserver();
+
+        // Re-observe saat floor/tab berubah (untuk dynamic content)
+        function reloadVisibleStreams() {
+            const activeGrid = document.querySelector('.floor-grid.active');
+            if (!activeGrid) return;
+
+            // Unobserve semua dulu
+            document.querySelectorAll('.stream-card').forEach(card => {
+                streamObserver.unobserve(card);
+            });
+
+            // Re-observe yang ada di active grid
+            setTimeout(() => {
+                activeGrid.querySelectorAll('.stream-card').forEach(card => {
+                    streamObserver.observe(card);
+                });
+            }, 100);
+        }
     </script>
 
 </body>
