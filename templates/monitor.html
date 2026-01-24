@@ -363,7 +363,7 @@
             
             <div class="floor-list">
                 {% for group_name, cameras in groups.items() %}
-                <div class="floor-item" onclick="selectFloor('floor-{{ loop.index }}', '{{ group_name }}')">
+                <div class="floor-item" onclick="selectFloor(event, 'floor-{{ loop.index }}', '{{ group_name }}')">
                     <span>{{ group_name }}</span>
                     <span class="count-badge">{{ cameras|length }}</span>
                 </div>
@@ -443,7 +443,7 @@
 
     <script>
         // --- NAVIGATION LOGIC ---
-        function selectFloor(floorId, floorName) {
+        function selectFloor(event, floorId, floorName) {
             // 1. Update Sidebar Active State
             document.querySelectorAll('.floor-item').forEach(item => item.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -605,6 +605,16 @@
             }
         }
 
+        // --- STREAM SWITCHER HELPER (Fix Memory Leak) ---
+        function switchStream(video, newUrl) {
+            if (video.whepClient) {
+                video.whepClient.close();
+                delete video.whepClient;
+            }
+            video.whepClient = new WHEPClient(video, newUrl);
+            video.whepClient.connect();
+        }
+
         // --- STRICT LAZY LOAD (Efficiency Booster) ---
         const streamObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -636,7 +646,7 @@
                     
                     // Unload Video (Hemat CPU & Bandwidth)
                     // Tapi jangan unload jika sedang fullscreen
-                    if (!document.fullscreenElement && video.whepClient) {
+                    if (!card.dataset.locked && video.whepClient) {
                         video.whepClient.close();
                         delete video.whepClient;
                     }
@@ -716,13 +726,12 @@
             if (fullscreenElement && fullscreenElement.classList.contains('stream-card')) {
                 // ENTER FULLSCREEN -> Switch to HD (/101)
                 const video = fullscreenElement.querySelector('video');
+                fullscreenElement.dataset.locked = "1"; // Lock observer agar tidak close stream
                 const hdUrl = video.getAttribute('data-hd-src');
                 
-                if (video.whepClient && hdUrl) {
+                if (hdUrl) {
                     console.log("Switching to HD Stream...");
-                    // Reconnect using HD URL
-                    video.whepClient.url = hdUrl;
-                    video.whepClient.connect().catch(err => console.error("HD Switch Error:", err));
+                    switchStream(video, hdUrl);
                 }
 
                 // Change Icon to Exit Fullscreen
@@ -733,13 +742,14 @@
                 }
             } else {
                 // EXIT FULLSCREEN -> Revert all to SD (/102)
-                document.querySelectorAll('.stream-card video').forEach(video => {
+                document.querySelectorAll('.stream-card').forEach(card => {
+                    delete card.dataset.locked; // Unlock observer
+                    const video = card.querySelector('video');
                     const sdUrl = video.getAttribute('data-src');
                     // Jika client ada dan URL saat ini bukan SD, kembalikan ke SD
                     if (video.whepClient && video.whepClient.url !== sdUrl) {
                         console.log("Reverting to SD Stream...");
-                        video.whepClient.url = sdUrl;
-                        video.whepClient.connect();
+                        switchStream(video, sdUrl);
                     }
                 });
 

@@ -22,12 +22,6 @@ def dashboard():
     if g.user['username'] not in allowed_users:
         return render_template('eror_403.html', message="Restricted Page."), 403
 
-    # --- DYNAMIC STREAM SERVER URL ---
-    # Otomatis mendeteksi IP Host (LAN atau Tailscale)
-    # Mengasumsikan go2rtc berjalan di host yang sama pada port 1984
-    host_ip = request.host.split(':')[0]
-    stream_server_url = f"http://{host_ip}:1984"
-
     # 2. Ambil Data CCTV dari Database
     groups = {}
     try:
@@ -76,7 +70,7 @@ def dashboard():
         print(f"Error loading CCTV from DB: {e}")
 
     # 3. Render Template dengan data dinamis
-    return render_template('monitor.html', groups=groups, stream_server=stream_server_url)
+    return render_template('monitor.html', groups=groups)
 
 @monitor_bp.route('/api/whep', methods=['POST'])
 @login_required
