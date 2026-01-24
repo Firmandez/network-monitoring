@@ -503,16 +503,53 @@
             fullscreenCard = card;
             card.setAttribute('data-fullscreen-requested', 'true');
             
-            // Request Native Fullscreen
-            if (card.requestFullscreen) {
-                card.requestFullscreen();
-            } else if (card.webkitRequestFullscreen) { /* Safari */
-                card.webkitRequestFullscreen();
-            } else if (card.mozRequestFullScreen) { /* Firefox */
-                card.mozRequestFullScreen();
-            } else if (card.msRequestFullscreen) { /* IE/Edge */
-                card.msRequestFullscreen();
-            }
+            const iframe = card.querySelector('iframe');
+            const loader = card.querySelector('.stream-loader');
+            
+            // 1. STOP semua stream lain SEBELUM fullscreen (hemat bandwidth)
+            document.querySelectorAll('.stream-card').forEach(otherCard => {
+                if (otherCard !== card) {
+                    const otherIframe = otherCard.querySelector('iframe');
+                    if (otherIframe) {
+                        otherIframe.setAttribute('src', '');
+                    }
+                }
+            });
+            
+            // 2. Langsung upgrade ke HD (/101) SEBELUM fullscreen
+            let currentSrc = iframe.getAttribute('data-src');
+            let highResSrc = currentSrc
+                .replace('Channels%2F102', 'Channels%2F101')
+                .replace('Channels/102', 'Channels/101')
+                .replace('%2F102', '%2F101')
+                .replace('/102', '/101');
+            
+            // Simpan URL HD
+            iframe.setAttribute('data-hd-src', highResSrc);
+            
+            // Show loader
+            if (loader) loader.style.display = 'block';
+            
+            // Load HD stream DULU
+            iframe.setAttribute('src', highResSrc);
+            
+            // Tandai quality
+            card.setAttribute('data-quality', 'hd');
+            updateQualityBadge(card, 'hd');
+            card.classList.add('playing');
+            
+            // 3. Request fullscreen setelah delay kecil (biar stream mulai load)
+            setTimeout(() => {
+                if (card.requestFullscreen) {
+                    card.requestFullscreen();
+                } else if (card.webkitRequestFullscreen) {
+                    card.webkitRequestFullscreen();
+                } else if (card.mozRequestFullScreen) {
+                    card.mozRequestFullScreen();
+                } else if (card.msRequestFullscreen) {
+                    card.msRequestFullscreen();
+                }
+            }, 200);
         }
 
         // Helper: Update quality badge
@@ -524,6 +561,14 @@
             }
         }
 
+        // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
+        function handleFullscreenChange() {
+            const fsElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+        
+            if (fsElement) {
         // Listener Global: Deteksi Fullscreen dari Button ATAU Native Player
         function handleFullscreenChange() {
             const fsElement = document.fullscreenElement || 
@@ -550,38 +595,9 @@
                     // Tandai card sebagai fullscreen
                     card.classList.add('fullscreen-mode');
                     card.setAttribute('data-is-fullscreen', 'true');
-                    card.setAttribute('data-quality', 'hd');
-                    updateQualityBadge(card, 'hd');
-
-                    // 1. STOP semua stream lain (hemat bandwidth & CPU untuk live CCTV)
-                    document.querySelectorAll('.stream-card').forEach(otherCard => {
-                        if (otherCard !== card) {
-                            const otherIframe = otherCard.querySelector('iframe');
-                            if (otherIframe) {
-                                otherIframe.setAttribute('src', ''); // Full stop, bukan pause
-                            }
-                        }
-                    });
-
-                    // 2. Upgrade ke HD (/101) - Main stream
-                    let currentSrc = iframe.getAttribute('data-src');
                     
-                    // Replace channel 102 (sub-stream) menjadi 101 (main stream) untuk HD
-                    let highResSrc = currentSrc
-                        .replace('Channels%2F102', 'Channels%2F101')
-                        .replace('Channels/102', 'Channels/101')
-                        .replace('%2F102', '%2F101')
-                        .replace('/102', '/101');
-                    
-                    // Simpan URL HD untuk reference
-                    iframe.setAttribute('data-hd-src', highResSrc);
-                    
-                    // Show loader saat switching quality
-                    if (loader) loader.style.display = 'block';
-                    
-                    // Load HD stream (LIVE)
-                    iframe.setAttribute('src', highResSrc);
-                    card.classList.add('playing');
+                    // Stream HD sudah di-load dari toggleFullscreen(), 
+                    // jadi ga perlu load lagi di sini
                     
                     // Notify player: entering fullscreen HD mode
                     setTimeout(() => {
@@ -661,8 +677,7 @@
                 
                 fullscreenCard = null;
             }
-        }
-
+        }}}
         // Listen to all fullscreen events (cross-browser)
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
