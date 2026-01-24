@@ -536,9 +536,13 @@
                 this.video = videoElement;
                 this.url = url;
                 this.pc = null;
+                this.isConnected = false;
             }
 
             async connect() {
+                // Cegah koneksi ganda
+                if (this.isConnected) return;
+                
                 if (this.pc) this.close();
 
                 this.pc = new RTCPeerConnection({
@@ -548,21 +552,42 @@
                 this.pc.addTransceiver('video', { direction: 'recvonly' });
 
                 this.pc.ontrack = (event) => {
+                    console.log(`[WHEP] Track received for ${this.url}`);
                     this.video.srcObject = event.streams[0];
+                    
+                    // Paksa play (penting untuk browser modern)
+                    this.video.play().then(() => {
+                        // Sembunyikan loader jika berhasil play
+                        const loader = this.video.parentElement.querySelector('.stream-loader');
+                        if (loader) loader.style.display = 'none';
+                    }).catch(e => {
+                        console.error("[WHEP] Autoplay blocked:", e);
+                    });
                 };
 
-                const offer = await this.pc.createOffer();
-                await this.pc.setLocalDescription(offer);
+                this.pc.onconnectionstatechange = () => {
+                    console.log(`[WHEP] State: ${this.pc.connectionState}`);
+                    if (this.pc.connectionState === 'failed') this.close();
+                };
 
-                const response = await fetch(this.url, {
-                    method: 'POST',
-                    body: offer.sdp,
-                    headers: { 'Content-Type': 'application/sdp' }
-                });
+                try {
+                    const offer = await this.pc.createOffer();
+                    await this.pc.setLocalDescription(offer);
 
-                if (response.ok) {
+                    const response = await fetch(this.url, {
+                        method: 'POST',
+                        body: offer.sdp,
+                        headers: { 'Content-Type': 'application/sdp' }
+                    });
+
+                    if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+
                     const answer = await response.text();
                     await this.pc.setRemoteDescription({ type: 'answer', sdp: answer });
+                    this.isConnected = true;
+                } catch (error) {
+                    console.error("[WHEP] Connection failed:", error);
+                    this.close();
                 }
             }
 
@@ -572,6 +597,11 @@
                     this.pc = null;
                 }
                 this.video.srcObject = null;
+                this.isConnected = false;
+                
+                // Munculkan loader lagi saat close
+                const loader = this.video.parentElement.querySelector('.stream-loader');
+                if (loader) loader.style.display = 'block';
             }
         }
 
@@ -595,14 +625,10 @@
                     
                     // Init WHEP jika belum ada client dan parent aktif
                     if (!video.whepClient && isParentActive) {
-                        if (loader) loader.style.display = 'block';
-                        
                         // Default load SD
                         const url = video.getAttribute('data-src');
                         video.whepClient = new WHEPClient(video, url);
-                        video.whepClient.connect().then(() => {
-                            if (loader) loader.style.display = 'none';
-                        });
+                        video.whepClient.connect();
                     }
                 } else {
                     // KELUAR LAYAR (HIDDEN)
@@ -613,7 +639,6 @@
                     if (!document.fullscreenElement && video.whepClient) {
                         video.whepClient.close();
                         delete video.whepClient;
-                        if (loader) loader.style.display = 'block'; // Reset loader for next time
                     }
                 }
             });
