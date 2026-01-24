@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Monitor</title>
+    <title>Private Monitor System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* Override & Specific Styles for Monitor Dashboard */
@@ -289,7 +289,7 @@
                             <div class="stream-card" data-name="{{ cam.name }}" data-ip="{{ cam.ip }}">
                                 <div class="stream-loader"></div>
                                 <!-- Default src kosong agar tidak loading di awal -->
-                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}" src="" allowfullscreen></iframe>
+                                <iframe class="lazy-stream" data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp }}&media=video" src="" allowfullscreen></iframe>
                                 
                                 <div class="stream-info">
                                     <span>{{ cam.name }}</span>
