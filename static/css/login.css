@@ -10,10 +10,10 @@ body {
     background-color: #0A2A4A;
     color: #FFFFFF;
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    height: 100vh; /* Fix height to viewport */
-    justify-content: center; /* Center content vertically */
-    overflow: hidden; /* Disable scrollbars */
+    flex-direction: column; 
+    height: 100vh;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .login-container {
@@ -22,7 +22,7 @@ body {
     align-items: center;
     width: 100%;
     padding: 20px;
-    flex-grow: 1; /* Make this container take up available space */
+    flex-grow: 1;
 }
 
 .login-box {
@@ -39,25 +39,25 @@ body {
 }
 
 .login-logo {
-    width: 100px; /* Ukuran logo yang pas */
+    width: 100px;
     height: auto;
-    margin-bottom: 20px; /* Jarak antara logo dan judul */
+    margin-bottom: 20px;
     transition: transform 0.3s ease;
 }
 
 .login-logo:hover {
-    transform: scale(1.05); /* Efek hover pada logo */
+    transform: scale(1.05);
 }
 
 .login-box h1 {
     color: #eeeeee;
-    margin-bottom: 8px; /* Jarak lebih kecil ke deskripsi */
+    margin-bottom: 8px;
     font-weight: 600;
 }
 
 .login-box p {
     color: #a0aec0;
-    margin-bottom: 25px; /* Jarak ke form */
+    margin-bottom: 25px;
     font-size: 14px;
 }
 
@@ -91,9 +91,9 @@ body {
 }
 
 .btn-login {
-    width: 100%; /* Tetap 100% untuk mobile */
-    max-width: 200px; /* Batasi lebar maksimum */
-    margin: 0 auto; /* Pusatkan tombol */
+    width: 100%;
+    max-width: 200px; 
+    margin: 0 auto;
     padding: 12px;
     background: #3498db;
     color: #fff;
@@ -101,7 +101,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 600; /* Font lebih tebal */
+    font-weight: 600;
     transition: background 0.3s;
 }
 
@@ -142,13 +142,13 @@ body {
 }
 
 .social-links a {
-    color: #a0aec0; /* Sub Text color */
+    color: #a0aec0;
     transition: color 0.3s, transform 0.3s;
     display: inline-block;
 }
 
 .social-links a:hover {
-    color: #3498db; /* Main blue */
+    color: #3498db;
     transform: scale(1.2);
 }
 
@@ -165,7 +165,7 @@ body {
     body {
         height: auto;
         min-height: 100vh;
-        overflow-y: auto; /* Enable scroll on mobile */
+        overflow-y: auto;
     }
 }
 
