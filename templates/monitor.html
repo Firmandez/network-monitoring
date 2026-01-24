@@ -266,6 +266,17 @@
             pointer-events: none; 
         }
 
+        /* Overlay transparan untuk menangkap Double Click di area video */
+        .click-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 50px); /* Sisakan ruang bawah untuk kontrol native player */
+            z-index: 15; /* Di atas iframe (2), di bawah info (20) */
+            cursor: pointer;
+        }
+
         /* Saat mode playing (Live Video) */
         .stream-card.playing iframe { z-index: 10; }
 
@@ -365,12 +376,13 @@
                 <div id="floor-{{ loop.index }}" class="floor-grid">
                     <div class="stream-grid">
                         {% for cam in cameras %}
-                        <!-- Added ondblclick for quick fullscreen -->
                         <div class="stream-card" 
                              data-name="{{ cam.name }}" 
                              data-ip="{{ cam.ip }}"
-                             data-quality="sd"
-                             ondblclick="toggleFullscreen(event, this)">
+                             data-quality="sd">
+                            
+                            <!-- Overlay untuk Double Click Fullscreen (Wrapper) -->
+                            <div class="click-overlay" ondblclick="toggleFullscreen(event, this)"></div>
                             
                             <div class="stream-loader"></div>
                             
@@ -496,8 +508,9 @@
         let isFullscreenActive = false;
         let fullscreenCard = null;
 
-        function toggleFullscreen(event, card) {
+        function toggleFullscreen(event, element) {
             event.stopPropagation();
+            const card = element.closest('.stream-card');
             
             // Tandai card yang akan fullscreen
             fullscreenCard = card;
