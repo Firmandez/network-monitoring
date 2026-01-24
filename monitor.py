@@ -21,9 +21,6 @@ STREAM_SERVER_URL = "http://192.168.68.109:1984"
 @monitor_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # 1. Cek Otorisasi Khusus
-    # Hanya user 'insider' (dan admin) yang boleh masuk.
-    # User biasa akan melihat error 403.
     allowed_users = ['insider']
     
     if g.user['username'] not in allowed_users:
@@ -48,8 +45,11 @@ def dashboard():
 
         for cam in cameras:
             # Mapping ID lantai ke Nama Lantai (dari config.py)
-            floor_key = cam['floor_id']
-            floor_name = FLOOR_LABELS.get(floor_key, floor_key.replace('_', ' ').title())
+            floor_key = cam['floor_id'] if cam['floor_id'] else "unknown"
+            
+            # Safety check: pastikan floor_key string sebelum di-replace
+            display_name = floor_key.replace('_', ' ').title() if isinstance(floor_key, str) else "Unknown Floor"
+            floor_name = FLOOR_LABELS.get(floor_key, display_name)
             
             if floor_name not in groups:
                 groups[floor_name] = []
