@@ -725,9 +725,21 @@ function setupLogPanel() {
     
     if (!logPanel || !logHeader) return;
 
-    // 1. Accordion Toggle (Klik 
+    // 1. Accordion Toggle (Klik Body/Header untuk Expand/Collapse)
+    logPanel.addEventListener('click', (e) => {
+        // Jangan toggle jika yang diklik adalah elemen interaktif (tombol, input, link)
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+        
         // Jangan toggle jika user sedang select text
         if (window.getSelection().toString().length > 0) return;
+
+        // LOGIC BARU: Jika sedang expanded, jangan close kalau klik di area konten (log-container/controls)
+        // Biar user bisa scroll atau klik log tanpa menutup panel secara tidak sengaja
+        if (logPanel.classList.contains('expanded')) {
+            if (e.target.closest('.log-container') || e.target.closest('.log-controls')) {
+                return;
+            }
+        }
 
         logPanel.classList.toggle('expanded');
         
@@ -736,7 +748,7 @@ function setupLogPanel() {
         if (title) {
             title.textContent = logPanel.classList.contains('expanded') ? 'Activity Logs 🔽' : 'Activity Logs 🔼';
         }
-    };
+    });
 
     // 2. Inject Controls (Search & Filter) secara dinamis
     // Kita masukkan sebelum logContainer
@@ -781,6 +793,7 @@ function setupLogPanel() {
     // Tambahkan indikator panah di judul awal
     const title = logHeader.querySelector('h3');
     if (title) title.textContent = 'Activity Logs 🔼';
+}
     
 // ZOOM & PAN CONTROLS (Perfect Wrapper)
 function setupZoomControls() {

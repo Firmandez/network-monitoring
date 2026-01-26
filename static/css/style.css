@@ -771,6 +771,7 @@ button, .filter-item {
     align-items: center;
     height: 50px; /* Tinggi fix header sedikit diperkecil */
     flex-shrink: 0;
+    cursor: pointer; /* Pastikan header selalu terlihat bisa diklik */
 }
 
 .log-header h3 {
