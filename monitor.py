@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, g, abort, request
+from flask import Blueprint, render_template, g, abort, request, redirect, url_for
 from auth import login_required
 from db import get_db
 from psycopg2.extras import DictCursor
@@ -19,7 +19,7 @@ def dashboard():
     allowed_users = ['insider']
     
     if g.user['username'] not in allowed_users:
-        return render_template('eror_403.html', message="Restricted Page."), 403
+        return redirect(url_for('index'))
 
     # --- DYNAMIC STREAM SERVER URL ---
     # Otomatis mendeteksi IP Host (LAN atau Tailscale)

@@ -196,7 +196,11 @@ def background_monitoring():
                     # FIX: Generate unique sequence number (0-65535) to prevent packet collision/cross-talk
                     # between threads. This fixes "Offline devices marked as Online".
                     seq_id = random.randint(0, 65535)
-                    latency = ping_device(device['ip'], seq=seq_id)
+                    
+                    # KHUSUS VOIP: Berikan timeout lebih panjang (2s) karena hardware telepon kadang lambat merespon
+                    timeout = 2 if device['type'] == 'voip' else 1
+                    
+                    latency = ping_device(device['ip'], timeout=timeout, seq=seq_id)
                     ping_results[device['id']] = latency
 
                 for device in current_devices:
@@ -216,8 +220,12 @@ def background_monitoring():
                         old_status = current_state['status']
                         new_status = old_status
 
+                        # Tentukan threshold latency untuk status 'unstable'
+                        # Default: 0.5s (500ms). Untuk VoIP kita set >10ms (0.01s) jadi unstable (karena normalnya ~4ms)
+                        latency_threshold = 0.01 if device_map[device_id]['type'] == 'voip' else 0.5
+
                         if isinstance(latency, float): # Ping berhasil, `latency` adalah float
-                            new_status = 'online' if latency <= 0.5 else 'unstable'
+                            new_status = 'online' if latency <= latency_threshold else 'unstable'
                         else: # Ping gagal, `latency` adalah None atau False
                             new_status = 'offline'
 

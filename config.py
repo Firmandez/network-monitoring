@@ -32,8 +32,8 @@ FLOOR_LABELS = {
 
 # Device Type Configuration
 DEVICE_TYPES = {
-    "switch": {"label": "Switch"},
-    "switch_poe": {"label": "Switch POE"},
+    "crs": {"label": "CRS"},
+    "ccr": {"label": "CCR"},
     "cctv": {"label": "CCTV"},
     "server":{"label": "Server"},
     "wifi": {"label": "WiFi/AP"},

@@ -48,15 +48,16 @@ def login():
             session.clear() # Hapus session lama sebelum membuat yang baru
             session['user_id'] = db_user['id']
             
-            # 1. Cek apakah ada parameter 'next' (halaman tujuan awal)
-            next_url = request.args.get('next')
-            if next_url and next_url.startswith('/'):
-                return redirect(next_url)
-
-            # Jika user adalah 'admin' atau 'firmandez', arahkan ke dashboard admin
+            # 2. Redirect berdasarkan role/username
+            # - Admin/Superuser ke panel admin
             if db_user['username'] in ['admin', 'firmandez']:
                 return redirect(url_for('admin.dashboard'))
-            return redirect(url_for('index')) # Redirect ke dashboard utama setelah login
+            # - User 'insider' khusus
+            if db_user['username'] == 'insider':
+                return redirect(url_for('monitor.dashboard'))
+            
+            # 3. Default redirect ke dashboard utama untuk user lain
+            return redirect(url_for('index'))
         
         error = "Login gagal: Username atau password salah."
 
