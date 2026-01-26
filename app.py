@@ -4,7 +4,7 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, g, render_template, jsonify, request
+from flask import Flask, g, render_template, jsonify, request, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
@@ -361,12 +361,25 @@ def handle_disconnect():
     print(f"[Socket.IO] Client disconnected: {request.sid}")
 
 @socketio.on('clear_logs')
-@login_required
 def handle_clear_logs():
     """Menghapus semua log dari memori dan database."""
+    # FIX: Cek Auth manual karena @login_required tidak jalan di Socket.IO context
+    if 'user_id' not in session:
+        print("[Socket.IO] Unauthorized attempt to clear logs")
+        return
+
     with app.app_context():
         db = get_db()
         cur = db.cursor()
+        
+        # Ambil username dari DB untuk logging console (karena g.user kosong di socket)
+        username = "Unknown"
+        try:
+            cur.execute("SELECT username FROM users WHERE id = %s", (session['user_id'],))
+            res = cur.fetchone()
+            if res: username = res[0]
+        except: pass
+
         try:
             with status_lock:
                 # Hapus dari database (TRUNCATE lebih cepat dari DELETE)
@@ -374,7 +387,7 @@ def handle_clear_logs():
                 db.commit()
                 # Hapus dari memori
                 event_logs.clear()
-            print(f"Event logs cleared by user: {g.user['username']}")
+            print(f"Event logs cleared by user: {username}")
             emit_update() # Kirim update ke semua klien dengan log kosong
         except Exception as e:
             db.rollback()
