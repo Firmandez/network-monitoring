@@ -737,7 +737,7 @@ button, .filter-item {
     /* Fixed Bottom Accordion Style */
     right: 20px;
     left: 60px; /* Sesuaikan dengan lebar sidebar */
-    height: 160px; /* Tinggi awal saat collapsed */
+    height: 300px; /* Tinggi awal saat collapsed */
     z-index: 500;
     border-radius: 12px 12px 0 0; /* Radius hanya di atas */
     background: rgba(15, 52, 96, 0.95); /* Kembali ke background solid */
