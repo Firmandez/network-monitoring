@@ -7,7 +7,6 @@
     --scrollbar-track-bg: #0f3460;
     --scrollbar-thumb-bg: #3498db;
     --scrollbar-thumb-hover-bg: #2980b9;
-    --footer-height: 90px; /* sesuaikan real height footer */
 }
 
 /* =========================
@@ -48,7 +47,6 @@ body {
     color: #FFFFFF;
     overflow-x: hidden;
     min-height: 100vh;
-    padding-bottom: 180px; /* Beri ruang di bawah agar footer tidak tertutup Log Panel */
 }
 
 /* Hide body scrollbar when in fullscreen mode */
@@ -737,8 +735,6 @@ button, .filter-item {
 /* Log Panel */
 .log-panel {
     /* Fixed Bottom Accordion Style */
-    position: fixed;
-    bottom: var(--footer-height);
     right: 20px;
     left: 60px; /* Sesuaikan dengan lebar sidebar */
     height: 160px; /* Tinggi awal saat collapsed */
