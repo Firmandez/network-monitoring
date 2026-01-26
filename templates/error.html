@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }} - NOC Monitoring</title>
+    <style>
+        body { 
+            background: #0A2A4A; /* Solid Navy Background */
+            color: #eeeeee; 
+            display: flex; 
+            height: 100vh; 
+            justify-content: center; 
+            align-items: center; 
+            font-family: 'Segoe UI', sans-serif; 
+            text-align: center; 
+            margin: 0;
+        }
+        .container {
+            background: #0f3460; /* Card Color */
+            padding: 50px;
+            border-radius: 16px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 { 
+            color: #3498db; 
+            font-size: 80px; 
+            margin: 0; 
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+        }
+        h2 { font-size: 24px; margin-bottom: 15px; color: #fff; margin-top: 10px; }
+        p { color: #a0aec0; margin-bottom: 30px; font-size: 16px; line-height: 1.5; }
+        a { 
+            color: #fff; 
+            text-decoration: none; 
+            background: transparent;
+            border: 1px solid rgba(52, 152, 219, 0.6);
+            color: #3498db;
+            padding: 12px 30px; 
+            border-radius: 8px; 
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        a:hover { 
+            background: rgba(52, 152, 219, 0.15);
+            color: #fff;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ error_code }}</h1>
+        <h2>{{ title }}</h2>
+        <p>{{ message }}</p>
+        <a href="{{ url_for('index') }}">Return to Dashboard</a>
+    </div>
+</body>
+</html>

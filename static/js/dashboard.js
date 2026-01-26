@@ -18,6 +18,7 @@ let clockInterval = null;
 let currentLogsData = [];
 let logSearchTerm = '';
 let logStatusFilter = 'all';
+let logTypeFilter = 'all';
 
 // --- HELPER UNTUK AKSI YANG MEMBUTUHKAN LOGIN ---
 function performAuthenticatedAction(action) {
@@ -686,12 +687,15 @@ function renderEventLogs(logs) {
         // Filter by Status
         const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
         
+        // Filter by Type
+        const matchesType = logTypeFilter === 'all' || log.type === logTypeFilter;
+
         // Filter by Search (Device Name or Message)
         const term = logSearchTerm.toLowerCase();
         const matchesSearch = (log.device && log.device.toLowerCase().includes(term)) || 
                               (log.message && log.message.toLowerCase().includes(term));
         
-        return matchesStatus && matchesSearch;
+        return matchesStatus && matchesSearch && matchesType;
     });
 
     if (!filteredLogs || filteredLogs.length === 0) {
@@ -743,20 +747,34 @@ function setupLogPanel() {
 
         logPanel.classList.toggle('expanded');
         
-        // Ganti icon panah jika ada (opsional)
-        const title = logHeader.querySelector('h3');
-        if (title) {
-            title.textContent = logPanel.classList.contains('expanded') ? 'Activity Logs 🔽' : 'Activity Logs 🔼';
+        // Ganti icon panah (Rotate SVG)
+        const icon = logHeader.querySelector('.log-toggle-icon');
+        if (icon) {
+            icon.style.transform = logPanel.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
     });
+
+    // Generate Type Options dari Config
+    let typeOptions = '<option value="all">All Types</option>';
+    if (typeof config !== 'undefined' && config.device_types) {
+        Object.keys(config.device_types).forEach(key => {
+            typeOptions += `<option value="${key}">${config.device_types[key].label}</option>`;
+        });
+    }
 
     // 2. Inject Controls (Search & Filter) secara dinamis
     // Kita masukkan sebelum logContainer
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'log-controls';
+    controlsDiv.style.flexDirection = 'column'; // Ubah jadi column biar rapi
     controlsDiv.innerHTML = `
-        <input type="text" id="log-search" class="log-search" placeholder="Search device or message...">
-        <div class="log-filter-group" style="display:flex; gap:5px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="log-search" class="log-search" placeholder="Search..." style="flex: 2;">
+            <select id="log-type-filter" class="log-search" style="flex: 1; cursor: pointer;">
+                ${typeOptions}
+            </select>
+        </div>
+        <div class="log-filter-group" style="display:flex; gap:5px; flex-wrap: wrap;">
             <button class="log-filter-btn active" data-filter="all">All</button>
             <button class="log-filter-btn" data-filter="online">Online</button>
             <button class="log-filter-btn" data-filter="offline">Offline</button>
@@ -770,6 +788,13 @@ function setupLogPanel() {
     const searchInput = document.getElementById('log-search');
     searchInput.addEventListener('input', (e) => {
         logSearchTerm = e.target.value;
+        renderEventLogs(currentLogsData);
+    });
+
+    // 3b. Event Listeners untuk Type Filter
+    const typeSelect = document.getElementById('log-type-filter');
+    typeSelect.addEventListener('change', (e) => {
+        logTypeFilter = e.target.value;
         renderEventLogs(currentLogsData);
     });
 
@@ -790,9 +815,15 @@ function setupLogPanel() {
         });
     });
     
-    // Tambahkan indikator panah di judul awal
+    // Tambahkan indikator panah SVG di judul awal
     const title = logHeader.querySelector('h3');
-    if (title) title.textContent = 'Activity Logs 🔼';
+    if (title) {
+        // Gunakan Flexbox biar teks dan icon sejajar vertikal
+        title.style.display = 'flex';
+        title.style.alignItems = 'center';
+        // Inject SVG Chevron Up
+        title.innerHTML = `Activity Logs <svg class="log-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="margin-left: 10px; transition: transform 0.3s ease;"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/></svg>`;
+    }
 }
     
 // ZOOM & PAN CONTROLS (Perfect Wrapper)
@@ -1380,3 +1411,13 @@ window.addEventListener('resize', () => {
         updateMapTransform();
     }
 });
+
+// --- SCROLLBAR FADE LOGIC ---
+let scrollTimer;
+document.addEventListener("scroll", () => {
+    document.body.classList.add("scrolling");
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+        document.body.classList.remove("scrolling");
+    }, 1000); // Scrollbar hilang setelah 1 detik diam
+}, true); // 'true' (Capture Phase) wajib agar bisa mendeteksi scroll di dalam div (sidebar/log)

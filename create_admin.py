@@ -9,7 +9,7 @@ load_dotenv()
 # Daftar user yang akan dibuat atau di-update
 # Format: (username, password)
 USERS_TO_CREATE = [
-    ("insider", "mastergame2004"),
+    ("admin", "laboranfti"),
 ]
 
 conn = None
@@ -27,7 +27,7 @@ try:
         print(f"Membuat atau memperbarui user: {username}")
 
         if not password:
-            print(f"⚠️  Password untuk user '{username}' kosong, user dilewati.")
+            print(f"Password untuk user '{username}' kosong, user dilewati.")
             continue
 
         # Hash password

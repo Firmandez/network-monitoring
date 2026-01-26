@@ -35,10 +35,11 @@ def dashboard():
         # Ambil device dengan type 'cctv' yang aktif
         # Kita urutkan berdasarkan lantai agar rapi
         cur.execute("""
-            SELECT id, name, ip, floor_id 
-            FROM devices 
-            WHERE type = 'cctv' AND is_active = TRUE 
-            ORDER BY floor_id, name
+            SELECT d.id, d.name, d.ip, d.floor_id, s.online
+            FROM devices d
+            LEFT JOIN device_status s ON d.id = s.device_id
+            WHERE d.type = 'cctv' AND d.is_active = TRUE 
+            ORDER BY d.floor_id, d.name
         """)
         cameras = cur.fetchall()
         cur.close()
@@ -66,6 +67,7 @@ def dashboard():
                 "id": cam['id'],
                 "name": cam['name'],
                 "ip": cam['ip'],
+                "online": cam['online'], # Status Online/Offline (True/False/None)
                 "rtsp_sd": encoded_sd,
                 "rtsp_hd": encoded_hd
             })

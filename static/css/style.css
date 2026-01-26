@@ -216,7 +216,7 @@ button, .filter-item {
 }
 
 .btn-admin:hover { 
-    background: rgba(52, 152, 219, 0.15); 
+    background: rgba(52, 152, 219, 0.15);
     border-color: #3498db; 
     color: #3498db !important; }
 
@@ -278,23 +278,28 @@ button, .filter-item {
 .sidebar {
     width: 250px; /* Sedikit lebih lebar agar proporsional */
     width: 220px;
-    background: rgba(255, 255, 255, 0.08);
+    background: #0f3460; /* Solid Navy */
     padding: 25px; /* Padding lebih lega */
     padding: 20px 15px;
     border-right: 2px solid rgba(52, 152, 219, 0.3);
     height: auto;
     overflow-y: auto;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
     transition: all 0.3s ease;
 }
 
 .sidebar:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: #163c6b; /* Slightly lighter solid on hover */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Hide Scrollbar for Sidebar (Chrome/Safari/Opera) */
+.sidebar::-webkit-scrollbar {
+    display: none;
 }
 
 .sidebar h3 {
@@ -739,10 +744,7 @@ button, .filter-item {
     left: 60px; /* Sesuaikan dengan lebar sidebar */
     height: 300px; /* Tinggi awal saat collapsed */
     z-index: 500;
-    border-radius: 12px 12px 0 0; /* Radius hanya di atas */
-    background: rgba(15, 52, 96, 0.95); /* Kembali ke background solid */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: #0f3460; /* Solid Navy */
     padding: 20px 30px;
     border-top: 2px solid rgba(52, 152, 219, 0.3);  
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -755,7 +757,7 @@ button, .filter-item {
 
 /* Hover Effect: Glow & Solidify */
 .log-panel:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: #163c6b; /* Slightly lighter solid on hover */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -788,9 +790,22 @@ button, .filter-item {
 
 .btn-clear {
     background: #7f8c8d;
+    background: transparent;
+    border: 1px solid rgba(149, 165, 166, 0.6);
+    color: #95a5a6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s;
 }
 .btn-clear:hover {
     background: #6c7b7d;
+    background: rgba(149, 165, 166, 0.15);
+    border-color: #95a5a6;
+    color: #fff;
+    transform: translateY(-1px);
 }
 
 .refresh-btn {
@@ -799,14 +814,25 @@ button, .filter-item {
     color: #fff;
     padding: 8px 16px;
     border-radius: 5px;
+    background: transparent;
+    border: 1px solid rgba(52, 152, 219, 0.6);
+    color: #3498db;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    font-size: 12px;
+    font-weight: 500;
     transition: all 0.3s;
 }
 
 .refresh-btn:hover {
     background: #2980b9;
     transform: translateY(-2px);
+    background: rgba(52, 152, 219, 0.15);
+    border-color: #3498db;
+    color: #fff;
+    transform: translateY(-1px);
 }
 
 /* Log Controls (Search & Filter) */
@@ -843,6 +869,12 @@ button, .filter-item {
     font-size: 13px;
 }
 .log-search:focus { border-color: #3498db; }
+
+/* Styling untuk dropdown option agar tidak putih silau */
+.log-search option {
+    background: #0f3460;
+    color: #fff;
+}
 
 .log-filter-btn {
     background: transparent;
@@ -926,35 +958,33 @@ button, .filter-item {
 
 /* Scrollbar Styling - Revised for Clarity */
 
-/* 1. Default Scrollbar (untuk body dan elemen umum) */
+/* Base scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
-    height: 8px; /* Untuk scrollbar horizontal jika ada */
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-bg); /* Warna track yang gelap dan konsisten */
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-bg); /* Warna thumb yang kontras */
+    background: transparent; /* Default: Hidden/Invisible */
     border-radius: 4px;
+    transition: background 0.5s ease; /* Transisi halus saat muncul/hilang */
 }
 
+/* Show thumb when container hovered OR when scrolling */
+body.scrolling ::-webkit-scrollbar-thumb,
+.log-container:hover::-webkit-scrollbar-thumb,
+.modal-body:hover::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-bg);
+}
+
+/* Darker on direct hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover-bg); /* Warna saat di-hover langsung */
+    background: var(--scrollbar-thumb-hover-bg);
 }
 
-/* 2. Auto-hiding Scrollbar (untuk container spesifik seperti sidebar & log) */
-.sidebar::-webkit-scrollbar-thumb,
-.log-container::-webkit-scrollbar-thumb {
-    background: transparent; /* Sembunyikan thumb by default */
-}
-
-.sidebar:hover::-webkit-scrollbar-thumb,
-.log-container:hover::-webkit-scrollbar-thumb {
-    background: rgba(52, 152, 219, 0.5); /* Tampilkan saat container di-hover */
-}
 
 /* Responsive Log Panel */
 @media (max-width: 1024px) {
@@ -1340,7 +1370,7 @@ button, .filter-item {
 .app-footer {
     text-align: center;
     padding: 20px;
-    margin-top: 40px;
+    margin-top: 80px;
     color: #a0aec0;
     font-size: 13px;
     border-top: 1px solid rgba(52, 152, 219, 0.2);

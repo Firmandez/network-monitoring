@@ -17,6 +17,7 @@
         .mon-layout {
             display: flex;
             height: 100vh;
+            height: 100dvh; /* Fix untuk mobile browser address bar */
             width: 100vw;
         }
 
@@ -164,6 +165,7 @@
             overflow-y: auto;
             padding: 20px;
             position: relative;
+            padding-bottom: 100px; /* Tambahan padding bawah agar card terakhir tidak terpotong */
         }
 
         .floor-grid {
@@ -380,9 +382,33 @@
             .mon-main {
                 width: 100%;
             }
+            
+            /* Mobile specific padding adjustment */
+            .grid-container {
+                padding: 10px 10px 150px 10px; /* Atas Kanan Bawah Kiri - Bawah diperbesar */
+            }
 
             .back-btn {
                 display: block;
+            }
+            .cam-offline-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                color: #eee;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 20px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                z-index: 3;
+                pointer-events: none;
+                display: none; /* Hidden by default, toggled by JS */
             }
         }
     </style>
@@ -437,49 +463,54 @@
             <div class="grid-container">
                 <div id="no-results-msg" class="no-results">No cameras found matching your search.</div>
 
+
                 {% for group_name, cameras in groups.items() %}
                 <div id="floor-{{ loop.index }}" class="floor-grid">
                     <div class="stream-grid">
                         {% for cam in cameras %}
-                        <div class="stream-card" 
+                        <div class="stream-card {{ 'offline' if not cam.online else '' }}" 
                              data-name="{{ cam.name }}" 
                              data-ip="{{ cam.ip }}"
                              data-quality="sd"
                              ondblclick="toggleFullscreen(this)">
                             
-                            <div class="stream-loader"></div>
-                            
-                            <!-- ROBUST AUDIO FIX: 
-                                 1. tracks=v : Memaksa go2rtc hanya kirim video track.
-                                 2. allow="autoplay" : Memenuhi policy browser.
-                            -->
-                            <iframe class="lazy-stream" 
-                                    data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp_sd }}&media=video" 
+                             <div class="stream-loader"></div>
+
+                            <iframe class="lazy-stream"
+                                    data-src="{{ stream_server }}/webrtc.html?src={{ cam.rtsp_sd }}&media=video"
                                     data-hd-src="{{ stream_server }}/stream.html?src={{ cam.rtsp_hd }}&mode=mse&media=video"
-                                    src="" 
+                                    src=""
                                     allow="autoplay; fullscreen"
-                                    allowfullscreen 
-                                    scrolling="no"></iframe>
+                                    allowfullscreen
+                                    scrolling="no">
+                            </iframe>
                             
-                            <div class="stream-info">
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-weight: 600;">{{ cam.name }}</span>
-                                    <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>
+                            <div class="cam-offline-overlay">
+                                CAM OFFLINE
+                            </div>
+
+                            <div class="stream-info">                           
+                                 <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight: 600;">{{ cam.name }}</span>                        
+                                    <span style="color: #2ecc71; font-size: 10px;">{{ cam.ip }}</span>                    
                                 </div>
                             </div>
                             
                             <div class="stream-controls">
+
                                 <!-- NEW: Rotate Button (Mobile) -->
                                 <button class="rotate-btn" onclick="rotateLandscape(this.closest('.stream-card'))" title="Landscape Mode">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/><path d="M11.536 14.01A8.473 8.473 0 0 1 8 14.5a8.473 8.473 0 0 1-3.536-.49l-.555.832A9.476 9.476 0 0 0 8 15.5a9.476 9.476 0 0 0 4.091-.658l-.555-.832zM3.5 13.5A7.5 7.5 0 0 1 8 13.5a7.5 7.5 0 0 1 4.5 0h-9z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 4.5A1.5 1.5 0 0 1 2.5 3h11A1.5 1.5 0 0 1 15 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 11.5v-7zM2.5 4a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-11z"/><path d="M14 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
                                     <span style="font-size: 10px; margin-left: 2px;">Rotate</span>
                                 </button>
+
                                 
                                 <!-- Fullscreen Toggle Button -->
                                 <button class="fs-toggle-btn" onclick="toggleFullscreen(this.closest('.stream-card'))" title="Fullscreen (HD)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>
                                 </button>
                             </div>
+
                         </div>
                         {% endfor %}
                     </div>
@@ -491,6 +522,15 @@
 
     <script>
         // --- NAVIGATION LOGIC ---
+        
+        // Helper: Update tampilan overlay offline
+        function updateOfflineOverlay(card) {
+            const isOffline = card.classList.contains('offline');
+            const overlay = card.querySelector('.cam-offline-overlay');
+            if (overlay) overlay.style.display = isOffline ? 'flex' : 'none';
+            return isOffline;
+        }
+
         function selectFloor(event, floorId, floorName) {
             // 1. Update Sidebar Active State
             document.querySelectorAll('.floor-item').forEach(item => item.classList.remove('active'));
@@ -592,6 +632,11 @@
                     // MASUK LAYAR (VISIBLE)
                     card.classList.add('visible');
                     
+                    // CEK STATUS OFFLINE: Jika offline, tampilkan overlay & JANGAN load video
+                    if (updateOfflineOverlay(card)) {
+                        return; 
+                    }
+
                     const parentGrid = card.closest('.floor-grid');
                     const isParentActive = parentGrid && parentGrid.classList.contains('active');
                     

@@ -336,6 +336,19 @@ def device_detail(device_id):
 
     return render_template('device_detail.html', device=device)
 
+# --- GLOBAL ERROR HANDLERS ---
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('error.html', error_code="403", title="Access Restricted", message="You don't have permission to access this area."), 403
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error.html', error_code="404", title="Page Not Found", message="The page you are looking for doesn't exist."), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('error.html', error_code="500", title="Server Error", message="Something went wrong on our end."), 500
+
 @app.route('/api/config')
 def get_config():
     return jsonify({
