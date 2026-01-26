@@ -14,6 +14,11 @@ let translateX = 0, translateY = 0;
 let isFullscreenMode = false;
 let clockInterval = null;
 
+// LOG VARIABLES
+let currentLogsData = [];
+let logSearchTerm = '';
+let logStatusFilter = 'all';
+
 // --- HELPER UNTUK AKSI YANG MEMBUTUHKAN LOGIN ---
 function performAuthenticatedAction(action) {
     // We determine if the user is authenticated by checking for an element
@@ -118,7 +123,8 @@ function onUpdateData(data) {
 
     // C. Render Logs
     if (data.logs) {
-        renderEventLogs(data.logs);
+        currentLogsData = data.logs; // Simpan data mentah
+        renderEventLogs(currentLogsData); // Render dengan filter saat ini
     }
 
     // D. Cek Config Terload
@@ -167,6 +173,9 @@ async function init() {
         
         // E. Setup Button Listeners
         setupButtonListeners();
+        
+        // F. Setup Log Panel (Accordion & Filter)
+        setupLogPanel();
         
         console.log('✅ Dashboard initialized successfully!');
 
@@ -672,24 +681,106 @@ function renderEventLogs(logs) {
         return; 
     }
 
-    if (!logs || logs.length === 0) {
+    // 1. Filter Logs Client-Side
+    const filteredLogs = logs.filter(log => {
+        // Filter by Status
+        const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
+        
+        // Filter by Search (Device Name or Message)
+        const term = logSearchTerm.toLowerCase();
+        const matchesSearch = (log.device && log.device.toLowerCase().includes(term)) || 
+                              (log.message && log.message.toLowerCase().includes(term));
+        
+        return matchesStatus && matchesSearch;
+    });
+
+    if (!filteredLogs || filteredLogs.length === 0) {
         safeLogContainer.innerHTML = '<p class="log-empty">No events yet...</p>';
         return;
     }
     
     safeLogContainer.innerHTML = '';
-    logs.forEach(log => {
+    filteredLogs.forEach(log => {
         const logItem = document.createElement('div');
         logItem.className = 'log-item';
         const statusClass = log.status ? log.status.toLowerCase() : 'unknown';
         logItem.classList.add(`status-${statusClass}`);
         
+        // Tampilkan Badge Tipe Device jika ada
+        const typeBadge = log.type ? `<span class="device-type-badge">${log.type}</span>` : '';
+
         logItem.innerHTML = `
             <div class="log-timestamp">${log.timestamp || '-'}</div>
-            <div class="log-message">${log.message || '-'}</div>
+            <div class="log-message">${typeBadge}${log.message || '-'}</div>
         `;
         safeLogContainer.appendChild(logItem);
     });
+}
+
+// --- LOG PANEL LOGIC (ACCORDION & FILTER) ---
+function setupLogPanel() {
+    const logPanel = document.querySelector('.log-panel');
+    const logHeader = document.querySelector('.log-header');
+    const logContainer = document.getElementById('log-container');
+    
+    if (!logPanel || !logHeader) return;
+
+    // 1. Accordion Toggle (Klik Header untuk Expand/Collapse)
+    logHeader.addEventListener('click', (e) => {
+        // Jangan toggle jika yang diklik adalah tombol di dalam header (misal refresh/clear)
+        if (e.target.closest('button') || e.target.closest('input')) return;
+        logPanel.classList.toggle('expanded');
+        
+        // Ganti icon panah jika ada (opsional)
+        const title = logHeader.querySelector('h3');
+        if (title) {
+            title.textContent = logPanel.classList.contains('expanded') ? 'Activity Logs 🔽' : 'Activity Logs 🔼';
+        }
+    });
+
+    // 2. Inject Controls (Search & Filter) secara dinamis
+    // Kita masukkan sebelum logContainer
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'log-controls';
+    controlsDiv.innerHTML = `
+        <input type="text" id="log-search" class="log-search" placeholder="Search device or message...">
+        <div class="log-filter-group" style="display:flex; gap:5px;">
+            <button class="log-filter-btn active" data-filter="all">All</button>
+            <button class="log-filter-btn" data-filter="online">Online</button>
+            <button class="log-filter-btn" data-filter="offline">Offline</button>
+            <button class="log-filter-btn" data-filter="unstable">Unstable</button>
+        </div>
+    `;
+    
+    logPanel.insertBefore(controlsDiv, logContainer);
+
+    // 3. Event Listeners untuk Search
+    const searchInput = document.getElementById('log-search');
+    searchInput.addEventListener('input', (e) => {
+        logSearchTerm = e.target.value;
+        renderEventLogs(currentLogsData);
+    });
+
+    // 4. Event Listeners untuk Filter Buttons
+    const filterBtns = document.querySelectorAll('.log-filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Stop propagation agar tidak men-trigger accordion
+            e.stopPropagation();
+            
+            // Update UI Active State
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update Filter Logic
+            logStatusFilter = btn.dataset.filter;
+            renderEventLogs(currentLogsData);
+        });
+    });
+    
+    // Tambahkan indikator panah di judul awal
+    const title = logHeader.querySelector('h3');
+    if (title) title.textContent = 'Activity Logs 🔼';
 }
 
 // ZOOM & PAN CONTROLS (Perfect Wrapper)

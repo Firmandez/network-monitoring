@@ -734,28 +734,42 @@ button, .filter-item {
 
 /* Log Panel */
 .log-panel {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 20px 30px;
-    border-top: 2px solid rgba(52, 152, 219, 0.3);
+    /* Fixed Bottom Accordion Style */
+    position: fixed;
+    bottom: 0;
+    right: 20px;
+    left: 240px; /* Sesuaikan dengan lebar sidebar */
+    z-index: 500;
+    
+    background: rgba(15, 52, 96, 0.95); /* Lebih solid agar menutupi map */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    
+    border-top: 2px solid #3498db;
     border-radius: 12px 12px 0 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
-    transition: all 0.3s ease;
+    
+    height: 60px; /* Tinggi saat collapsed (hanya header) */
+    transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
 }
 
-.log-panel:hover {
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+.log-panel.expanded {
+    height: 50vh; /* Setengah layar saat expanded */
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .log-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    height: 60px; /* Tinggi fix header */
+    flex-shrink: 0;
+    cursor: pointer; /* Indikasi bisa diklik */
 }
 
 .log-header h3 {
@@ -791,13 +805,58 @@ button, .filter-item {
     transform: translateY(-2px);
 }
 
+/* Log Controls (Search & Filter) */
+.log-controls {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Disable klik saat collapsed */
+}
+
+.log-panel.expanded .log-controls {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.log-search {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    outline: none;
+    font-size: 13px;
+}
+.log-search:focus { border-color: #3498db; }
+
+.log-filter-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+.log-filter-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.log-filter-btn.active { background: #3498db; color: white; border-color: #3498db; }
+
 .log-container {
-    max-height: 200px;
+    flex: 1; /* Isi sisa ruang panel */
     overflow-y: auto;
     background: #0f3460; /* Navy Aksen */
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #1e4d7b;
+    margin-bottom: 20px;
 }
 
 .log-item {
@@ -825,6 +884,21 @@ button, .filter-item {
 .log-item.status-online { border-left-color: #2ecc71; }
 .log-item.status-offline { border-left-color: #e74c3c; }
 .log-item.status-unstable { border-left-color: #f39c12; }
+
+/* Device Type Badge di Log */
+.device-type-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    margin-right: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
 .log-timestamp {
     color: #a0aec0; /* Adjusted to palette */
@@ -872,6 +946,14 @@ button, .filter-item {
 .sidebar:hover::-webkit-scrollbar-thumb,
 .log-container:hover::-webkit-scrollbar-thumb {
     background: rgba(52, 152, 219, 0.5); /* Tampilkan saat container di-hover */
+}
+
+/* Responsive Log Panel */
+@media (max-width: 1024px) {
+    .log-panel {
+        left: 0; /* Full width di mobile/tablet */
+        right: 0;
+    }
 }
 
 /* Sidebar Toggle Button */

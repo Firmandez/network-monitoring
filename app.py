@@ -154,7 +154,7 @@ def load_initial_logs():
         cur = db.cursor(cursor_factory=DictCursor)
         # Join dengan tabel devices untuk mendapatkan nama perangkat
         cur.execute("""
-            SELECT l.created_at, d.name as device_name, l.status, l.message
+            SELECT l.created_at, d.name as device_name, d.type as device_type, l.status, l.message
             FROM event_logs l
             JOIN devices d ON l.device_id = d.id
             ORDER BY l.created_at DESC
@@ -166,7 +166,13 @@ def load_initial_logs():
         with status_lock:
             event_logs.clear()
             for row in reversed(rows): # Dibalik agar urutan di frontend benar (tertua di atas)
-                event_logs.append({ "timestamp": row['created_at'].strftime("%Y-%m-%d %H:%M:%S"), "device": row['device_name'], "status": row['status'], "message": row['message'] })
+                event_logs.append({ 
+                    "timestamp": row['created_at'].strftime("%Y-%m-%d %H:%M:%S"), 
+                    "device": row['device_name'], 
+                    "type": row['device_type'], 
+                    "status": row['status'], 
+                    "message": row['message'] 
+                })
         print(f"Loaded {len(event_logs)} logs from database.")
 
 # --- BACKGROUND TASK ---
@@ -245,6 +251,7 @@ def background_monitoring():
                             log_entry_for_memory = {
                                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "device": device_name,
+                                "type": device_map[device_id]['type'],
                                 "status": new_status,
                                 "message": message
                             }
