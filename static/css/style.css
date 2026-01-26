@@ -7,6 +7,7 @@
     --scrollbar-track-bg: #0f3460;
     --scrollbar-thumb-bg: #3498db;
     --scrollbar-thumb-hover-bg: #2980b9;
+    --footer-height: 90px; /* sesuaikan real height footer */
 }
 
 /* =========================
@@ -737,7 +738,9 @@ button, .filter-item {
 .log-panel {
     /* Fixed Bottom Accordion Style */
     position: fixed;
-    bottom: 0; /* KUNCI: Anchor ke bawah agar expand ke atas */
+    bottom: var(--footer-height);
+    right: 20px;
+    left: 60px; /* Sesuaikan dengan lebar sidebar */
     height: 160px; /* Tinggi awal saat collapsed */
     z-index: 500;
     border-radius: 12px 12px 0 0; /* Radius hanya di atas */
@@ -752,7 +755,7 @@ button, .filter-item {
     transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transisi height saja */
     display: flex;
     flex-direction: column;
-    cursor: pointer;
+    cursor: default;
 }
 
 /* Hover Effect: Glow & Solidify */
@@ -762,7 +765,7 @@ button, .filter-item {
 }
 
 .log-panel.expanded {
-    height: calc(100vh - 180px); /* Expand sampai bawah Header Utama */
+    height: calc(100vh - var(--footer-height) - 120px);
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     cursor: default; /* Balik normal saat expanded */
 }
@@ -774,7 +777,8 @@ button, .filter-item {
     height: 50px;
     margin-bottom: 15px; 
     flex-shrink: 0;
-    cursor: pointer; /* Pastikan header selalu terlihat bisa diklik */
+    cursor: pointer;
+
 }
 
 .log-header h3 {
