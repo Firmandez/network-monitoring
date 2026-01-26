@@ -750,7 +750,7 @@ button, .filter-item {
     transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transisi height saja */
     display: flex;
     flex-direction: column;
-    cursor: default;
+    cursor: pointer;
 }
 
 /* Hover Effect: Glow & Solidify */
