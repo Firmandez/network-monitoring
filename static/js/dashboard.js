@@ -725,10 +725,10 @@ function setupLogPanel() {
     
     if (!logPanel || !logHeader) return;
 
-    // 1. Accordion Toggle (Klik Header untuk Expand/Collapse)
-    logHeader.addEventListener('click', (e) => {
-        // Jangan toggle jika yang diklik adalah tombol di dalam header (misal refresh/clear)
-        if (e.target.closest('button') || e.target.closest('input')) return;
+    // 1. Accordion Toggle (Klik 
+        // Jangan toggle jika user sedang select text
+        if (window.getSelection().toString().length > 0) return;
+
         logPanel.classList.toggle('expanded');
         
         // Ganti icon panah jika ada (opsional)
@@ -736,7 +736,7 @@ function setupLogPanel() {
         if (title) {
             title.textContent = logPanel.classList.contains('expanded') ? 'Activity Logs 🔽' : 'Activity Logs 🔼';
         }
-    });
+    };
 
     // 2. Inject Controls (Search & Filter) secara dinamis
     // Kita masukkan sebelum logContainer
@@ -781,8 +781,7 @@ function setupLogPanel() {
     // Tambahkan indikator panah di judul awal
     const title = logHeader.querySelector('h3');
     if (title) title.textContent = 'Activity Logs 🔼';
-}
-
+    
 // ZOOM & PAN CONTROLS (Perfect Wrapper)
 function setupZoomControls() {
     // Reset Origin
