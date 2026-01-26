@@ -744,8 +744,7 @@ button, .filter-item {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 20px 30px;
-    border-top: 2px solid rgba(52, 152, 219, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-top: 2px solid rgba(52, 152, 219, 0.3);  
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
     transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transisi height saja */
