@@ -741,26 +741,36 @@ button, .filter-item {
     left: 240px; /* Sesuaikan dengan lebar sidebar */
     z-index: 500;
     
-    background: rgba(15, 52, 96, 0.95); /* Lebih solid agar menutupi map */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(15, 52, 96, 0.85); /* Lebih transparan (Glassmorphism) */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     
     border-top: 2px solid #3498db;
-    border-radius: 12px 12px 0 0;
+    border-radius: 20px 20px 0 0; /* Lebih rounded ala Dock */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
     
     height: 160px; /* Tinggi saat collapsed (Header + 2 Log Terakhir) */
-    transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1); /* Smooth transition untuk width & height */
     display: flex;
     flex-direction: column;
     padding: 0 20px;
     cursor: pointer; /* Indikasi seluruh panel bisa diklik */
 }
 
+/* Hover Effect: Glow & Solidify */
+.log-panel:hover {
+    background: rgba(15, 52, 96, 0.95);
+    box-shadow: 0 -8px 30px rgba(52, 152, 219, 0.3);
+    border-top-color: #5dade2;
+}
+
 .log-panel.expanded {
     height: calc(100vh - 180px); /* Expand sampai bawah Header Utama */
+    left: 0; /* Mentok Kiri (Cover Sidebar) */
+    right: 0; /* Mentok Kanan */
+    z-index: 1000; /* Pastikan di atas sidebar */
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     cursor: default; /* Balik normal saat expanded */
 }
