@@ -735,12 +735,18 @@ button, .filter-item {
 /* Log Panel */
 .log-panel {
     /* Fixed Bottom Accordion Style */
+    position: fixed;
+    bottom: 0; /* KUNCI: Anchor ke bawah agar expand ke atas */
+    right: 20px;
+    left: 240px; /* Sesuaikan dengan lebar sidebar */
+    height: 160px; /* Tinggi awal saat collapsed */
+    z-index: 500;
+    border-radius: 12px 12px 0 0; /* Radius hanya di atas */
     background: rgba(15, 52, 96, 0.95); /* Kembali ke background solid */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 20px 30px;
     border-top: 2px solid rgba(52, 152, 219, 0.3);
-    border-radius: 12px 12px 0 0; /* Radius standar */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
