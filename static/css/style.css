@@ -735,28 +735,19 @@ button, .filter-item {
 /* Log Panel */
 .log-panel {
     /* Fixed Bottom Accordion Style */
-    position: fixed;
-    bottom: 0;
-    right: 20px;
-    left: 240px; /* Sesuaikan dengan lebar sidebar */
-    z-index: 500;
-    
     background: rgba(15, 52, 96, 0.95); /* Kembali ke background solid */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    
-    border-top: 2px solid #3498db;
+    padding: 20px 30px;
+    border-top: 2px solid rgba(52, 152, 219, 0.3);
     border-radius: 12px 12px 0 0; /* Radius standar */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
-    
-    height: 160px; /* Tinggi saat collapsed (Header + 2 Log Terakhir) */
     transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transisi height saja */
     display: flex;
     flex-direction: column;
-    padding: 0 20px;
-    cursor: pointer; /* Indikasi seluruh panel bisa diklik */
+    cursor: pointer;
 }
 
 /* Hover Effect: Glow & Solidify */
@@ -775,7 +766,8 @@ button, .filter-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 50px; /* Tinggi fix header sedikit diperkecil */
+    height: 50px;
+    margin-bottom: 15px; 
     flex-shrink: 0;
     cursor: pointer; /* Pastikan header selalu terlihat bisa diklik */
 }
