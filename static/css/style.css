@@ -125,6 +125,12 @@ button, .filter-item {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Icon-only button adjustment */
+.fullscreen-btn svg, .exit-fullscreen-btn svg {
+    display: block;
+    margin: 0 auto;
+}
+
 .header-text {
     display: flex;
     flex-direction: column;
@@ -531,6 +537,21 @@ button, .filter-item {
     animation: ripple-alert 1s infinite ease-out; /* Kedip lebih cepet */
 }
 
+/* --- STATUS: UNSTABLE (Orange Warning) --- */
+.device-dot.unstable {
+    background-color: #f39c12; /* Inti Orange */
+    border-color: #fce5cd;
+    box-shadow: 0 0 10px #f39c12;
+    z-index: 15;
+}
+
+/* Ripple Animation Orange */
+.device-dot.unstable::after {
+    background-color: rgba(243, 156, 18, 0.4);
+    box-shadow: 0 0 15px #f39c12;
+    animation: ripple-alert 1.5s infinite ease-out;
+}
+
 /* --- HOVER EFFECT (Target Lock) --- */
 .device-dot:hover {
     transform: translate(-50%, -50%) scale(1.3); /* Tetap di tengah + Zoom */
@@ -602,6 +623,20 @@ button, .filter-item {
         box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
     }
 }
+
+/* Animasi Pulse untuk Dot di Grid (Fullscreen) */
+@keyframes pulse-offline {
+    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70% { transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 0 5px rgba(231, 76, 60, 0); }
+    100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+@keyframes pulse-unstable {
+    0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
+    70% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 0 4px rgba(243, 156, 18, 0); }
+    100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+}
+
 /* =========================
    MAP INFO BOX (Glassmorphism)
    ========================= */
@@ -1162,6 +1197,20 @@ body.scrolling ::-webkit-scrollbar-thumb,
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4); /* Bayangan ke atas */
 }
 
+/* Footer Alert (Ticker) */
+.footer-alert {
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+    margin: 0 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #a0aec0;
+}
+.footer-alert.critical { color: #e74c3c; animation: pulse-text 2s infinite; }
+@keyframes pulse-text { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
 /* 4. GRID LAYOUT */
 .fullscreen-grid {
     flex: 1;
@@ -1210,9 +1259,41 @@ body.scrolling ::-webkit-scrollbar-thumb,
     z-index: 30;
 }
 
+/* Label Lantai di Focus Mode */
+.focus-floor-label {
+    position: absolute; /* Sekarang relatif terhadap .map-container */
+    bottom: 20px;
+    left: 20px;
+    background: rgba(15, 52, 96, 0.9); /* Navy Glass */
+    padding: 10px 25px;
+    border-radius: 8px;
+    border-left: 5px solid #3498db; /* Aksen biru */
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    z-index: 30; /* Di atas konten peta (termasuk dots) */
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    animation: slide-in-up 0.5s ease-out;
+}
+
+/* Tombol Focus Close (Back to Grid / Stop Rotate) */
+.focus-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px; /* Biar icon grid ga gepeng */
+    height: 45px;
+}
+
+@keyframes slide-in-up {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 /* 5. Kotak Per Lantai */
 .floor-grid-item {
-    background: #0a1929; /* Keep map bg dark for contrast */
+    background: linear-gradient(145deg, #0a1929 0%, #06101a 100%); /* Gradient biar lebih deep */
     border: 1px solid #1e4d7b;
     border-radius: 8px;
     overflow: hidden;
@@ -1249,7 +1330,7 @@ body.scrolling ::-webkit-scrollbar-thumb,
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
+    font-size: 13px; /* Font sedikit diperbesar */
     border-bottom: 1px solid #1e4d7b;
     height: 30px;
     color: #eeeeee;
@@ -1274,8 +1355,8 @@ body.scrolling ::-webkit-scrollbar-thumb,
     object-fit: fill;
     opacity: 1;
     filter: contrast(1.2) brightness(0.9) sepia(0.2) hue-rotate(190deg) saturate(0.5);
-    -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
-    mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle at center, black 70%, transparent 100%); /* Vignette dikurangi biar pojok kelihatan */
+    mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
     transition: all 0.3s ease, filter 0.3s ease; /* Tambah transisi untuk filter */
 }
 
@@ -1318,6 +1399,13 @@ body.scrolling ::-webkit-scrollbar-thumb,
     animation: pulse-offline 1s infinite;
 }
 
+.floor-grid-dot.unstable {
+    background-color: #f39c12;
+    box-shadow: 0 0 8px #f39c12;
+    z-index: 15;
+    animation: pulse-unstable 1.5s infinite; /* Tambah animasi pulse */
+}
+
 .floor-grid-item:hover .floor-grid-dot.offline {
     /* Pastikan dot offline juga membesar saat di-hover */
     width: 16px;
@@ -1342,12 +1430,27 @@ body.scrolling ::-webkit-scrollbar-thumb,
     animation: ripple-scan 2s infinite ease-out;
 }
 
+/* Carousel Button */
+.carousel-btn {
+    background: transparent;
+    border: 1px solid rgba(52, 152, 219, 0.5);
+    color: #3498db;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 15px;
+    transition: all 0.3s;
+}
+.carousel-btn:hover { background: rgba(52, 152, 219, 0.1); }
+.carousel-btn.active { background: #3498db; color: #fff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+
 /* Tombol Exit */
 .exit-fullscreen-btn {
     background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 15px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;

@@ -13,6 +13,14 @@ let isPanning = false;
 let translateX = 0, translateY = 0;
 let isFullscreenMode = false;
 let clockInterval = null;
+let carouselInterval = null;
+let carouselIndex = 0;
+let isCarouselActive = false;
+
+// ICONS
+const ICON_GRID = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/></svg>`;
+const ICON_ENTER_FS = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/></svg>`;
+const ICON_EXIT_FS = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/></svg>`;
 
 // LOG VARIABLES
 let currentLogsData = [];
@@ -126,6 +134,25 @@ function onUpdateData(data) {
     if (data.logs) {
         currentLogsData = data.logs; // Simpan data mentah
         renderEventLogs(currentLogsData); // Render dengan filter saat ini
+        
+        // --- FITUR BARU: Update Fullscreen Ticker ---
+        if (data.logs.length > 0) {
+            const latest = data.logs[0];
+            const footer = document.querySelector('.fullscreen-footer');
+            if (footer) {
+                let alertBox = document.getElementById('fs-alert-box');
+                if (!alertBox) {
+                    alertBox = document.createElement('div');
+                    alertBox.id = 'fs-alert-box';
+                    alertBox.className = 'footer-alert';
+                    // Insert di tengah (sebelum elemen terakhir/jam)
+                    footer.insertBefore(alertBox, footer.lastElementChild);
+                }
+                alertBox.textContent = `[${latest.timestamp.split(' ')[1]}] ${latest.device}: ${latest.message}`;
+                alertBox.className = 'footer-alert'; // Reset class
+                if (latest.status !== 'online') alertBox.classList.add('critical');
+            }
+        }
     }
 
     // D. Cek Config Terload
@@ -223,9 +250,13 @@ function setupButtonListeners() {
 
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreen);
+        fullscreenBtn.innerHTML = ICON_ENTER_FS; // Ganti teks dengan Icon
+        fullscreenBtn.title = "Enter Fullscreen";
     }
     if (exitFullscreenBtn) {
         exitFullscreenBtn.addEventListener('click', toggleFullscreen);
+        exitFullscreenBtn.innerHTML = ICON_EXIT_FS; // Ganti teks dengan Icon
+        exitFullscreenBtn.title = "Exit Fullscreen";
     }
     if (sidebarToggleBtn) {
         sidebarToggleBtn.addEventListener('click', toggleSidebar);
@@ -253,6 +284,21 @@ function setupButtonListeners() {
                 refreshLogBtn.textContent = 'Refresh';
             }, 1000);
         });
+    }
+
+    // --- FITUR BARU: Inject Carousel Button ke Fullscreen Header ---
+    const fsHeader = document.querySelector('.fullscreen-header');
+    if (fsHeader && !document.getElementById('carousel-toggle-btn')) {
+        const btn = document.createElement('button');
+        btn.id = 'carousel-toggle-btn';
+        btn.className = 'carousel-btn';
+        btn.textContent = '▶ Auto Rotate';
+        btn.onclick = toggleCarousel;
+        
+        // Masukkan sebelum stats container
+        const statsDiv = fsHeader.querySelector('.fullscreen-stats');
+        if (statsDiv) fsHeader.insertBefore(btn, statsDiv);
+        else fsHeader.appendChild(btn);
     }
 }
 
@@ -1198,6 +1244,8 @@ function exitFullscreenMode() {
     
     if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
 
+    if (isCarouselActive) toggleCarousel(); // Stop carousel pas exit
+
     // Hard Reset Visual (Anti-Blank)
     mapContainer.style.display = 'none';
     void mapContainer.offsetHeight; // Force reflow
@@ -1288,15 +1336,20 @@ function enterFocusMode(floorId) {
     focusViewContainer.classList.add('active');
     focusViewContainer.innerHTML = ''; // Clear previous
 
+    // Tentukan konten tombol berdasarkan status Carousel
+    const btnContent = isCarouselActive ? '⏹ Stop Rotate' : ICON_GRID;
+    const btnTitle = isCarouselActive ? 'Stop Auto Rotate' : 'Back to Grid';
+
     // Create map structure
     const focusMapHTML = `
         <div class="map-container" id="focus-map-container">
+            <div class="focus-floor-label">${config.floor_labels[floorId]}</div>
             <div id="focus-map-content" class="map-content">
                 <img id="focus-floor-map" src="" class="floor-map">
                 <div id="focus-device-dots-container" class="device-dots-container"></div>
             </div>
         </div>
-        <button id="focus-close-btn" class="exit-fullscreen-btn focus-close-btn">Back to Grid</button>
+        <button id="focus-close-btn" class="exit-fullscreen-btn focus-close-btn" title="${btnTitle}">${btnContent}</button>
     `;
     focusViewContainer.innerHTML = focusMapHTML;
 
@@ -1307,7 +1360,14 @@ function enterFocusMode(floorId) {
     const focusDotsContainer = document.getElementById('focus-device-dots-container');
     const focusCloseBtn = document.getElementById('focus-close-btn');
 
-    focusCloseBtn.addEventListener('click', exitFocusMode);
+    // Logic tombol: Kalau lagi rotate -> Stop Rotate. Kalau manual -> Back to Grid.
+    focusCloseBtn.addEventListener('click', () => {
+        if (isCarouselActive) {
+            toggleCarousel(); // Stop rotation, stay in focus view (button will update via toggleCarousel)
+        } else {
+            exitFocusMode();
+        }
+    });
 
     focusFloorMap.src = '/static/' + config.floor_maps[floorId];
     renderFocusViewDevices(floorId, focusDotsContainer);
@@ -1326,6 +1386,48 @@ function exitFocusMode() {
     focusViewContainer.classList.remove('active');
     focusViewContainer.innerHTML = '';
     fullscreenGrid.style.display = 'grid';
+}
+
+// --- CAROUSEL LOGIC ---
+function toggleCarousel() {
+    isCarouselActive = !isCarouselActive;
+    const btn = document.getElementById('carousel-toggle-btn');
+    const focusBtn = document.getElementById('focus-close-btn'); // Tombol di dalam focus view
+    
+    if (isCarouselActive) {
+        if (btn) {
+            btn.textContent = '⏹ Stop Rotate';
+            btn.classList.add('active');
+        }
+        if (focusBtn) {
+            focusBtn.innerHTML = '⏹ Stop Rotate';
+            focusBtn.title = 'Stop Auto Rotate';
+        }
+        startCarousel();
+    } else {
+        if (btn) {
+            btn.textContent = '▶ Auto Rotate';
+            btn.classList.remove('active');
+        }
+        if (focusBtn) {
+            focusBtn.innerHTML = ICON_GRID; // Balik jadi icon Grid
+            focusBtn.title = 'Back to Grid';
+        }
+        if (carouselInterval) clearInterval(carouselInterval);
+    }
+}
+
+function startCarousel() {
+    const floorIds = Object.keys(config.floor_labels);
+    if (floorIds.length === 0) return;
+
+    // Mulai langsung
+    enterFocusMode(floorIds[carouselIndex]);
+    
+    carouselInterval = setInterval(() => {
+        carouselIndex = (carouselIndex + 1) % floorIds.length;
+        enterFocusMode(floorIds[carouselIndex]);
+    }, 10000); // Ganti lantai tiap 10 detik
 }
 
 // Update Stats & Visual saat Data Masuk (Tanpa Re-generate semua HTML)

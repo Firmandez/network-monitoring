@@ -164,6 +164,14 @@ body.matrix-theme .exit-fullscreen-btn {
     color: #fff;
 }
 
+body.matrix-theme .focus-floor-label {
+    background: rgba(0, 20, 0, 0.9);
+    border-left-color: #0f0;
+    color: #0f0;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    text-shadow: 0 0 5px #0f0;
+}
+
 body.matrix-theme .exit-fullscreen-btn:hover {
     background: #a03020;
 }
